@@ -1,0 +1,142 @@
+/* Modern Dashboard Styles for Exposed Child System */
+
+.dashboard-container {
+  background: #f7f9fb;
+  min-height: 100vh;
+  padding: 32px 24px 24px 24px;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.dashboard-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2a3b4d;
+  letter-spacing: 1px;
+}
+
+.dashboard-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px 0 rgba(44,62,80,0.07);
+  padding: 28px 32px;
+  min-width: 220px;
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: box-shadow 0.2s;
+}
+.summary-card:hover {
+  box-shadow: 0 4px 24px 0 rgba(44,62,80,0.13);
+}
+.summary-label {
+  font-size: 1.1rem;
+  color: #6c7a89;
+  margin-bottom: 8px;
+}
+.summary-value {
+  font-size: 2.1rem;
+  font-weight: 600;
+  color: #1a232f;
+}
+.summary-icon {
+  font-size: 2.2rem;
+  color: #4e8cff;
+  margin-bottom: 10px;
+}
+
+.dashboard-section {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px 0 rgba(44,62,80,0.07);
+  padding: 28px 32px;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2a3b4d;
+  margin-bottom: 18px;
+}
+
+.recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.recent-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.05rem;
+  color: #34495e;
+}
+.recent-list li:last-child {
+  border-bottom: none;
+}
+
+/* Chart.js or other chart containers */
+.dashboard-charts {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.dashboard-chart {
+  flex: 1 1 320px;
+  min-width: 280px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px 0 rgba(44,62,80,0.07);
+  padding: 24px 20px 16px 20px;
+  margin-bottom: 32px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .dashboard-summary, .dashboard-charts {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dashboard-section, .dashboard-chart {
+    padding: 18px 10px;
+  }
+}
+
+/* Buttons */
+.dashboard-btn {
+  background: #4e8cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(44,62,80,0.07);
+}
+.dashboard-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Misc */
+.dashboard-empty {
+  color: #b0b8c1;
+  font-style: italic;
+  font-size: 1.05rem;
+  padding: 12px 0;
+}

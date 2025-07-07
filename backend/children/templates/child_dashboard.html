@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load field_tags %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4">Child Dashboard</h2>
+
+    <!-- Top Section: Child Details and Current Outcome -->
+    <div id="cd-top-section" class="card mb-4 p-3 shadow">
+        <div class="row mb-2">
+            <div class="col-md-3"><strong>HCC Number:</strong> {{ child.hcc_number }}</div>
+            <div class="col-md-3"><strong>Name:</strong> {{ child.child_name }}</div>
+            <div class="col-md-3"><strong>DOB:</strong> {{ child.child_dob }}</div>
+            <div class="col-md-3"><strong>Gender:</strong> {{ child.child_gender }}</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3"><strong>Birth Weight:</strong> {{ child.child_birth_weight }} kg</div>
+            <div class="col-md-3"><strong>Agrees to FUP:</strong> {{ child.agrees_to_fup }}</div>
+            <div class="col-md-3"><strong>Guardian Name:</strong> {{ child.guardian_name }}</div>
+            <div class="col-md-3"><strong>Phone:</strong> {{ child.guardian_phone }}</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-4"><strong>Address:</strong> {{ child.physical_address }}</div>
+            <div class="col-md-4"><strong>Mother Status:</strong> {{ child.mother_status }}</div>
+            <div class="col-md-4"><strong>ART Number:</strong> {{ child.mother_art_number }}</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-4"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
+            <div class="col-md-8">
+                <strong>Current Outcome:</strong> 
+                {% if current_outcome %}
+                    <span class="badge bg-info text-dark">{{ current_outcome }}</span>
+                    {% if current_outcome == 'Missed Appointment' and missed_or_defaulted_date %}
+                        <span class="text-muted">(became missed on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
+                    {% elif current_outcome == 'Defaulted' and missed_or_defaulted_date %}
+                        <span class="text-muted">(became defaulted on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
+                    {% elif current_outcome_date %}
+                        <span class="text-muted">(as of {{ current_outcome_date }})</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">N/A</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Section: Visits Table -->
+ <div id="cd-middle-section" class="card mb-4">
+    <div class="card-header bg-secondary text-white">Visit History</div>
+    <div class="card-body">
+        {% if visits %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Visit Date</th>
+                        <th>Height (cm)</th>
+                        <th>Weight (kg)</th>
+                        <th>MUAC (cm)</th>
+                        <th>Wasting</th>
+                        <th>Breastfeeding</th>
+                        <th>Mother ART Status</th>
+                        <th>Clinical Monitoring</th>
+                        <th>HIV Testing</th>
+                        <th>Infection Status</th>
+                        <th>CPT Given</th>
+                        <th>Follow-Up Outcome</th>
+                        <th>Next Appointment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visit in visits %}
+                    <tr>
+                        <td>{{ visit.visit_date }}</td>
+                        <td>{{ visit.height }}</td>
+                        <td>{{ visit.weight }}</td>
+                        <td>{{ visit.muac }}</td>
+                        <td>{{ visit.get_wasting_display }}</td>
+                        <td>{{ visit.get_breastfeeding_display }}</td>
+                        <td>{{ visit.get_mother_art_status_display }}</td>
+                        <td>{{ visit.get_clinical_monitoring_display }}</td>
+                        <td>{{ visit.get_hiv_testing_display }}</td>
+                        <td>{{ visit.get_infection_status_display }}</td>
+                        <td>{{ visit.cpt_given }}</td>
+                        <td>{{ visit.get_follow_up_outcome_display }}</td>
+                        <td>{{ visit.next_appointment_or_outcome_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>No visits recorded yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+    <!-- Bottom Section: Actions -->
+    <div id="cd-bottom-section" class="cd-fixed-bottom-bar">
+        <div class="container-fluid d-flex flex-wrap justify-content-center gap-2 py-3">
+            {% if user.is_superuser %}
+                <a href="{% url 'add_visit' child.hcc_number %}" class="btn btn-success flex-fill">Add Visit</a>
+                <a href="{% url 'add_hts_result' child.hcc_number %}" class="btn btn-info flex-fill">Add HTS Result</a>
+                <a href="{% url 'update_outcome' child.hcc_number %}" class="btn btn-warning flex-fill">Update Outcome</a>
+                <a href="{% url 'edit_field' child.hcc_number 'all' %}" class="btn btn-secondary flex-fill">Demographics Edit</a>
+                <a href="{% url 'change_hcc_number' child.hcc_number %}" class="btn btn-warning flex-fill">Change HCC Number</a>
+                <a href="{% url 'delete_child' child.hcc_number %}" class="btn btn-danger flex-fill">Delete</a>
+            {% else %}
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can add or edit information">Add Visit</button>
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can add or edit information">Add HTS Result</button>
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can add or edit information">Update Outcome</button>
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can edit demographics">Demographics Edit</button>
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can change HCC Number">Change HCC Number</button>
+                <button class="btn btn-secondary flex-fill" disabled title="Only superusers can delete">Delete</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Demographics Modal removed: now using full page edit form -->
+{% endblock %}

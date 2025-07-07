@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ action }} User</h2>
+  <form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+        {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_email">Email</label>
+        {{ form.email }}
+        {% for error in form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_first_name">First Name</label>
+        {{ form.first_name }}
+        {% for error in form.first_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_last_name">Last Name</label>
+        {{ form.last_name }}
+        {% for error in form.last_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+        {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_is_active">Active</label><br>
+        {{ form.is_active }}
+        {% for error in form.is_active.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-12 mb-3">
+        <label for="id_role">Role</label>
+        {{ form.role }}
+        <small class="form-text text-muted">Superuser can manage users and data. Standard can only view and change their password.</small>
+        {% for error in form.role.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'user_management' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

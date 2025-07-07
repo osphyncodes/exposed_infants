@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Exposed Child System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Sidebar toggle and tooltip styles are now in styles.css -->
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="sidebar-header text-center mb-3" style="padding-top:18px; padding-bottom:10px; position:relative;">
+            <span class="fs-5 fw-bold d-block system-name" style="letter-spacing:1px; white-space:nowrap;">Exposed Infants</span>
+            <span class="system-tooltip">Exposed Infants</span>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'children' %} active{% endif %}" href="{% url 'children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}" href="{% url 'reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
+            {# User List link removed as requested #}
+            {% if request.user.is_superuser %}
+            <a class="nav-link{% if request.resolver_match.url_name == 'user_management' %} active{% endif %}" href="{% url 'user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
+            {% endif %}
+            <a class="nav-link{% if request.resolver_match.url_name == 'reminders' %} active{% endif %}" href="{% url 'reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'import_export' %} active{% endif %}" href="{% url 'import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'logs' %} active{% endif %}" href="{% url 'logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
+            {% if not request.user.is_superuser %}
+            <a class="nav-link{% if request.resolver_match.url_name == 'change_password' %} active{% endif %}" href="{% url 'change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
+            {% endif %}
+        </nav>
+        <form method="post" action="{% url 'logout' %}" class="logout-form mt-auto text-center">
+            {% csrf_token %}
+            <button type="submit" id="buttonLog" class="btn btn-danger w-100 mt-3"><i class="fas fa-sign-out-alt"></i> <span class="sidebar-label">Logout</span></button>
+        </form>
+    </div>
+    <div class="content" id="mainContent">
+        {% block content %}{% endblock %}
+    </div>
+    <div class="popview">
+        {% block popview %}{% endblock %}
+    </div>
+</body>
+    <script>
+        // Sidebar toggle logic
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        function setSidebarState(collapsed) {
+            if (collapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.style.marginLeft = '60px';
+                localStorage.setItem('sidebar-collapsed', '1');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                mainContent.style.marginLeft = '220px';
+                localStorage.setItem('sidebar-collapsed', '0');
+            }
+            // Show/hide tooltips for nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (collapsed) {
+                    link.setAttribute('title', link.getAttribute('data-tooltip'));
+                } else {
+                    link.removeAttribute('title');
+                }
+            });
+        }
+        toggleBtn.addEventListener('click', function() {
+            setSidebarState(!sidebar.classList.contains('sidebar-collapsed'));
+        });
+        // Restore sidebar state
+        if (localStorage.getItem('sidebar-collapsed') === '1') {
+            setSidebarState(true);
+        } else {
+            setSidebarState(false);
+        }
+
+        // Auto-logout after inactivity (client-side fallback)
+        let sessionTimeout = 15 * 60 * 1000; // 15 minutes
+        let logoutUrl = "{% url 'logout' %}";
+        let timeoutHandle;
+        function resetTimeout() {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(function() {
+                window.location.href = logoutUrl;
+            }, sessionTimeout);
+        }
+        document.addEventListener('mousemove', resetTimeout);
+        document.addEventListener('keydown', resetTimeout);
+        document.addEventListener('click', resetTimeout);
+        resetTimeout();
+    </script>
+</html>

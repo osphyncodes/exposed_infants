@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/dash.css' %}">
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <span class="dashboard-title"><i class="fas fa-tachometer-alt summary-icon"></i> Dashboard</span>
+    </div>
+    <div class="dashboard-summary">
+        <div class="summary-card">
+            <span class="summary-icon"><i class="fas fa-baby"></i></span>
+            <span class="summary-label">Total Children</span>
+            <span class="summary-value">{{ total_children }}</span>
+        </div>
+        <div class="summary-card">
+            <span class="summary-icon"><i class="fas fa-user-md"></i></span>
+            <span class="summary-label">Total Visits</span>
+            <span class="summary-value">{{ total_visits }}</span>
+        </div>
+        <div class="summary-card">
+            <span class="summary-icon"><i class="fas fa-vial"></i></span>
+            <span class="summary-label">Total HTS Samples</span>
+            <span class="summary-value">{{ total_hts_samples }}</span>
+        </div>
+    </div>
+    <div class="dashboard-charts">
+        <div class="dashboard-chart" style="max-width: 420px; min-width: 280px;">
+            <div class="section-title">Children Registered Per Month</div>
+            <canvas id="childrenPerMonthChart" width="380" height="280"></canvas>
+        </div>
+        <div class="dashboard-chart" style="max-width: 420px; min-width: 280px;">
+            <div class="section-title">Gender Distribution</div>
+            <canvas id="genderPieChart" width="380" height="280"></canvas>
+        </div>
+    </div>
+    <div class="dashboard-section">
+        <div class="section-title">Recent Children</div>
+        {% if recent_children %}
+        <ul class="recent-list">
+            {% for child in recent_children %}
+            <li>{{ child.child_name }} &mdash; <b>{{ child.hcc_number }}</b> ({{ child.child_dob }}, {{ child.child_gender }})</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="dashboard-empty">No children found.</div>
+        {% endif %}
+    </div>
+    <div class="dashboard-section">
+        <div class="section-title">Recent Visits</div>
+        {% if recent_visits %}
+        <ul class="recent-list">
+            {% for visit in recent_visits %}
+            <li>{{ visit.child.child_name }} &mdash; {{ visit.visit_date }} | Height: {{ visit.height }} cm, Weight: {{ visit.weight }} kg</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="dashboard-empty">No visits found.</div>
+        {% endif %}
+    </div>
+</div>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script>
+    // Data passed from Django view as JSON
+    const childrenPerMonthLabels = JSON.parse('{{ children_per_month_labels|escapejs }}');
+    const childrenPerMonthData = JSON.parse('{{ children_per_month_data|escapejs }}');
+    const genderLabels = JSON.parse('{{ gender_labels|escapejs }}');
+    const genderData = JSON.parse('{{ gender_data|escapejs }}');
+
+    // Bar Chart: Children Registered Per Month
+    const ctx1 = document.getElementById('childrenPerMonthChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: childrenPerMonthLabels,
+            datasets: [{
+                label: 'Children Registered',
+                data: childrenPerMonthData,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: '#222',
+                    font: { weight: 'bold', size: 13 },
+                    formatter: Math.round
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Pie Chart: Gender Distribution
+    const ctx2 = document.getElementById('genderPieChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                data: genderData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    color: '#222',
+                    font: { weight: 'bold', size: 14 },
+                    formatter: function(value, context) {
+                        const label = context.chart.data.labels[context.dataIndex];
+                        return label + ': ' + value;
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+</script>
+{% endblock %}

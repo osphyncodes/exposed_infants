@@ -1,0 +1,200 @@
+/* Sidebar collapsed styles for toggle */
+.sidebar.sidebar-collapsed {
+    width: 60px !important;
+    min-width: 60px !important;
+    transition: width 0.2s;
+}
+.sidebar.sidebar-collapsed .sidebar-label {
+    display: none !important;
+}
+.sidebar.sidebar-collapsed .sidebar-header {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+.sidebar.sidebar-collapsed .nav-link {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    justify-content: center;
+}
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 18px;
+    right: -18px;
+    z-index: 1200;
+    background: #23272b;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.sidebar-toggle-btn:hover {
+    background: #007bff;
+    color: #fff;
+}
+.sidebar-collapsed .sidebar-header .system-name {
+    display: none !important;
+}
+.sidebar-collapsed .sidebar-header {
+    position: relative;
+}
+.sidebar-collapsed .sidebar-header .system-tooltip {
+    display: none;
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #23272b;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 1.05rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+    z-index: 2000;
+}
+.sidebar-collapsed .sidebar-header:hover .system-tooltip {
+    display: block;
+}
+/* Ensure the body takes full height */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Sidebar styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 220px;
+    background-color: #23272b;
+    color: #fff;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    z-index: 1100;
+    transition: width 0.2s;
+}
+
+.sidebar-header {
+    padding: 24px 0 8px 0;
+    background: #23272b;
+    border-bottom: 1px solid #343a40;
+}
+
+.sidebar h5 {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+/* Sidebar nav-link styles */
+.sidebar .nav-link {
+    color: #fff;
+    padding: 14px 24px;
+    font-size: 1.08rem;
+    border-radius: 0;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: none;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background: #fff !important;
+    color: #007bff !important;
+}
+
+.sidebar .nav-link:hover i,
+.sidebar .nav-link.active i {
+    color: #007bff !important;
+}
+
+.sidebar .fa {
+    min-width: 22px;
+    text-align: center;
+}
+
+.sidebar .logout-form {
+    width: 100%;
+    padding: 0 16px 24px 16px;
+}
+
+#buttonLog {
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 10px 0;
+    cursor: pointer;
+    font-size: 1.08rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+#buttonLog:hover {
+    background-color: #c82333;
+}
+
+/* Content area styles */
+.content {
+    margin-left: 220px;
+    padding: 20px;
+    padding-bottom: 90px; /* add space for fixed bar */
+    height: 100vh;
+    overflow-y: auto;  /* Makes the content scrollable */
+    transition: margin-left 0.2s;
+}
+
+@media (max-width: 900px) {
+    .sidebar { left: 0; }
+    .content { margin-left: 60px !important; }
+}
+
+/* --- Child Dashboard Fixed Bottom Bar --- */
+.cd-fixed-bottom-bar {
+    position: fixed;
+    left: 220px; /* width of sidebar */
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+    z-index: 2000;
+    border-top: 1px solid #e0e0e0;
+    padding-bottom: env(safe-area-inset-bottom, 0); /* for mobile safe area */
+}
+
+.cd-fixed-bottom-bar .btn {
+    min-width: 140px;
+    font-weight: 500;
+    font-size: 1.05rem;
+    margin-bottom: 0 !important;
+}
+
+.cd-fixed-bottom-bar .container-fluid {
+    max-width: 100vw;
+}
+
+/* --- Child Dashboard Top Section Grouping --- */
+#cd-top-section .row.mb-2:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+}
+
+#cd-top-section strong {
+    color: #2c3e50;
+}

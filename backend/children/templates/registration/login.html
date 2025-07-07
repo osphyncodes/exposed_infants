@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Exposed Infants System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #007bff 0%, #23272b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+            padding: 40px 32px 32px 32px;
+            max-width: 370px;
+            width: 100%;
+            margin: 32px 0;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .login-header h2 {
+            font-weight: 700;
+            color: #23272b;
+            margin-bottom: 6px;
+        }
+        .login-header .brand {
+            color: #007bff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #23272b;
+        }
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 1.05rem;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.08);
+        }
+        .btn-login {
+            width: 100%;
+            background: #007bff;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 1.08rem;
+            margin-top: 10px;
+            transition: background 0.15s;
+        }
+        .btn-login:hover {
+            background: #0056b3;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 18px;
+            color: #888;
+            font-size: 0.97rem;
+        }
+        .login-icon {
+            color: #007bff;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        .alert {
+            margin-bottom: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">
+                <i class="fa-solid fa-baby"></i>
+            </div>
+            <h2>Login</h2>
+            <div class="brand">Exposed Infants System</div>
+        </div>
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                Invalid username or password. Please try again.
+            </div>
+        {% endif %}
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" autofocus required class="form-control" id="id_username" placeholder="Enter your username">
+            </div>
+            <div class="mb-3">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" required class="form-control" id="id_password" placeholder="Enter your password">
+            </div>
+            <button type="submit" class="btn btn-login">Login</button>
+        </form>
+        <div class="login-footer">
+            &copy; {{ year|default:2025 }} Exposed Infants System
+        </div>
+    </div>
+</body>
+</html>

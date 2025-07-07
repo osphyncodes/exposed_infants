@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Add New Child</h2>
+
+    <form method="post" class="row g-3 shadow p-4 bg-light rounded">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label for="id_hcc_number" class="form-label">HCC Number</label>
+            {{ form.hcc_number|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_child_name" class="form-label">Child Name</label>
+            {{ form.child_name|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_child_dob" class="form-label">Date of Birth</label>
+            {{ form.child_dob|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_child_gender" class="form-label">Gender</label>
+            {{ form.child_gender|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_child_birth_weight" class="form-label">Birth Weight (kg)</label>
+            {{ form.child_birth_weight|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_guardian_name" class="form-label">Guardian Name</label>
+            {{ form.guardian_name|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_relationship" class="form-label">Relationship</label>
+            {{ form.relationship|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_guardian_phone" class="form-label">Guardian Phone</label>
+            {{ form.guardian_phone|add_class:"form-control" }}
+        </div>
+        <div class="col-12">
+            <label for="id_physical_address" class="form-label">Physical Address</label>
+            {{ form.physical_address|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_agrees_to_fup" class="form-label">Agrees to FUP?</label>
+            {{ form.agrees_to_fup|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_mother_status" class="form-label">Mother Status</label>
+            {{ form.mother_status|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_mother_art_number" class="form-label">Mother ART Number</label>
+            {{ form.mother_art_number|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_mother_art_start_date" class="form-label">ART Start Date</label>
+            {{ form.mother_art_start_date|add_class:"form-control" }}
+        </div>
+
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary">Save Child</button>
+            <a href="{% url 'children' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

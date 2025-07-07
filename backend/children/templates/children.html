@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Children Management</h2>
+        <a href="{% url 'add_child' %}" class="btn btn-primary">Add New Child</a>
+    </div>
+
+    <form method="post" class="row g-3 mb-4">
+        {% csrf_token %}
+        <div class="col-md-4">
+            <select name="search_by" class="form-select" required>
+                <option value="hcc" {% if request.GET.search_by == "hcc" %}selected{% endif %}>HCC Number</option>
+                <option value="mother_art" {% if request.GET.search_by == "mother_art" %}selected{% endif %}>Mother ART Number</option>
+            </select>
+        </div>
+        <div class="col-md-5">
+            <input type="text" name="query" class="form-control" placeholder="Enter search value" value="{{ request.GET.query }}" required>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success w-100">Search</button>
+        </div>
+    </form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>HCC #</th>
+            <th>Child Name</th>
+            <th>Gender</th>
+            <th>Mother ARV#</th>
+            <th>DOB</th>
+            <th>Guardian</th>
+            <th>Relationship</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for child in children %}
+        <tr>
+            <td>{{ child.hcc_number }}</td>
+            <td>{{ child.child_name }}</td>
+            <td>{{ child.child_gender }}</td>
+            <td>{{ child.mother_art_number }}</td>
+            <td>{{ child.child_dob }}</td>
+            <td>{{ child.guardian_name }}</td>
+            <td>{{ child.relationship }}</td>
+            <td>
+                <a href="{% url 'child_dashboard' child.hcc_number %}" class="btn btn-sm btn-primary">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No children found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+</div>
+{% endblock %}
