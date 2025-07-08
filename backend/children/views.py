@@ -9,6 +9,8 @@ from .forms_change_hcc import ChangeHCCNumberForm
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
 from .forms import ChildForm, ChildVisitForm, HTSSampleForm
 from .forms_outcome import OutcomeVisitForm
 from .models import Child, ChildVisit, HTSSample, SystemLog
@@ -356,4 +358,8 @@ def update_outcome(request, hcc_number):
     else:
         form = OutcomeVisitForm()
     return render(request, 'add_visit.html', {'form': form, 'child': child, 'show_weight_muac': False, 'outcome_only': True})
+
+@login_required
+def app_selector(request):
+    return render(request, 'app_selector.html')
 

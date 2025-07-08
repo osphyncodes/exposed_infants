@@ -1,5 +1,3 @@
-    
-    
 from django.urls import path
 from . import views
 
@@ -25,4 +23,5 @@ urlpatterns = [
     path('user-management/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('user-management/<int:user_id>/delete/', views.delete_user, name='delete_user'),
     path('change-password/', views.change_password, name='change_password'),
+    path('select-app/', views.app_selector, name='app_selector'),
 ]

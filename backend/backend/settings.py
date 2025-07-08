@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'children',
-    'widget_tweaks',
+    'widget_tweaks',  # Optional: for development tools like shell_plus
+    'tingathe_tools',  # Optional: if you have custom tools
 ]
 
 MIDDLEWARE = [
@@ -130,9 +131,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "children" / "static",]
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/select-app/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
