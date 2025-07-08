@@ -20,18 +20,17 @@
             <span class="system-tooltip">Exposed Infants</span>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'children:dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'children' %} active{% endif %}" href="{% url 'children:children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}" href="{% url 'children:reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
-            {# User List link removed as requested #}
+            <a class="nav-link" data-nav-name="dashboard" href="{% url 'children:dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
+            <a class="nav-link" data-nav-name="children" href="{% url 'children:children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
+            <a class="nav-link" data-nav-name="reports" href="{% url 'children:reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
             {% if request.user.is_superuser %}
-            <a class="nav-link{% if request.resolver_match.url_name == 'user_management' %} active{% endif %}" href="{% url 'children:user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
+            <a class="nav-link" data-nav-name="user_management" href="{% url 'children:user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
             {% endif %}
-            <a class="nav-link{% if request.resolver_match.url_name == 'reminders' %} active{% endif %}" href="{% url 'children:reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'import_export' %} active{% endif %}" href="{% url 'children:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'logs' %} active{% endif %}" href="{% url 'children:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
+            <a class="nav-link" data-nav-name="reminders" href="{% url 'children:reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
+            <a class="nav-link" data-nav-name="import_export" href="{% url 'children:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
+            <a class="nav-link" data-nav-name="logs" href="{% url 'children:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
             {% if not request.user.is_superuser %}
-            <a class="nav-link{% if request.resolver_match.url_name == 'change_password' %} active{% endif %}" href="{% url 'change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
+            <a class="nav-link" data-nav-name="change_password" href="{% url 'change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
             {% endif %}
         </nav>
         <div class="mt-auto text-center">
@@ -101,5 +100,24 @@
         document.addEventListener('keydown', resetTimeout);
         document.addEventListener('click', resetTimeout);
         resetTimeout();
+
+        // Highlight active sidebar link based on current URL
+        (function() {
+            const path = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link[data-nav-name]');
+            navLinks.forEach(link => {
+                if (link.href && path === new URL(link.href).pathname) {
+                    link.classList.add('active');
+                }
+                // Optionally, handle "Children" subpages:
+                if (link.dataset.navName === "children" && (
+                    path.startsWith("{% url 'children:children' %}".replace(/\/$/, "")) ||
+                    path.startsWith("{% url 'children:add_child' %}".replace(/\/$/, "")) ||
+                    path.startsWith("{% url 'children:child_dashboard' hcc_number='dummy' %}".replace('dummy', ''))
+                )) {
+                    link.classList.add('active');
+                }
+            });
+        })();
     </script>
 </html>
