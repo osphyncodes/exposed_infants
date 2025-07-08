@@ -102,12 +102,12 @@
     <div id="cd-bottom-section" class="cd-fixed-bottom-bar">
         <div class="container-fluid d-flex flex-wrap justify-content-center gap-2 py-3">
             {% if user.is_superuser %}
-                <a href="{% url 'add_visit' child.hcc_number %}" class="btn btn-success flex-fill">Add Visit</a>
-                <a href="{% url 'add_hts_result' child.hcc_number %}" class="btn btn-info flex-fill">Add HTS Result</a>
-                <a href="{% url 'update_outcome' child.hcc_number %}" class="btn btn-warning flex-fill">Update Outcome</a>
-                <a href="{% url 'edit_field' child.hcc_number 'all' %}" class="btn btn-secondary flex-fill">Demographics Edit</a>
-                <a href="{% url 'change_hcc_number' child.hcc_number %}" class="btn btn-warning flex-fill">Change HCC Number</a>
-                <a href="{% url 'delete_child' child.hcc_number %}" class="btn btn-danger flex-fill">Delete</a>
+                <a href="{% url 'children:add_visit' child.hcc_number %}" class="btn btn-success flex-fill">Add Visit</a>
+                <a href="{% url 'children:add_hts_result' child.hcc_number %}" class="btn btn-info flex-fill">Add HTS Result</a>
+                <a href="{% url 'children:update_outcome' child.hcc_number %}" class="btn btn-warning flex-fill">Update Outcome</a>
+                <a href="{% url 'children:edit_field' child.hcc_number 'all' %}" class="btn btn-secondary flex-fill">Demographics Edit</a>
+                <a href="{% url 'children:change_hcc_number' child.hcc_number %}" class="btn btn-warning flex-fill">Change HCC Number</a>
+                <a href="{% url 'children:delete_child' child.hcc_number %}" class="btn btn-danger flex-fill">Delete</a>
             {% else %}
                 <button class="btn btn-secondary flex-fill" disabled title="Only superusers can add or edit information">Add Visit</button>
                 <button class="btn btn-secondary flex-fill" disabled title="Only superusers can add or edit information">Add HTS Result</button>

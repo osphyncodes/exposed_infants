@@ -33,7 +33,7 @@ def change_password(request):
             user = form.save()
             update_session_auth_hash(request, user)
             messages.success(request, 'Your password was changed successfully.')
-            return redirect('change_password')
+            return redirect('children:change_password')
         else:
             messages.error(request, 'Please correct the error below.')
     else:
@@ -53,7 +53,7 @@ def add_user(request):
         form = UserForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_management')
+            return redirect('children:user_management')
     else:
         form = UserForm()
     return render(request, 'user_form.html', {'form': form, 'action': 'Add'})
@@ -66,7 +66,7 @@ def edit_user(request, user_id):
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('user_management')
+            return redirect('children:user_management')
     else:
         form = UserForm(instance=user)
     return render(request, 'user_form.html', {'form': form, 'action': 'Edit'})
@@ -77,7 +77,7 @@ def delete_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     if request.method == 'POST':
         user.delete()
-        return redirect('user_management')
+        return redirect('children:user_management')
     return render(request, 'user_confirm_delete.html', {'user': user})
 
 @login_required
@@ -103,7 +103,7 @@ def change_hcc_number(request, hcc_number):
                     # Update all related records to point to the new PK (by value)
                     ChildVisit.objects.filter(child__hcc_number=new_hcc).update(child_id=new_hcc)
                     HTSSample.objects.filter(child__hcc_number=new_hcc).update(child_id=new_hcc)
-                return redirect('child_dashboard', hcc_number=new_hcc)
+                return redirect('children:child_dashboard', hcc_number=new_hcc)
     else:
         form = ChangeHCCNumberForm(initial={'new_hcc_number': child.hcc_number})
     return render(request, 'change_hcc_number.html', {'form': form, 'child': child, 'error': error})
@@ -155,12 +155,12 @@ def add_child(request):
     from django.contrib import messages
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to add a child.')
-        return redirect('dashboard')
+        return redirect('children:dashboard')
     if request.method == 'POST':
         form = ChildForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('children')
+            return redirect('children:children')
     else:
         form = ChildForm()
     return render(request, 'add_child.html', {'form': form})
@@ -185,8 +185,6 @@ def children_view(request):
 @login_required
 def reports(request):
     return render(request, 'reports.html')
-
-
 
 
 @login_required
@@ -268,7 +266,7 @@ def edit_child_field_view(request, hcc_number, field=None):
         form = ChildForm(request.POST, instance=child)
         if form.is_valid():
             form.save()
-            return redirect('child_dashboard', hcc_number=hcc_number)
+            return redirect('children:child_dashboard', hcc_number=hcc_number)
     else:
         form = ChildForm(instance=child)
     return render(request, 'edit_field.html', {
@@ -284,7 +282,7 @@ def delete_child_view(request, hcc_number):
         child.delete()
         from django.contrib import messages
         messages.success(request, 'Child deleted successfully.')
-        return redirect('children')
+        return redirect('children:children')
     return render(request, 'confirm_delete.html', {'child': child})
 
 @login_required
@@ -292,7 +290,7 @@ def add_visit(request, hcc_number):
     from django.contrib import messages
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to add a visit.')
-        return redirect('dashboard')
+        return redirect('children:dashboard')
     child = get_object_or_404(Child, hcc_number=hcc_number)
 
     from datetime import date
@@ -316,7 +314,7 @@ def add_visit(request, hcc_number):
             visit = form.save(commit=False)
             visit.child = child
             visit.save()
-            return redirect('child_dashboard', hcc_number=child.hcc_number)
+            return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = ChildVisitForm(child=child)
 
@@ -328,14 +326,14 @@ def add_hts_result(request, hcc_number):
     from django.contrib import messages
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to add an HTS sample.')
-        return redirect('dashboard')
+        return redirect('children:dashboard')
     child = get_object_or_404(Child, hcc_number=hcc_number)
 
     if request.method == 'POST':
         form = HTSSampleForm(request.POST, child=child)  # pass child here
         if form.is_valid():
             form.save()
-            return redirect('child_dashboard', hcc_number=child.hcc_number)
+            return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = HTSSampleForm(child=child)  # also pass child on GET
 
@@ -346,7 +344,7 @@ def update_outcome(request, hcc_number):
     from django.contrib import messages
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to update outcome information.')
-        return redirect('dashboard')
+        return redirect('children:dashboard')
     child = get_object_or_404(Child, hcc_number=hcc_number)
     if request.method == 'POST':
         form = OutcomeVisitForm(request.POST)
@@ -354,7 +352,7 @@ def update_outcome(request, hcc_number):
             visit = form.save(commit=False)
             visit.child = child
             visit.save()
-            return redirect('child_dashboard', hcc_number=child.hcc_number)
+            return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = OutcomeVisitForm()
     return render(request, 'add_visit.html', {'form': form, 'child': child, 'show_weight_muac': False, 'outcome_only': True})

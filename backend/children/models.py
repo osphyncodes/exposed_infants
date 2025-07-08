@@ -124,8 +124,8 @@ class HTSSample(models.Model):
     sample_date = models.DateField()
     test_type = models.CharField(max_length=10, choices=TEST_TYPE_CHOICES)
     sample_id = models.CharField(max_length=50)
-    result = models.CharField(max_length=20, choices=RESULT_CHOICES)
-    date_received = models.DateField()
+    result = models.CharField(max_length=20, choices=RESULT_CHOICES, null=True, blank=True)
+    date_received = models.DateField(null=True, blank=True)
 
 
     def __str__(self):

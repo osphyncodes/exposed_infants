@@ -18,9 +18,14 @@
   <div class="text-center mt-5">
     <h2>Select Application</h2>
     <div class="mt-4">
-        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg m-2">Exposed Infants App</a>
-        <a href="{% url 'tingathe_tools_index' %}" class="btn btn-success btn-lg m-2">Tingathe Tools App</a>
+        <a href="{% url 'children:dashboard' %}" class="btn btn-primary btn-lg m-2">Exposed Infants App</a>
+        <a href="{% url 'tingathe_tools:tingathe_tools_index' %}" class="btn btn-success btn-lg m-2">Tingathe Tools App</a>
     </div>
+
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-lg m-2">Logout</button>
+    </form>
 </div>  
 </body>
 </html>

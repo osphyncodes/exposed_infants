@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-00-bzyptlb=ic1t9dbukj7r#jl594fo=r3imtj^nkm@nt149qc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -126,9 +126,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [BASE_DIR / "children" / "static",]
+STATICFILES_DIRS = [
+    BASE_DIR / "children" / "static",
+    BASE_DIR / "tingathe_tools" / "static",
+]
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/select-app/'

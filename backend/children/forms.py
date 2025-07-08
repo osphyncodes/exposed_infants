@@ -1,11 +1,26 @@
 from django import forms
-from .models import Child, ChildVisit,HTSSample
+from .models import Child, ChildVisit, HTSSample
 
 class ChildForm(forms.ModelForm):
     class Meta:
         model = Child
-        exclude = ['hcc_number']
+        fields = [
+            'hcc_number',
+            'child_name',
+            'child_dob',
+            'child_gender',
+            'child_birth_weight',
+            'guardian_name',
+            'relationship',
+            'guardian_phone',
+            'physical_address',
+            'agrees_to_fup',
+            'mother_status',
+            'mother_art_number',
+            'mother_art_start_date',
+        ]
         widgets = {
+            'hcc_number': forms.TextInput(attrs={'class': 'form-control'}),
             'child_name': forms.TextInput(attrs={'class': 'form-control'}),
             'child_dob': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'child_gender': forms.Select(attrs={'class': 'form-select'}),
@@ -19,6 +34,7 @@ class ChildForm(forms.ModelForm):
             'mother_art_number': forms.TextInput(attrs={'class': 'form-control'}),
             'mother_art_start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # hcc_number is not editable, but we can show it as read-only if needed

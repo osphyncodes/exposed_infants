@@ -20,24 +20,31 @@
             <span class="system-tooltip">Exposed Infants</span>
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'children' %} active{% endif %}" href="{% url 'children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}" href="{% url 'reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'children:dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'children' %} active{% endif %}" href="{% url 'children:children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}" href="{% url 'children:reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
             {# User List link removed as requested #}
             {% if request.user.is_superuser %}
-            <a class="nav-link{% if request.resolver_match.url_name == 'user_management' %} active{% endif %}" href="{% url 'user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'user_management' %} active{% endif %}" href="{% url 'children:user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
             {% endif %}
-            <a class="nav-link{% if request.resolver_match.url_name == 'reminders' %} active{% endif %}" href="{% url 'reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'import_export' %} active{% endif %}" href="{% url 'import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
-            <a class="nav-link{% if request.resolver_match.url_name == 'logs' %} active{% endif %}" href="{% url 'logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'reminders' %} active{% endif %}" href="{% url 'children:reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'import_export' %} active{% endif %}" href="{% url 'children:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
+            <a class="nav-link{% if request.resolver_match.url_name == 'logs' %} active{% endif %}" href="{% url 'children:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
             {% if not request.user.is_superuser %}
             <a class="nav-link{% if request.resolver_match.url_name == 'change_password' %} active{% endif %}" href="{% url 'change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
             {% endif %}
         </nav>
-        <form method="post" action="{% url 'logout' %}" class="logout-form mt-auto text-center">
-            {% csrf_token %}
-            <button type="submit" id="buttonLog" class="btn btn-danger w-100 mt-3"><i class="fas fa-sign-out-alt"></i> <span class="sidebar-label">Logout</span></button>
-        </form>
+        <div class="mt-auto text-center">
+            <a href="{% url 'children:app_selector' %}" class="btn btn-secondary w-100 mt-3">
+                <i class="fas fa-exchange-alt"></i> <span class="sidebar-label">Switch App</span>
+            </a>
+            <form method="post" action="{% url 'logout' %}" class="logout-form mt-2">
+                {% csrf_token %}
+                <button type="submit" id="buttonLog" class="btn btn-danger w-100">
+                    <i class="fas fa-sign-out-alt"></i> <span class="sidebar-label">Logout</span>
+                </button>
+            </form>
+        </div>
     </div>
     <div class="content" id="mainContent">
         {% block content %}{% endblock %}
