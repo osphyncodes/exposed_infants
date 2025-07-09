@@ -54,6 +54,7 @@ class ChildVisitForm(forms.ModelForm):
             'clinical_monitoring': forms.Select(attrs={'class': 'form-select'}),
             'hiv_testing': forms.Select(attrs={'class': 'form-select'}),
             'infection_status': forms.Select(attrs={'class': 'form-select'}),
+            'drug_given': forms.Select(attrs={'class': 'form-select'}),
             'cpt_given': forms.NumberInput(attrs={'class': 'form-control'}),
             'follow_up_outcome': forms.Select(attrs={'class': 'form-select'}),
             'next_appointment_or_outcome_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -75,7 +76,6 @@ class ChildVisitForm(forms.ModelForm):
                     pass
             age_months = (visit_date.year - self.child.child_dob.year) * 12 + (visit_date.month - self.child.child_dob.month)
             if age_months < 6:
-                self.fields.pop('weight', None)
                 self.fields.pop('muac', None)
 
     def save(self, commit=True):

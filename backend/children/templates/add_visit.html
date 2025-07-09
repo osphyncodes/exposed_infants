@@ -21,11 +21,14 @@
             {{ form.height|add_class:"form-control" }}
         </div>
 
-        {% if not outcome_only and show_weight_muac %}
+    
         <div class="col-md-6">
             <label for="id_weight" class="form-label">Weight (kg)</label>
             {{ form.weight|add_class:"form-control" }}
         </div>
+
+
+        {% if not outcome_only and show_weight_muac %}
         <div class="col-md-6">
             <label for="id_muac" class="form-label">MUAC (cm)</label>
             {{ form.muac|add_class:"form-control" }}
@@ -56,6 +59,10 @@
         <div class="col-md-6">
             <label for="id_infection_status" class="form-label">Infection Status</label>
             {{ form.infection_status|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_drug_given" class="form-label">Drug Given</label>
+            {{ form.drug_given|add_class:"form-select" }}
         </div>
         <div class="col-md-6">
             <label for="id_cpt_given" class="form-label">CPT Given (tabs)</label>

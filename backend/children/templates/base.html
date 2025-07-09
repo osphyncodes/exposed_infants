@@ -30,7 +30,7 @@
             <a class="nav-link" data-nav-name="import_export" href="{% url 'children:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
             <a class="nav-link" data-nav-name="logs" href="{% url 'children:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
             {% if not request.user.is_superuser %}
-            <a class="nav-link" data-nav-name="change_password" href="{% url 'change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
+            <a class="nav-link" data-nav-name="change_password" href="{% url 'children:change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
             {% endif %}
         </nav>
         <div class="mt-auto text-center">
@@ -89,11 +89,13 @@
         // Auto-logout after inactivity (client-side fallback)
         let sessionTimeout = 15 * 60 * 1000; // 15 minutes
         let logoutUrl = "{% url 'logout' %}";
+        let loginUrl = "{% url 'login' %}";
         let timeoutHandle;
         function resetTimeout() {
             clearTimeout(timeoutHandle);
             timeoutHandle = setTimeout(function() {
                 window.location.href = logoutUrl;
+                window.location.href = loginUrl; // Redirect to login page after logout
             }, sessionTimeout);
         }
         document.addEventListener('mousemove', resetTimeout);

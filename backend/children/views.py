@@ -159,8 +159,8 @@ def add_child(request):
     if request.method == 'POST':
         form = ChildForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('children:children')
+            child = form.save()
+            return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = ChildForm()
     return render(request, 'add_child.html', {'form': form})
@@ -204,6 +204,7 @@ def logs(request):
 def child_dashboard_view(request, hcc_number):
     child = get_object_or_404(Child, hcc_number=hcc_number)
     visits = child.visits.order_by('-visit_date')
+    hts_samples = child.hts_samples.order_by('-sample_date')
     # Get field names and values
     child_fields = []
     for field in child._meta.fields:
@@ -217,6 +218,7 @@ def child_dashboard_view(request, hcc_number):
     # Determine current outcome
     current_outcome = None
     current_outcome_date = None
+    current_result = None
     if visits.exists():
         latest_visit = visits.first()
         outcome = latest_visit.follow_up_outcome
@@ -247,6 +249,17 @@ def child_dashboard_view(request, hcc_number):
     else:
         missed_or_defaulted_date = None
 
+    if hts_samples.exists():
+        latest_hts = hts_samples.first()
+        hts_result = latest_hts.result
+        hts_date_received = latest_hts.date_received
+        if hts_result:
+            current_result = latest_hts.result
+        else:
+            current_result = 'Pending'
+    else:
+        current_result = 'No HTS Samples'
+
     return render(request, 'child_dashboard.html', {
         'child': child,
         'visits': visits,
@@ -254,6 +267,7 @@ def child_dashboard_view(request, hcc_number):
         'current_outcome': current_outcome,
         'current_outcome_date': current_outcome_date,
         'missed_or_defaulted_date': missed_or_defaulted_date,
+        'current_result': current_result,
     })
 
 

@@ -28,7 +28,7 @@
         </div>
         <div class="row mb-2">
             <div class="col-md-4"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
-            <div class="col-md-8">
+            <div class="col-md-4">
                 <strong>Current Outcome:</strong> 
                 {% if current_outcome %}
                     <span class="badge bg-info text-dark">{{ current_outcome }}</span>
@@ -36,11 +36,17 @@
                         <span class="text-muted">(became missed on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
                     {% elif current_outcome == 'Defaulted' and missed_or_defaulted_date %}
                         <span class="text-muted">(became defaulted on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
-                    {% elif current_outcome_date %}
-                        <span class="text-muted">(as of {{ current_outcome_date }})</span>
                     {% endif %}
                 {% else %}
                     <span class="text-muted">N/A</span>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <strong>Current HTS Result:</strong>
+                {% if current_result %}
+                    <span class="badge bg-success">{{ current_result }}</span>
+                {% else %}
+                    <span class="text-muted">No HTS Result</span>
                 {% endif %}
             </div>
         </div>

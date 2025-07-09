@@ -46,13 +46,13 @@ class ChildVisit(models.Model):
     WASTING_CHOICES = [
         ('No', 'No Wasting'), ('Mod', 'Moderate'), ('Sev', 'Severe')
     ]
-    wasting = models.CharField(max_length=4, choices=WASTING_CHOICES, null=True, blank=True)
+    wasting = models.CharField(max_length=4, choices=WASTING_CHOICES, null=True, blank=True, default='No')
 
     BREASTFEEDING_CHOICES = [
-        ('Exc', 'Exclusive'), ('M', 'Mixed'), ('<6', 'Stopped <6m'),
-        ('C', 'Complementary'), ('Stopped', 'Stopped')
+        ('Exc', 'Exclusive'), ('M', 'Mixed/Complement'), ('<6', 'Stopped last 6 Weeks'),
+        ('C', 'Stopped over 6w. ago')
     ]
-    breastfeeding = models.CharField(max_length=10, choices=BREASTFEEDING_CHOICES, null=True, blank=True)
+    breastfeeding = models.CharField(max_length=10, choices=BREASTFEEDING_CHOICES, null=True, blank=True, default='Exc')
 
     MOTHER_ART_CHOICES = [
         ('No ART', 'Alive No ART'),
@@ -60,30 +60,38 @@ class ChildVisit(models.Model):
         ('Died', 'Died'),
         ('Unk', 'Unknown')
     ]
-    mother_art_status = models.CharField(max_length=10, choices=MOTHER_ART_CHOICES, null=True, blank=True)
+    mother_art_status = models.CharField(max_length=10, choices=MOTHER_ART_CHOICES, null=True, blank=True, default='On ART')
 
     CLINICAL_MONITORING_CHOICES = [
         ('NAD', 'No Abnormality Detected'),
         ('Sick', 'Sick child')
     ]
-    clinical_monitoring = models.CharField(max_length=10, choices=CLINICAL_MONITORING_CHOICES, null=True, blank=True)
+    clinical_monitoring = models.CharField(max_length=10, choices=CLINICAL_MONITORING_CHOICES, null=True, blank=True, default='NAD')
 
     HIV_TEST_CHOICES = [
         ('No', 'Not done'),
         ('Dbs', 'Dried Blood Spot (PCR)'),
         ('Rt', 'Rapid Test')
     ]
-    hiv_testing = models.CharField(max_length=10, choices=HIV_TEST_CHOICES, null=True, blank=True)
+    hiv_testing = models.CharField(max_length=10, choices=HIV_TEST_CHOICES, null=True, blank=True, default='No')
 
     HIV_INFECTION_STATUS_CHOICES = [
-        ('A', 'Confirmed infected'),
-        ('B', 'Not confirmed'),
-        ('C', 'Not infected'),
-        ('D', 'Not Eligible for ART')
+        ('A', 'Not Infected'),
+        ('B', 'Infected'),
+        ('C', 'Not ART Eligible'),
+        ('D', 'PSHD -> ART')
     ]
-    infection_status = models.CharField(max_length=20, choices=HIV_INFECTION_STATUS_CHOICES, null=True, blank=True)
+    infection_status = models.CharField(max_length=20, choices=HIV_INFECTION_STATUS_CHOICES, null=True, blank=True, default='C')
 
-    cpt_given = models.PositiveIntegerField(null=True, blank=True, help_text="Number of CPT tablets given")
+    DRUG_GIVEN_CHOICES = [
+        ('None', 'No Drugs Given'),
+        ('CPT', 'Cotrimoxazole Prophylaxis (CPT)'),
+        ('NVP', 'Nevirapine (NVP)'),
+        ('2P', '2P'),
+    ]
+    drug_given = models.CharField(max_length=10, choices=DRUG_GIVEN_CHOICES, null=True, blank=True, default='CPT')
+
+    cpt_given = models.PositiveIntegerField(null=True, blank=True, help_text="Number of CPT/NVP tablets given")
 
     FOLLOW_UP_CHOICES = [
         ('Con', 'Continue FUP'),
@@ -93,7 +101,7 @@ class ChildVisit(models.Model):
         ('Def', 'Defaulted'),
         ('Died', 'Died')
     ]
-    follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES)
+    follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES,default='Con')
 
     next_appointment_or_outcome_date = models.DateField(null=True, blank=True)
 
@@ -110,8 +118,6 @@ class HTSSample(models.Model):
     TEST_TYPE_CHOICES = [
         ('DBS', 'Dried Blood Spot'),
         ('Rapid', 'Rapid Test'),
-        ('PCR', 'PCR Test'),
-        ('Other', 'Other'),
     ]
 
     RESULT_CHOICES = [
