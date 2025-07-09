@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Exposed Child System{% endblock %}</title>
+    <title>{% block title %}Pact System{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -16,16 +16,12 @@
             <i class="fas fa-bars"></i>
         </button>
         <div class="sidebar-header text-center mb-3" style="padding-top:18px; padding-bottom:10px; position:relative;">
-            <span class="fs-5 fw-bold d-block system-name" style="letter-spacing:1px; white-space:nowrap;">Exposed Infants</span>
-            <span class="system-tooltip">Pact App</span>
+            <span class="fs-5 fw-bold d-block system-name" style="letter-spacing:1px; white-space:nowrap;">Pact App</span>
         </div>
         <nav class="nav flex-column">
             <a class="nav-link" data-nav-name="dashboard" href="{% url 'pact:pact_dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
             <a class="nav-link" data-nav-name="children" href="{% url 'pact:children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Children</span></a>
             <a class="nav-link" data-nav-name="reports" href="{% url 'pact:reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
-            {% if request.user.is_superuser %}
-            <a class="nav-link" data-nav-name="user_management" href="{% url 'user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
-            {% endif %}
             <a class="nav-link" data-nav-name="reminders" href="{% url 'pact:reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
             <a class="nav-link" data-nav-name="import_export" href="{% url 'pact:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
             <a class="nav-link" data-nav-name="logs" href="{% url 'pact:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>

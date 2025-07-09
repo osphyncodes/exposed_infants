@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from exposed.views import dashboard
-from exposed.views import app_selector
+from children.views import dashboard
+from children.views import app_selector
 
 urlpatterns = [
     path('admin/', admin.site.urls),

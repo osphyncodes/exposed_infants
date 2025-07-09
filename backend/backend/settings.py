@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'exposed',
+    'children',
     'pact',
     'widget_tweaks',  # Optional: for development tools like shell_plus
     'tingathe_tools',  # Optional: if you have custom tools
