@@ -17,13 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from children.views import dashboard
+from exposed.views import dashboard
+from exposed.views import app_selector
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('children.urls')),  # <--- updated to children app
+    path('children/', include('children.urls')),  # <--- updated to children app
+    path('pact/', include('pact.urls')),  # <--- updated to pact app
     path('login/', auth_views.LoginView.as_view(template_name = 'registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('', app_selector, name='app_selector'),
     path('tingathe_tools/', include('tingathe_tools.urls')),
 ]

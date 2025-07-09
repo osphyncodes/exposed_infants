@@ -3,7 +3,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('children', '0006_htssample'),
+        ('exposed', '0006_htssample'),
         ('auth', '0012_alter_user_first_name_max_length'),
     ]
 

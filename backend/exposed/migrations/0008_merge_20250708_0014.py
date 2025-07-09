@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('children', '0007_alter_childvisit_breastfeeding_and_more'),
-        ('children', '0007_systemlog'),
+        ('exposed', '0007_alter_childvisit_breastfeeding_and_more'),
+        ('exposed', '0007_systemlog'),
     ]
 
     operations = [

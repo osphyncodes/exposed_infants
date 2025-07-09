@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('children', '0003_child_child_gender'),
+        ('exposed', '0003_child_child_gender'),
     ]
 
     operations = [

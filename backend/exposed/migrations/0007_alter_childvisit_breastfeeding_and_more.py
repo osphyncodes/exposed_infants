@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('children', '0006_htssample'),
+        ('exposed', '0006_htssample'),
     ]
 
     operations = [

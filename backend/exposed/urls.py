@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-app_name = "children"
+app_name = "exposed"
 
 urlpatterns = [
     path('exposed/dashboard/', views.dashboard, name='dashboard'),
@@ -21,7 +21,7 @@ urlpatterns = [
     path('exposed/children/child_dashboard/<str:hcc_number>/delete/', views.delete_child_view, name='delete_child'),
     path('exposed/children/child_dashboard/<str:hcc_number>/change_hcc/', views.change_hcc_number, name='change_hcc_number'),
     
-    path('exposed/user-management/', views.user_management, name='user_management'),
+    path('user-management/', views.user_management, name='user_management'),
     path('user-management/add/', views.add_user, name='add_user'),
     path('user-management/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('user-management/<int:user_id>/delete/', views.delete_user, name='delete_user'),
