@@ -87,10 +87,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'osphyncodes',    # Database created in MySQL
+        'USER': 'root',       # e.g. 'root'
+        'PASSWORD': 'osphyncodes@1995', # e.g. 'usbw' for USBWebserver
+        'HOST': '127.0.0.1',             # or MySQL server IP/domain
+        'PORT': '3306',                  # USBWebserver uses 3307 by default
     }
 }
+
 
 
 # Password validation
