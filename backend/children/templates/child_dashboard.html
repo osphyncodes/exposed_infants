@@ -19,16 +19,17 @@
             <div class="col-md-3"><strong>Birth Weight:</strong> {{ child.child_birth_weight }} kg</div>
             <div class="col-md-3"><strong>Agrees to FUP:</strong> {{ child.agrees_to_fup }}</div>
             <div class="col-md-3"><strong>Guardian Name:</strong> {{ child.guardian_name }}</div>
-            <div class="col-md-3"><strong>Phone:</strong> {{ child.guardian_phone }}</div>
+            <div class="col-md-3"><strong>Guardian Phone:</strong> {{ child.guardian_phone }}</div>  
         </div>
         <div class="row mb-2">
-            <div class="col-md-4"><strong>Address:</strong> {{ child.physical_address }}</div>
-            <div class="col-md-4"><strong>Mother Status:</strong> {{ child.mother_status }}</div>
-            <div class="col-md-4"><strong>ART Number:</strong> {{ child.mother_art_number }}</div>
+            <div class="col-md-3"><strong>Relationship:</strong> {{ child.relationship }}</div>
+            <div class="col-md-3"><strong>Address:</strong> {{ child.physical_address }}</div>
+            <div class="col-md-3"><strong>Mother Status:</strong> {{ child.mother_status }}</div>
+            <div class="col-md-3"><strong>ART Number:</strong> {{ child.mother_art_number }}</div>
         </div>
         <div class="row mb-2">
-            <div class="col-md-4"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
-            <div class="col-md-4">
+            <div class="col-md-3"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
+            <div class="col-md-3">
                 <strong>Current Outcome:</strong> 
                 {% if current_outcome %}
                     <span class="badge bg-info text-dark">{{ current_outcome }}</span>
@@ -41,7 +42,7 @@
                     <span class="text-muted">N/A</span>
                 {% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <strong>Current HTS Result:</strong>
                 {% if current_result %}
                     <span class="badge bg-success">{{ current_result }}</span>

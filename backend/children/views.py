@@ -4,6 +4,7 @@ from django.contrib.auth import update_session_auth_hash
 
 from django.contrib.auth.models import User
 from .forms_user import UserForm
+from django.core.paginator import Paginator
 
 from .forms_change_hcc import ChangeHCCNumberForm
 
@@ -18,6 +19,9 @@ from django.forms.models import model_to_dict
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 import json
+
+from django.utils import timezone
+from datetime import timedelta
 
 from django.contrib.auth.decorators import user_passes_test
 
@@ -110,15 +114,16 @@ def change_hcc_number(request, hcc_number):
 
 @login_required
 def dashboard(request):
+    # Basic counts
     total_children = Child.objects.count()
     total_visits = ChildVisit.objects.count()
     total_hts_samples = HTSSample.objects.count()
 
+    # Recent records (ordering before slicing)
     recent_children = Child.objects.order_by('-child_dob')[:5]
     recent_visits = ChildVisit.objects.select_related('child').order_by('-visit_date')[:5]
 
     # Children registered per month (last 6 months)
-
     children_per_month_qs = (
         Child.objects.annotate(month=TruncMonth('child_dob'))
         .values('month')
@@ -133,16 +138,47 @@ def dashboard(request):
     gender_labels = [g['child_gender'] for g in gender_qs]
     gender_data = [g['count'] for g in gender_qs]
 
+    # Date calculations (removed duplicates)
+    today = timezone.now().date()
+    days = [today - timedelta(days=i) for i in range(6, -1, -1)]  # Last 7 days including today
+
+    # Visit counts per day
+    visit_counts = []
+    daily_summary = []
+    for day in days:
+        # For visit counts chart
+        count = ChildVisit.objects.filter(visit_date=day).count()
+        visit_counts.append({
+            'date': day.strftime('%Y-%m-%d'),
+            'count': count
+        })
+        
+        # For daily summary
+        unique_children = ChildVisit.objects.filter(
+            visit_date=day
+        ).values('child__hcc_number').distinct().count()
+        
+        daily_summary.append({
+            'date': day.strftime('%d %b %y'),  # Example: 11 Jul 25
+            'count': unique_children
+        })
+
     context = {
         'total_children': total_children,
         'total_visits': total_visits,
         'total_hts_samples': total_hts_samples,
         'recent_children': recent_children,
-        'recent_visits': recent_visits,
+        'recent_visits': recent_visits,  # Already ordered by visit_date
         'children_per_month_labels': json.dumps(children_per_month_labels),
         'children_per_month_data': json.dumps(children_per_month_data),
         'gender_labels': json.dumps(gender_labels),
         'gender_data': json.dumps(gender_data),
+        'labels': [item['date'] for item in visit_counts],
+        'data': [item['count'] for item in visit_counts],
+        'daily_summary': daily_summary,
+        'total_visits_7days': sum(item['count'] for item in daily_summary),  # Renamed to avoid conflict
+        'start_date': days[0].strftime('%d %b %Y'),
+        'end_date': days[-1].strftime('%d %b %Y')
     }
     return render(request, 'dashboard.html', context)
 
@@ -165,21 +201,46 @@ def add_child(request):
         form = ChildForm()
     return render(request, 'add_child.html', {'form': form})
 
+
 @login_required
 def children_view(request):
-    children = Child.objects.all()
+    children_list = Child.objects.all()
 
+    # Handle search
     if request.method == 'POST':
         search_by = request.POST.get('search_by')
         query = request.POST.get('query')
-
         if search_by and query:
             if search_by == 'hcc':
-                children = children.filter(hcc_number__icontains=query)
+                children_list = children_list.filter(hcc_number__icontains=query)
             elif search_by == 'mother_art':
-                children = children.filter(mother_art_number__icontains=query)
+                children_list = children_list.filter(mother_art_number__icontains=query)
 
-    return render(request, 'children.html', {'children': children})
+    # Get per_page from GET
+    per_page = request.GET.get('per_page', '10')
+
+    if per_page == 'all':
+        page_obj = children_list  # Not paginated
+        is_paginated = False
+    else:
+        try:
+            per_page = per_page
+        except ValueError:
+            per_page = '10'
+            # per_page = 10
+        paginator = Paginator(children_list, per_page)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        is_paginated = True
+
+    context = {
+        'page_obj': page_obj,
+        'per_page': per_page,
+        'is_paginated': is_paginated,
+    }
+    return render(request, 'children.html', context)
+
+
 
 
 @login_required
@@ -333,7 +394,6 @@ def add_visit(request, hcc_number):
         form = ChildVisitForm(child=child)
 
     return render(request, 'add_visit.html', {'form': form, 'child': child, 'show_weight_muac': show_weight_muac})
-
 
 @login_required
 def add_hts_result(request, hcc_number):

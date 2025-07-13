@@ -36,6 +36,52 @@
             <canvas id="genderPieChart" width="380" height="280"></canvas>
         </div>
     </div>
+
+    <div class="container mt-4">
+    <h2>Child Visits (Last 7 Days)</h2>
+
+    <div class="alert alert-success">
+        <strong>{{ unique_children_count }}</strong> unique child(ren) visited the clinic in the last 7 days.
+    </div>
+
+    {% if visits %}
+    <table class="table table-bordered table-striped mt-3">
+        <thead class="table-primary">
+            <tr>
+                <th>Date</th>
+                <th>HCC Number</th>
+                <th>Child Name</th>
+                <th>Age (months)</th>
+                <th>Weight (kg)</th>
+                <th>Height (cm)</th>
+                <th>MUAC (cm)</th>
+                <th>Wasting</th>
+                <th>Breastfeeding</th>
+                <th>Follow-Up</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in visits %}
+            <tr>
+                <td>{{ visit.visit_date }}</td>
+                <td>{{ visit.child.hcc_number }}</td>
+                <td>{{ visit.child.child_name }}</td>
+                <td>{{ visit.age_in_months }}</td>
+                <td>{{ visit.weight }}</td>
+                <td>{{ visit.height }}</td>
+                <td>{{ visit.muac }}</td>
+                <td>{{ visit.get_wasting_display }}</td>
+                <td>{{ visit.get_breastfeeding_display }}</td>
+                <td>{{ visit.get_follow_up_outcome_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="alert alert-info mt-3">No visits recorded in the last 7 days.</p>
+    {% endif %}
+</div>
+
     <div class="dashboard-section">
         <div class="section-title">Recent Children</div>
         {% if recent_children %}
@@ -73,6 +119,7 @@
 
     // Bar Chart: Children Registered Per Month
     const ctx1 = document.getElementById('childrenPerMonthChart').getContext('2d');
+    
     new Chart(ctx1, {
         type: 'bar',
         data: {
