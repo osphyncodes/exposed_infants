@@ -90,13 +90,11 @@
         // Auto-logout after inactivity (client-side fallback)
         let sessionTimeout = 15 * 60 * 1000; // 15 minutes
         let logoutUrl = "{% url 'logout' %}";
-        let loginurl = "{% url 'login' %}";
         let timeoutHandle;
         function resetTimeout() {
             clearTimeout(timeoutHandle);
             timeoutHandle = setTimeout(function() {
                 window.location.href = logoutUrl;
-                window.location.href = loginurl;
             }, sessionTimeout);
         }
         document.addEventListener('mousemove', resetTimeout);

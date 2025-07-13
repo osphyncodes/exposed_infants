@@ -89,9 +89,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'osphyncodes',    # Database created in MySQL
-        'USER': 'root',       # e.g. 'root'
-        'PASSWORD': 'osphyncodes@1995', # e.g. 'usbw' for USBWebserver
-        'HOST': '127.0.0.1',             # or MySQL server IP/domain
+        'USER': 'osphyncodes',       # e.g. 'root'
+        'PASSWORD': 'Osphyncodes@1995', # e.g. 'usbw' for USBWebserver
+        'HOST': 'localhost',             # or MySQL server IP/domain
         'PORT': '3306',                  # USBWebserver uses 3307 by default
     }
 }
