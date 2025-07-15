@@ -20,7 +20,7 @@
             <div class="summary-content">
                 <span class="summary-icon"><i class="fas fa-baby"></i></span>
                 <div class="summary-text">
-                    <span class="summary-label">Total Children</span>
+                    <span class="summary-label">Total Children ({{ start_year }} - {{ current_year }})</span>
                     <span class="summary-value">{{ total_children }}</span>
                 </div>
             </div>
@@ -31,10 +31,10 @@
         
         <div class="summary-card card-success">
             <div class="summary-content">
-                <span class="summary-icon"><i class="fas fa-user-md"></i></span>
+                <span class="summary-icon"><i class="fas fa-user-check"></i></span>
                 <div class="summary-text">
-                    <span class="summary-label">Total Visits</span>
-                    <span class="summary-value">{{ total_visits }}</span>
+                    <span class="summary-label">Alive in Care</span>
+                    <span class="summary-value">{{ aliveCount }}</span>
                 </div>
             </div>
             <div class="summary-trend">
@@ -44,10 +44,10 @@
         
         <div class="summary-card card-info">
             <div class="summary-content">
-                <span class="summary-icon"><i class="fas fa-vial"></i></span>
+                <span class="summary-icon"><i class="fas fa-exclamation-triangle"></i></span>
                 <div class="summary-text">
-                    <span class="summary-label">HTS Samples</span>
-                    <span class="summary-value">{{ total_hts_samples }}</span>
+                    <span class="summary-label">Defaulted (MOH :: PEPFAR)</span>
+                    <span class="summary-value">{{ tiMOH }} :: {{ tiPepfar }}</span>
                 </div>
             </div>
             <div class="summary-trend">

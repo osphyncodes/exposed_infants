@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from .forms_user import UserForm
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDay
+from django.db.models import OuterRef, Subquery
 
 from .forms_change_hcc import ChangeHCCNumberForm
 
@@ -22,7 +23,7 @@ from django.db.models.functions import TruncMonth
 import json
 
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth.decorators import user_passes_test
 
@@ -115,11 +116,79 @@ def change_hcc_number(request, hcc_number):
 
 @login_required
 def dashboard(request):
-    # Basic counts
-    total_children = Child.objects.count()
-    total_visits = ChildVisit.objects.count()
-    total_hts_samples = HTSSample.objects.count()
+    current_year = date.today().year
+    start_year = current_year - 2
+
+    current_year_str = date(current_year, 12, 31)
+    start_year_str = date(start_year, 1, 1)
+
+    total_children = Child.objects.filter(child_dob__year__range=(start_year, current_year)).count()
+
+    # Get latest visits for each child
+    latest_visits = ChildVisit.objects.filter(
+        child__child_dob__year__range=(start_year, current_year),
+        child=OuterRef('pk')
+        )
     
+    # Annotate children with their latest visit date
+    # This will give us the latest visit date for each child
+    children_with_latest_visits = Child.objects.annotate(
+        latest_visit_date=Subquery(
+            latest_visits.filter().values('next_appointment_or_outcome_date').order_by('-next_appointment_or_outcome_date')[:1]
+        ),
+        current_outcome=Subquery(
+            latest_visits.filter().values('follow_up_outcome').order_by('-next_appointment_or_outcome_date')[:1]
+        )
+    )
+
+    outcomeCount = 0
+    defaultedPepfarCount = 0
+    defaultedMOHCount = 0
+    missedCount = 0
+    aliveCount = 0
+    diedCount = 0
+    toCount = 0
+    disCount = 0
+    artCount = 0
+    # Initialize counts
+    # Iterate through children to determine their current outcome based on latest visit date
+    for child in children_with_latest_visits:
+        if child.current_outcome == 'Con':
+            if child.latest_visit_date:
+                days_since = (timezone.now().date() - child.latest_visit_date).days
+                if days_since > 60:
+                    child.current_outcome = 'Defaulted'
+                    defaultedMOHCount += 1
+                elif days_since > 28:
+                    defaultedPepfarCount += 1
+                elif days_since > 7:
+                    child.current_outcome = 'Missed Appointment'
+                    missedCount += 1
+                else:
+                    child.current_outcome = 'Alive in Care'
+                    aliveCount += 1
+        elif child.current_outcome == 'Died':
+            diedCount += 1
+        elif child.current_outcome == 'To':
+            toCount += 1
+        elif child.current_outcome == 'Dis':
+            disCount += 1
+        elif child.current_outcome == 'ART':
+            artCount += 1
+        else:
+            print(child.hcc_number)
+        outcomeCount += 1
+
+    totalCheck= total_children - (defaultedPepfarCount + defaultedMOHCount + missedCount + aliveCount + diedCount + toCount + disCount + artCount)
+    if totalCheck > 0:
+        print(f"Warning: There are {totalCheck} children with outcomes not accounted for in the counts.")
+    print(f"Total children with outcomes: {outcomeCount}, Defaulted: {defaultedMOHCount + defaultedPepfarCount}, Missed: {missedCount}, Alive: {aliveCount} died: {diedCount}, Transferred Out: {toCount}, Discharged: {disCount}, Started ART: {artCount}")
+
+    total_visits = children_with_latest_visits.exclude(latest_visit_date=None).count()
+
+    total_hts_samples = HTSSample.objects.count()
+
+
     # Upcoming appointments (next 7 days)
     today = timezone.now().date()
     upcoming_appointments = ChildVisit.objects.filter(
@@ -128,7 +197,7 @@ def dashboard(request):
     ).count()
 
     # Recent records
-    recent_children = Child.objects.order_by('-child_dob')[:5]
+    recent_children = Child.objects.order_by('-child_dob').filter(child_dob__year__range=(start_year, current_year))[:5]
     recent_visits = ChildVisit.objects.select_related('child').order_by('-visit_date')[:5]
 
     # Children registered per month (last 12 months)
@@ -164,9 +233,6 @@ def dashboard(request):
         )
         .order_by('day')
     )
-
-    for v in visit_trends:
-        print(v['day'], v['total_visits'], v['unique_children'])
 
     visit_trends_labels = [v['day'].strftime('%a %d %b') for v in visit_trends]  # e.g., "Mon 08 Jul"
     visit_trends_data = [v['total_visits'] for v in visit_trends]
@@ -213,7 +279,13 @@ def dashboard(request):
         .order_by('wasting')
     )
 
+    childrens = Child.objects.filter(child_dob__year=2023).values('child_name', 'child_dob', 'hcc_number')
+    print("Children born in 2024:")
+    print(childrens.count())
+
     context = {
+        'current_year': current_year,
+        'start_year': start_year,
         'total_children': total_children,
         'total_visits': total_visits,
         'total_hts_samples': total_hts_samples,
@@ -222,6 +294,9 @@ def dashboard(request):
         'recent_visits': recent_visits,
         'visits': visits_last_7_days,
         'unique_children_count': unique_children_count,
+        'aliveCount': aliveCount,
+        'tiPepfar': defaultedPepfarCount,
+        'tiMOH': defaultedMOHCount,
         
         # Chart data
         'children_per_month_labels': json.dumps(children_per_month_labels),
@@ -297,13 +372,9 @@ def children_view(request):
     }
     return render(request, 'children.html', context)
 
-
-
-
 @login_required
 def reports(request):
     return render(request, 'reports.html')
-
 
 @login_required
 def reminders(request):
@@ -344,6 +415,7 @@ def child_dashboard_view(request, hcc_number):
         from datetime import date, timedelta
         today = date.today()
         missed_or_defaulted_date = None
+
         if outcome == 'Con':  # Continue FUP
             if outcome_date:
                 days_since = (today - outcome_date).days
