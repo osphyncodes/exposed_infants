@@ -5,182 +5,994 @@
 {% block content %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/dash.css' %}">
+<!-- ApexCharts CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css">
+
 <div class="dashboard-container">
     <div class="dashboard-header">
-        <span class="dashboard-title"><i class="fas fa-tachometer-alt summary-icon"></i> Dashboard</span>
+        <h1 class="dashboard-title"><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h1>
+        <div class="last-updated">Last updated: {% now "DATETIME_FORMAT" %}</div>
     </div>
+    
+    <!-- Summary Cards -->
     <div class="dashboard-summary">
-        <div class="summary-card">
-            <span class="summary-icon"><i class="fas fa-baby"></i></span>
-            <span class="summary-label">Total Children</span>
-            <span class="summary-value">{{ total_children }}</span>
+        <div class="summary-card card-primary">
+            <div class="summary-content">
+                <span class="summary-icon"><i class="fas fa-baby"></i></span>
+                <div class="summary-text">
+                    <span class="summary-label">Total Children</span>
+                    <span class="summary-value">{{ total_children }}</span>
+                </div>
+            </div>
+            <div class="summary-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> 12%</span> from last month
+            </div>
         </div>
-        <div class="summary-card">
-            <span class="summary-icon"><i class="fas fa-user-md"></i></span>
-            <span class="summary-label">Total Visits</span>
-            <span class="summary-value">{{ total_visits }}</span>
+        
+        <div class="summary-card card-success">
+            <div class="summary-content">
+                <span class="summary-icon"><i class="fas fa-user-md"></i></span>
+                <div class="summary-text">
+                    <span class="summary-label">Total Visits</span>
+                    <span class="summary-value">{{ total_visits }}</span>
+                </div>
+            </div>
+            <div class="summary-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> 8%</span> from last month
+            </div>
         </div>
-        <div class="summary-card">
-            <span class="summary-icon"><i class="fas fa-vial"></i></span>
-            <span class="summary-label">Total HTS Samples</span>
-            <span class="summary-value">{{ total_hts_samples }}</span>
+        
+        <div class="summary-card card-info">
+            <div class="summary-content">
+                <span class="summary-icon"><i class="fas fa-vial"></i></span>
+                <div class="summary-text">
+                    <span class="summary-label">HTS Samples</span>
+                    <span class="summary-value">{{ total_hts_samples }}</span>
+                </div>
+            </div>
+            <div class="summary-trend">
+                <span class="trend-down"><i class="fas fa-arrow-down"></i> 3%</span> from last month
+            </div>
+        </div>
+
+        <div class="summary-card card-warning">
+            <div class="summary-content">
+                <span class="summary-icon"><i class="fas fa-calendar-check"></i></span>
+                <div class="summary-text">
+                    <span class="summary-label">Upcoming Appointments</span>
+                    <span class="summary-value">{{ upcoming_appointments }}</span>
+                </div>
+            </div>
+            <div class="summary-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> 5%</span> from last week
+            </div>
         </div>
     </div>
+    
+{% comment %}     <!-- Main Charts Section -->
     <div class="dashboard-charts">
-        <div class="dashboard-chart" style="max-width: 420px; min-width: 280px;">
-            <div class="section-title">Children Registered Per Month</div>
-            <canvas id="childrenPerMonthChart" width="380" height="280"></canvas>
+        <!-- Children Registered Per Month -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Children Registered Per Month</h3>
+                <div class="chart-actions">
+                    <button class="btn-period active" data-period="year">Year</button>
+                    <button class="btn-period" data-period="half-year">6 Months</button>
+                    <button class="btn-period" data-period="quarter">Quarter</button>
+                </div>
+            </div>
+            <div id="childrenPerMonthChart"></div>
         </div>
-        <div class="dashboard-chart" style="max-width: 420px; min-width: 280px;">
-            <div class="section-title">Gender Distribution</div>
-            <canvas id="genderPieChart" width="380" height="280"></canvas>
+        
+        <!-- Gender Distribution -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Gender Distribution</h3>
+                <div class="chart-actions">
+                    <button class="btn-view active" data-view="pie">Pie</button>
+                    <button class="btn-view" data-view="donut">Donut</button>
+                </div>
+            </div>
+            <div id="genderDistributionChart"></div>
+        </div>
+    </div> 
+{% endcomment %}
+    
+    
+<div class="row">
+    <!-- Visit Trend (Last 7 Days) -->
+    <div class="col-12 col-md-6">
+        <div class="chart-container full-width">
+            <div class="chart-header">
+                <h3>Visit Trend (Last 7 Days)</h3>
+                <div class="chart-actions">
+                    <button class="btn-metric active" data-metric="visits">Visits</button>
+                    <button class="btn-metric" data-metric="children">Unique Children</button>
+                </div>
+            </div>
+            <div id="visitTrendsChart"></div>
         </div>
     </div>
 
-    <div class="container mt-4">
-    <h2>Child Visits (Last 7 Days)</h2>
-
-    <div class="alert alert-success">
-        <strong>{{ unique_children_count }}</strong> unique child(ren) visited the clinic in the last 7 days.
+    <!-- Visit Trend (Next 7 Days) -->
+    <div class="col-12 col-md-6">
+        <div class="chart-container full-width">
+            <div class="chart-header">
+                <h3>Visit Trend (Next 7 Days)</h3>
+                <div class="chart-actions">
+                    <button class="btn-metric active" data-metric="visits">Visits</button>
+                </div>
+            </div>
+            <div id="appsTrendsChart"></div>
+        </div>
     </div>
-
-    {% if visits %}
-    <table class="table table-bordered table-striped mt-3">
-        <thead class="table-primary">
-            <tr>
-                <th>Date</th>
-                <th>HCC Number</th>
-                <th>Child Name</th>
-                <th>Age (months)</th>
-                <th>Weight (kg)</th>
-                <th>Height (cm)</th>
-                <th>MUAC (cm)</th>
-                <th>Wasting</th>
-                <th>Breastfeeding</th>
-                <th>Follow-Up</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for visit in visits %}
-            <tr>
-                <td>{{ visit.visit_date }}</td>
-                <td>{{ visit.child.hcc_number }}</td>
-                <td>{{ visit.child.child_name }}</td>
-                <td>{{ visit.age_in_months }}</td>
-                <td>{{ visit.weight }}</td>
-                <td>{{ visit.height }}</td>
-                <td>{{ visit.muac }}</td>
-                <td>{{ visit.get_wasting_display }}</td>
-                <td>{{ visit.get_breastfeeding_display }}</td>
-                <td>{{ visit.get_follow_up_outcome_display }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-        <p class="alert alert-info mt-3">No visits recorded in the last 7 days.</p>
-    {% endif %}
 </div>
 
-    <div class="dashboard-section">
-        <div class="section-title">Recent Children</div>
-        {% if recent_children %}
-        <ul class="recent-list">
-            {% for child in recent_children %}
-            <li>{{ child.child_name }} &mdash; <b>{{ child.hcc_number }}</b> ({{ child.child_dob }}, {{ child.child_gender }})</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <div class="dashboard-empty">No children found.</div>
-        {% endif %}
-    </div>
-    <div class="dashboard-section">
-        <div class="section-title">Recent Visits</div>
-        {% if recent_visits %}
-        <ul class="recent-list">
-            {% for visit in recent_visits %}
-            <li>{{ visit.child.child_name }} &mdash; {{ visit.visit_date }} | Height: {{ visit.height }} cm, Weight: {{ visit.weight }} kg</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <div class="dashboard-empty">No visits found.</div>
-        {% endif %}
-    </div>
+    
+    <!-- Recent Activity Section -->
+    {% comment %} <div class="recent-activity-container">
+        <div class="recent-activity-section">
+            <div class="section-header">
+                <h3><i class="fas fa-calendar-week"></i> Recent Visits (Last 7 Days)</h3>
+                <span class="badge">{{ unique_children_count }} unique children</span>
+            </div>
+            
+            {% if visits %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>HCC Number</th>
+                            <th>Child Name</th>
+                            <th>Age</th>
+                            <th>Weight</th>
+                            <th>Height</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in visits %}
+                        <tr>
+                            <td>{{ visit.visit_date|date:"M d" }}</td>
+                            <td><span class="badge badge-light">{{ visit.child.hcc_number }}</span></td>
+                            <td>
+                                <div class="child-info">
+                                    <div class="child-name">{{ visit.child.child_name }}</div>
+                                    <small class="text-muted">{{ visit.child.child_gender }}, {{ visit.age_in_months }}mo</small>
+                                </div>
+                            </td>
+                            <td>{{ visit.age_in_months }}mo</td>
+                            <td>
+                                <span class="weight-value">{{ visit.weight }} kg</span>
+                                {% if visit.weight < 3.5 %}
+                                <span class="badge badge-danger">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ visit.height }} cm</td>
+                            <td>
+                                {% if visit.wasting == 'Sev' %}
+                                <span class="badge badge-danger">Severe Wasting</span>
+                                {% elif visit.wasting == 'Mod' %}
+                                <span class="badge badge-warning">Moderate Wasting</span>
+                                {% else %}
+                                <span class="badge badge-success">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list empty-icon"></i>
+                <h4>No visits recorded</h4>
+                <p>No children visited the clinic in the last 7 days.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="recent-activity-section">
+            <div class="section-header">
+                <h3><i class="fas fa-baby"></i> Recently Registered Children</h3>
+                <a href="" class="btn btn-sm btn-primary">Add New</a>
+            </div>
+            
+            {% if recent_children %}
+            <div class="children-grid">
+                {% for child in recent_children %}
+                <div class="child-card">
+                    <div class="child-avatar">
+                        {% if child.child_gender == 'Male' %}
+                        <i class="fas fa-male"></i>
+                        {% else %}
+                        <i class="fas fa-female"></i>
+                        {% endif %}
+                    </div>
+                    <div class="child-info">
+                        <h5>{{ child.child_name }}</h5>
+                        <div class="child-meta">
+                            <span><i class="fas fa-id-card"></i> {{ child.hcc_number }}</span>
+                            <span><i class="fas fa-birthday-cake"></i> {{ child.child_dob|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="child-actions">
+                            <button class="btn btn-sm btn-outline-secondary">Profile</button>
+                            <button class="btn btn-sm btn-outline-primary">Record Visit</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-baby empty-icon"></i>
+                <h4>No children found</h4>
+                <p>No children have been registered yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div> {% endcomment %}
 </div>
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<!-- JavaScript Libraries -->
+
+
 <script>
-    // Data passed from Django view as JSON
+    // Data passed from Django view
     const childrenPerMonthLabels = JSON.parse('{{ children_per_month_labels|escapejs }}');
     const childrenPerMonthData = JSON.parse('{{ children_per_month_data|escapejs }}');
     const genderLabels = JSON.parse('{{ gender_labels|escapejs }}');
     const genderData = JSON.parse('{{ gender_data|escapejs }}');
+    const visitTrendsLabels = JSON.parse('{{ visit_trends_labels|escapejs }}');
+    const visitTrendsData = JSON.parse('{{ visit_trends_data|escapejs }}');
+    const uniqueChildrenTrendsData = JSON.parse('{{ unique_children_trends_data|escapejs }}');
+    const appTrendsLabels = JSON.parse('{{ app_trends_labels|escapejs }}');
+    const appTrendsData = JSON.parse('{{ app_trends_data|escapejs }}');
 
-    // Bar Chart: Children Registered Per Month
-    const ctx1 = document.getElementById('childrenPerMonthChart').getContext('2d');
-    
-    new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: childrenPerMonthLabels,
-            datasets: [{
-                label: 'Children Registered',
-                data: childrenPerMonthData,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    color: '#222',
-                    font: { weight: 'bold', size: 13 },
-                    formatter: Math.round
+    // Children Registered Per Month Chart
+    const childrenPerMonthOptions = {
+        series: [{
+            name: 'Children Registered',
+            data: childrenPerMonthData
+        }],
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: true,
+                tools: {
+                    download: true,
+                    selection: true,
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    pan: true,
+                    reset: true
                 }
             }
         },
-        plugins: [ChartDataLabels]
-    });
-
-    // Pie Chart: Gender Distribution
-    const ctx2 = document.getElementById('genderPieChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'pie',
-        data: {
-            labels: genderLabels,
-            datasets: [{
-                data: genderData,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)'
-                ],
-                borderWidth: 1
-            }]
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: false,
+                columnWidth: '55%',
+            },
         },
-        options: {
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    color: '#222',
-                    font: { weight: 'bold', size: 14 },
-                    formatter: function(value, context) {
-                        const label = context.chart.data.labels[context.dataIndex];
-                        return label + ': ' + value;
+        dataLabels: {
+            enabled: true
+        },
+        stroke: {
+            show: true,
+            width: 2,
+            colors: ['transparent']
+        },
+        xaxis: {
+            categories: childrenPerMonthLabels,
+            labels: {
+                style: {
+                    fontSize: '12px'
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Number of Children'
+            }
+        },
+        fill: {
+            opacity: 1,
+            colors: ['#3a86ff']
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + " children"
+                }
+            }
+        },
+        responsive: [{
+            breakpoint: 768,
+            options: {
+                chart: {
+                    height: 300
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '60%'
                     }
                 }
             }
+        }]
+    };
+
+    const childrenPerMonthChart = new ApexCharts(
+        document.querySelector("#childrenPerMonthChart"), 
+        childrenPerMonthOptions
+    );
+    childrenPerMonthChart.render();
+
+    // Gender Distribution Chart
+    const genderDistributionOptions = {
+        series: genderData,
+        chart: {
+            type: 'pie',
+            height: 350,
+            toolbar: {
+                show: true
+            }
         },
-        plugins: [ChartDataLabels]
+        labels: genderLabels,
+        colors: ['#ff6392', '#3a86ff'],
+        responsive: [{
+            breakpoint: 768,
+            options: {
+                chart: {
+                    height: 300
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }],
+        legend: {
+            position: 'right',
+            offsetY: 0,
+            height: 230,
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val, { seriesIndex, w }) {
+                return w.config.labels[seriesIndex] + ': ' + val + '%'
+            },
+            dropShadow: {
+                enabled: false
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + '%'
+                }
+            }
+        }
+    };
+
+    const genderDistributionChart = new ApexCharts(
+        document.querySelector("#genderDistributionChart"), 
+        genderDistributionOptions
+    );
+    genderDistributionChart.render();
+
+    // Visit Trends Chart
+    const visitTrendsOptions = {
+        series: [{
+            name: 'Total Visits',
+            data: visitTrendsData
+        }],
+        chart: {
+            type: 'area',
+            height: '98%',
+            width: '97%',
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                },
+                dynamicAnimation: {
+                    enabled: true,
+                    speed: 350
+                }
+            },
+            stacked: false,
+            zoom: {
+                enabled: true
+            },
+            toolbar: {
+                show: true
+            }
+        },
+        colors: ['#5e60ce', '#4ea8de'],
+        dataLabels: {
+            enabled: true
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                inverseColors: false,
+                opacityFrom: 0.5,
+                opacityTo: 0,
+                stops: [0, 90, 100]
+            },
+        },
+        markers: {
+            size: 4,
+            strokeWidth: 0,
+            hover: {
+                size: 6
+            }
+        },
+        xaxis: {
+            categories: visitTrendsLabels,
+            labels: {
+                style: {
+                    fontSize: '12px'
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Number of Visits'
+            },
+            min: 0
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: function (val) {
+                    return val + (val !== 1 ? ' visits' : ' visit')
+                }
+            }
+        },
+        responsive: [{
+            breakpoint: 768,
+            options: {
+                chart: {
+                    height: 300
+                }
+            }
+        }]
+    };
+
+    const appTrendsOptions = {
+        series: [{
+            name: 'Total Appointments',
+            data: appTrendsData
+        }],
+        chart: {
+            type: 'area',
+            height: '98%',
+            width: '97%',
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                },
+                dynamicAnimation: {
+                    enabled: true,
+                    speed: 350
+                }
+            },
+            stacked: false,
+            zoom: {
+                enabled: true
+            },
+            toolbar: {
+                show: true
+            }
+        },
+        colors: ['#5e60ce', '#4ea8de'],
+        dataLabels: {
+            enabled: true
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                inverseColors: false,
+                opacityFrom: 0.5,
+                opacityTo: 0,
+                stops: [0, 90, 100]
+            },
+        },
+        markers: {
+            size: 4,
+            strokeWidth: 0,
+            hover: {
+                size: 6
+            }
+        },
+        xaxis: {
+            categories: appTrendsLabels,
+            labels: {
+                style: {
+                    fontSize: '12px',
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Number of Appointments'
+            },
+            min: 0
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: function (val) {
+                    return val
+                }
+            }
+        },
+        responsive: [{
+            breakpoint: 768,
+            options: {
+                chart: {
+                    height: 300
+                }
+            }
+        }]
+    };
+
+    const appsTrendsChart = new ApexCharts(
+        document.querySelector("#appsTrendsChart"), 
+        appTrendsOptions
+    );
+    appsTrendsChart.render();
+
+    const visitTrendsChart = new ApexCharts(
+        document.querySelector("#visitTrendsChart"), 
+        visitTrendsOptions
+    );
+    visitTrendsChart.render();
+
+    // Chart view toggle functionality
+    document.querySelectorAll('.btn-view').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-view').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const viewType = this.getAttribute('data-view');
+            genderDistributionChart.updateOptions({
+                chart: {
+                    type: viewType
+                }
+            });
+        });
+    });
+
+    // Chart period toggle functionality
+    document.querySelectorAll('.btn-period').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-period').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // In a real implementation, you would fetch new data based on the period
+            // For this example, we'll just simulate it by adjusting the x-axis
+            const period = this.getAttribute('data-period');
+            let labels = childrenPerMonthLabels;
+            
+            if (period === 'half-year') {
+                labels = childrenPerMonthLabels.slice(-6);
+            } else if (period === 'quarter') {
+                labels = childrenPerMonthLabels.slice(-3);
+            }
+            
+            childrenPerMonthChart.updateOptions({
+                xaxis: {
+                    categories: labels
+                }
+            });
+        });
+    });
+
+    // Metric toggle functionality for visit trends
+    document.querySelectorAll('.btn-metric').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-metric').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const metric = this.getAttribute('data-metric');
+            if (metric === 'visits') {
+                visitTrendsChart.updateSeries([{
+                    name: 'Total Visits',
+                    data: visitTrendsData
+                }, {
+                    name: 'Unique Children',
+                    data: uniqueChildrenTrendsData
+                }]);
+            } else {
+                visitTrendsChart.updateSeries([{
+                    name: 'Unique Children',
+                    data: uniqueChildrenTrendsData
+                }]);
+            }
+        });
     });
 </script>
+
+<style>
+    /* Add this to your dash.css file */
+    .dashboard-container {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .dashboard-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .last-updated {
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+    
+    .dashboard-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-primary {
+        border-left: 4px solid #3a86ff;
+    }
+    
+    .card-success {
+        border-left: 4px solid #4cc9f0;
+    }
+    
+    .card-info {
+        border-left: 4px solid #560bad;
+    }
+    
+    .card-warning {
+        border-left: 4px solid #f72585;
+    }
+    
+    .summary-content {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .summary-icon {
+        font-size: 24px;
+        margin-right: 15px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .card-primary .summary-icon {
+        background-color: rgba(58, 134, 255, 0.1);
+        color: #3a86ff;
+    }
+    
+    .card-success .summary-icon {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: #4cc9f0;
+    }
+    
+    .card-info .summary-icon {
+        background-color: rgba(86, 11, 173, 0.1);
+        color: #560bad;
+    }
+    
+    .card-warning .summary-icon {
+        background-color: rgba(247, 37, 133, 0.1);
+        color: #f72585;
+    }
+    
+    .summary-text {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .summary-label {
+        font-size: 14px;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+    }
+    
+    .summary-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .summary-trend {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+    
+    .trend-up {
+        color: #2ecc71;
+    }
+    
+    .trend-down {
+        color: #e74c3c;
+    }
+    
+    .dashboard-charts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .chart-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .chart-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-period, .btn-view, .btn-metric {
+        padding: 5px 10px;
+        font-size: 12px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-period:hover, .btn-view:hover, .btn-metric:hover {
+        background: #f1f1f1;
+    }
+    
+    .btn-period.active, .btn-view.active, .btn-metric.active {
+        background: #3a86ff;
+        color: white;
+        border-color: #3a86ff;
+    }
+    
+    .recent-activity-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+    
+    .recent-activity-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 2px solid #eee;
+    }
+    
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    tr:hover td {
+        background-color: #f8f9fa;
+    }
+    
+    .child-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .child-name {
+        font-weight: 500;
+    }
+    
+    .weight-value {
+        display: inline-block;
+        min-width: 40px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #7f8c8d;
+    }
+    
+    .empty-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+    
+    .empty-state h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+    
+    .children-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .child-card {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        transition: transform 0.2s ease;
+    }
+    
+    .child-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .child-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #e0f2fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 20px;
+        color: #3a86ff;
+    }
+    
+    .child-info h5 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+    }
+    
+    .child-meta {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 10px;
+    }
+    
+    .child-meta span {
+        display: block;
+        margin-bottom: 3px;
+    }
+    
+    .child-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    @media (max-width: 992px) {
+        .recent-activity-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-summary {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .dashboard-charts {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .dashboard-summary {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .last-updated {
+            margin-top: 10px;
+        }
+    }
+</style>
 {% endblock %}

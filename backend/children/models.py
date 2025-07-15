@@ -13,12 +13,12 @@ class Child(models.Model):
 
     child_birth_weight = models.DecimalField(max_digits=5, decimal_places=2)
     guardian_name = models.CharField(max_length=200)
-    relationship = models.CharField(max_length=100)
-    guardian_phone = models.CharField(max_length=20)
+    relationship = models.CharField(max_length=100, default='Mother')
+    guardian_phone = models.CharField(max_length=20, default='None')
     physical_address = models.TextField()
     
     AGREES_TO_FUP_CHOICES = [('Yes', 'Yes'), ('No', 'No')]
-    agrees_to_fup = models.CharField(max_length=3, choices=AGREES_TO_FUP_CHOICES)
+    agrees_to_fup = models.CharField(max_length=3, choices=AGREES_TO_FUP_CHOICES, default='Yes')
 
     MOTHER_STATUS_CHOICES = [
         ('Alive No ART', 'Alive No ART'),
@@ -26,7 +26,7 @@ class Child(models.Model):
         ('Died', 'Died'),
         ('Unknown', 'Unknown'),
     ]
-    mother_status = models.CharField(max_length=20, choices=MOTHER_STATUS_CHOICES)
+    mother_status = models.CharField(max_length=20, choices=MOTHER_STATUS_CHOICES, default='Alive OnART')
     mother_art_number = models.CharField(max_length=20, blank=True, null=True)
     mother_art_start_date = models.DateField(blank=True, null=True)
 

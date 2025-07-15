@@ -5,6 +5,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
 from .forms_user import UserForm
 from django.core.paginator import Paginator
+from django.db.models.functions import TruncDay
 
 from .forms_change_hcc import ChangeHCCNumberForm
 
@@ -118,67 +119,123 @@ def dashboard(request):
     total_children = Child.objects.count()
     total_visits = ChildVisit.objects.count()
     total_hts_samples = HTSSample.objects.count()
+    
+    # Upcoming appointments (next 7 days)
+    today = timezone.now().date()
+    upcoming_appointments = ChildVisit.objects.filter(
+        next_appointment_or_outcome_date__gte=today,
+        next_appointment_or_outcome_date__lte=today + timedelta(days=7)
+    ).count()
 
-    # Recent records (ordering before slicing)
+    # Recent records
     recent_children = Child.objects.order_by('-child_dob')[:5]
     recent_visits = ChildVisit.objects.select_related('child').order_by('-visit_date')[:5]
 
-    # Children registered per month (last 6 months)
-    children_per_month_qs = (
-        Child.objects.annotate(month=TruncMonth('child_dob'))
+    # Children registered per month (last 12 months)
+    twelve_months_ago = today - timedelta(days=365)
+
+    children_per_month = (
+        Child.objects.filter(child_dob__gte=twelve_months_ago)
+        .annotate(month=TruncMonth('child_dob'))
         .values('month')
         .annotate(count=Count('hcc_number'))
         .order_by('month')
     )
-    children_per_month_labels = [c['month'].strftime('%b %Y') if c['month'] else '' for c in children_per_month_qs]
-    children_per_month_data = [c['count'] for c in children_per_month_qs]
+    children_per_month_labels = [c['month'].strftime('%b %Y') for c in children_per_month]
+    children_per_month_data = [c['count'] for c in children_per_month]
 
     # Gender distribution
-    gender_qs = Child.objects.values('child_gender').annotate(count=Count('hcc_number'))
-    gender_labels = [g['child_gender'] for g in gender_qs]
-    gender_data = [g['count'] for g in gender_qs]
+    gender_distribution = (
+        Child.objects.values('child_gender')
+        .annotate(count=Count('hcc_number'))
+        .order_by('child_gender')
+    )
+    gender_labels = [g['child_gender'] for g in gender_distribution]
+    gender_data = [g['count'] for g in gender_distribution]
 
-    # Date calculations (removed duplicates)
-    today = timezone.now().date()
-    days = [today - timedelta(days=i) for i in range(6, -1, -1)]  # Last 7 days including today
+    # Visit trends (last 7 days)
+    visit_trends = (
+        ChildVisit.objects.filter(visit_date__gte=today - timedelta(days=7))
+        .annotate(day=TruncDay('visit_date'))
+        .values('day')
+        .annotate(
+            total_visits=Count('id'),
+            unique_children=Count('child', distinct=True)
+        )
+        .order_by('day')
+    )
 
-    # Visit counts per day
-    visit_counts = []
-    daily_summary = []
-    for day in days:
-        # For visit counts chart
-        count = ChildVisit.objects.filter(visit_date=day).count()
-        visit_counts.append({
-            'date': day.strftime('%Y-%m-%d'),
-            'count': count
-        })
-        
-        # For daily summary
-        unique_children = ChildVisit.objects.filter(
-            visit_date=day
-        ).values('child__hcc_number').distinct().count()
-        
-        daily_summary.append({
-            'date': day.strftime('%d %b %y'),  # Example: 11 Jul 25
-            'count': unique_children
-        })
+    for v in visit_trends:
+        print(v['day'], v['total_visits'], v['unique_children'])
+
+    visit_trends_labels = [v['day'].strftime('%a %d %b') for v in visit_trends]  # e.g., "Mon 08 Jul"
+    visit_trends_data = [v['total_visits'] for v in visit_trends]
+    unique_children_trends_data = [v['unique_children'] for v in visit_trends]
+
+        # Visit trends (next 7 days)
+    app_trends = (
+        ChildVisit.objects.filter(
+            next_appointment_or_outcome_date__gte=today,
+            next_appointment_or_outcome_date__lte=today + timedelta(days=7)
+        )
+        .annotate(day=TruncDay('next_appointment_or_outcome_date'))
+        .values('day')
+        .annotate(total_apps=Count('id'))
+        .order_by('day')
+    )
+
+    app_trends_labels = [v['day'].strftime('%a %d %b') for v in app_trends]
+    app_trends_data = [v['total_apps'] for v in app_trends]
+
+
+    # Outcomes distribution
+    outcomes = (
+        ChildVisit.objects.values('follow_up_outcome')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    outcome_labels = [o['follow_up_outcome'] for o in outcomes]
+    outcome_data = [o['count'] for o in outcomes]
+
+    # Last 7 days visits
+    seven_days_ago = today - timedelta(days=6)
+    visits_last_7_days = (
+        ChildVisit.objects.filter(visit_date__gte=seven_days_ago)
+        .select_related('child')
+        .order_by('-visit_date')
+    )
+    unique_children_count = visits_last_7_days.values('child').distinct().count()
+
+    # Wasting statistics
+    wasting_stats = (
+        ChildVisit.objects.values('wasting')
+        .annotate(count=Count('id'))
+        .order_by('wasting')
+    )
 
     context = {
         'total_children': total_children,
         'total_visits': total_visits,
         'total_hts_samples': total_hts_samples,
+        'upcoming_appointments': upcoming_appointments,
         'recent_children': recent_children,
-        'recent_visits': recent_visits,  # Already ordered by visit_date
+        'recent_visits': recent_visits,
+        'visits': visits_last_7_days,
+        'unique_children_count': unique_children_count,
+        
+        # Chart data
         'children_per_month_labels': json.dumps(children_per_month_labels),
         'children_per_month_data': json.dumps(children_per_month_data),
         'gender_labels': json.dumps(gender_labels),
         'gender_data': json.dumps(gender_data),
-        'labels': [item['date'] for item in visit_counts],
-        'data': [item['count'] for item in visit_counts],
-        'daily_summary': daily_summary,
-        'total_visits_7days': sum(item['count'] for item in daily_summary),  # Renamed to avoid conflict
-        'start_date': days[0].strftime('%d %b %Y'),
-        'end_date': days[-1].strftime('%d %b %Y')
+        'visit_trends_labels': json.dumps(visit_trends_labels),
+        'visit_trends_data': json.dumps(visit_trends_data),
+        'unique_children_trends_data': json.dumps(unique_children_trends_data),
+        'outcome_labels': json.dumps(outcome_labels),
+        'outcome_data': json.dumps(outcome_data),
+        'wasting_stats': wasting_stats,
+        'app_trends_labels': json.dumps(app_trends_labels),
+        'app_trends_data': json.dumps(app_trends_data),
     }
     return render(request, 'dashboard.html', context)
 
