@@ -728,7 +728,8 @@ def defaulters_view(request):
                                     'mother_status': child.mother_status,
                                     'mother_art_number': child.mother_art_number,
                                     'mother_art_start_date': child.mother_art_start_date,
-                                    'defaulting_date': defaulting_date
+                                    'defaulting_date': defaulting_date,
+                                    'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
                                 })
                     else:
                         if appointment_date:
@@ -749,7 +750,8 @@ def defaulters_view(request):
                                     'mother_status': child.mother_status,
                                     'mother_art_number': child.mother_art_number,
                                     'mother_art_start_date': child.mother_art_start_date,
-                                    'defaulting_date': defaulting_date
+                                    'defaulting_date': defaulting_date,
+                                    'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
                                 })
             response = {
                 'count': defCount,
@@ -855,6 +857,7 @@ def appointments_view(request):
                 'action_needed': action_needed,
                 'mother_status': child.mother_status,
                 'mother_art_number': child.mother_art_number,
+                'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
             })
 
         return JsonResponse({

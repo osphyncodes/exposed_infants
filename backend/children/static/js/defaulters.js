@@ -124,7 +124,11 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${client.guardian_phone}</td>
           <td>${client.physical_address}</td>
           <td>${client.defaulting_date}</td>
-          <td><button class="btn btn-primary">View</button></td>
+          <td>
+          <a href="${client.view_url}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+          </td>
         </tr>
       `;
     });
