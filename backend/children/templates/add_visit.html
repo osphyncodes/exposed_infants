@@ -73,6 +73,10 @@
             <label for="id_follow_up_outcome" class="form-label">Follow-Up Outcome</label>
             {{ form.follow_up_outcome|add_class:"form-select" }}
         </div>
+        <div class="col-md-6" id="id_art_container">
+            <label for="id_follow_up_outcome" class="form-label">ART Number</label>
+            {{ form.art_number|add_class:"form-control" }}
+        </div>
         <div class="col-md-6">
             <label for="id_next_appointment_or_outcome_date" class="form-label">Next Appointment / Outcome Date</label>
             {{ form.next_appointment_or_outcome_date|add_class:"form-control" }}
@@ -84,4 +88,24 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const artNumberInput = document.querySelector('#id_art_number')
+        const artContainer = document.querySelector('#id_art_container')
+        const outcomeInput = document.querySelector('#id_follow_up_outcome')
+
+        artContainer.style.display = "None" 
+
+        outcomeInput.addEventListener('change', (event)=> {
+            value = outcomeInput.value
+
+            if (value === 'ART'){
+                artContainer.style.display = ""  
+            }else {
+                artContainer.style.display = "none"  
+            }
+        })
+    });
+</script>
 {% endblock %}

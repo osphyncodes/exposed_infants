@@ -150,6 +150,9 @@ def dashboard(request):
     toCount = 0
     disCount = 0
     artCount = 0
+    noCount = 0
+
+
     # Initialize counts
     # Iterate through children to determine their current outcome based on latest visit date
     for child in children_with_latest_visits:
@@ -176,9 +179,21 @@ def dashboard(request):
         elif child.current_outcome == 'ART':
             artCount += 1
         else:
+            noCount += 1
             print(child.hcc_number)
         outcomeCount += 1
-
+    
+    outcomeData = [
+        defaultedMOHCount + defaultedPepfarCount,
+        missedCount,
+        aliveCount,
+        diedCount,
+        toCount,
+        disCount,
+        artCount,
+        noCount
+    ]
+    
     totalCheck= total_children - (defaultedPepfarCount + defaultedMOHCount + missedCount + aliveCount + diedCount + toCount + disCount + artCount)
     if totalCheck > 0:
         print(f"Warning: There are {totalCheck} children with outcomes not accounted for in the counts.")
@@ -294,9 +309,12 @@ def dashboard(request):
         'recent_visits': recent_visits,
         'visits': visits_last_7_days,
         'unique_children_count': unique_children_count,
+
+        # outcomes count
         'aliveCount': aliveCount,
         'tiPepfar': defaultedPepfarCount,
         'tiMOH': defaultedMOHCount,
+        'outcomeData': outcomeData,
         
         # Chart data
         'children_per_month_labels': json.dumps(children_per_month_labels),
@@ -392,8 +410,8 @@ def logs(request):
 @login_required
 def child_dashboard_view(request, hcc_number):
     child = get_object_or_404(Child, hcc_number=hcc_number)
-    visits = child.visits.order_by('-visit_date')
-    hts_samples = child.hts_samples.order_by('-sample_date')
+    visits = child.visits.order_by('-visit_date')[:1]
+    hts_samples = child.hts_samples.order_by('-sample_date')[:1]
     # Get field names and values
     child_fields = []
     for field in child._meta.fields:
@@ -408,9 +426,14 @@ def child_dashboard_view(request, hcc_number):
     current_outcome = None
     current_outcome_date = None
     current_result = None
+    art_number = None
     if visits.exists():
         latest_visit = visits.first()
         outcome = latest_visit.follow_up_outcome
+
+        if (latest_visit):
+            art_number = latest_visit.art_number
+
         outcome_date = latest_visit.next_appointment_or_outcome_date
         from datetime import date, timedelta
         today = date.today()
@@ -450,8 +473,11 @@ def child_dashboard_view(request, hcc_number):
     else:
         current_result = 'No HTS Samples'
 
+
     return render(request, 'child_dashboard.html', {
         'child': child,
+        'art_number': art_number,
+        'hts_samples': hts_samples,
         'visits': visits,
         'child_fields': child_fields,
         'current_outcome': current_outcome,
@@ -477,6 +503,41 @@ def edit_child_field_view(request, hcc_number, field=None):
         'child': child,
         'form': form,
     })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def edit_hts_result(request, hcc_number, field=None):
+    child = get_object_or_404(Child, hcc_number=hcc_number)
+    hts_sample = get_object_or_404(HTSSample, child=child)
+    from .forms import HTSSampleForm
+    if request.method == 'POST':
+        form = HTSSampleForm(request.POST, instance=hts_sample)
+        if form.is_valid():
+            form.save()
+            return redirect('children:child_dashboard', hcc_number=hcc_number)
+    else:
+        form = HTSSampleForm(instance=hts_sample)
+
+        print(form.initial)
+    return render(request, 'edit_hts.html', {
+        'child': child,
+        'form': form,
+    })
+
+@login_required
+def view_child_visits(request, hcc_number):
+    child = get_object_or_404(Child, hcc_number=hcc_number)
+    visits = child.visits.order_by('-visit_date')
+    count = visits.count()
+
+    print(count)
+
+    return render(request, 'view_visits.html', {
+        'child': child,
+        'visits': visits,
+        'count': count
+    })
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -518,7 +579,7 @@ def add_visit(request, hcc_number):
             visit = form.save(commit=False)
             visit.child = child
             visit.save()
-            return redirect('children:child_dashboard', hcc_number=child.hcc_number)
+            return redirect('children:view_visits', hcc_number=child.hcc_number)
     else:
         form = ChildVisitForm(child=child)
 
@@ -564,3 +625,14 @@ def update_outcome(request, hcc_number):
 def app_selector(request):
     return render(request, 'app_selector.html')
 
+from django.contrib import messages
+
+def delete_visit(request, visit_id):
+    visit = get_object_or_404(ChildVisit, id=visit_id)
+
+    hcc_number = request.POST.get('hcc_number')
+
+    if request.method == 'POST':
+        visit.delete()
+        messages.success(request, 'Visit deleted successfully.')
+    return redirect('children:view_visits', hcc_number = hcc_number) 

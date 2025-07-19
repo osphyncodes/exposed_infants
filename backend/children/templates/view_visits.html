@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load field_tags %}
+
+{% block content %}
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show auto-dismiss" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between">
+        <h2 class="mb-4">Child Dashboard - Visits ({{ count }})</h2>
+        {% if user.is_superuser%}
+            <a href="{% url 'children:add_visit' child.hcc_number %}" class="visit-add btn btn-success w-auto h-auto" style="height: 20px">Add Visit</a>
+        {% endif %}
+    </div>
+
+    <!-- Middle Section: Visits Table -->
+    <div id="cd-middle-section" class="card mb-4">
+        <div class="card-header bg-secondary text-white">Visit History</div>
+        <div class="card-body">
+            {% if visits %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Age (months)</th>
+                            <th>Visit Date</th>
+                            <th>Height (cm)</th>
+                            <th>Weight (kg)</th>
+                            <th>MUAC (cm)</th>
+                            <th>Wasting</th>
+                            <th>Breastfeeding</th>
+                            <th>Mother ART Status</th>
+                            <th>Clinical Monitoring</th>
+                            <th>HIV Testing</th>
+                            <th>Infection Status</th>
+                            <th>CPT Given</th>
+                            <th>Follow-Up Outcome</th>
+                            <th>Next Appointment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in visits %}
+                        <tr>
+                            <td>
+                                {% if child.child_dob and visit.visit_date %}
+                                    {# Calculate age in months using a custom template filter #}
+                                    {{ visit.visit_date|age_in_months:child.child_dob }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ visit.visit_date }}</td>
+                            <td>{{ visit.height }}</td>
+                            <td>{{ visit.weight }}</td>
+                            <td>{{ visit.muac }}</td>
+                            <td>{{ visit.get_wasting_display }}</td>
+                            <td>{{ visit.get_breastfeeding_display }}</td>
+                            <td>{{ visit.get_mother_art_status_display }}</td>
+                            <td>{{ visit.get_clinical_monitoring_display }}</td>
+                            <td>{{ visit.get_hiv_testing_display }}</td>
+                            <td>{{ visit.get_infection_status_display }}</td>
+                            <td>{{ visit.cpt_given }}</td>
+                            <td>{{ visit.get_follow_up_outcome_display }}</td>
+                            <td>{{ visit.next_appointment_or_outcome_date }}</td>
+                            <td>
+                                <a href="{% url 'children:child_dashboard' child.hcc_number %}" class="btn btn-sm btn-primary">View</a>
+                                <form action="{% url 'children:delete_visit' visit.id %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="hcc_number" value="{{ child.hcc_number }}">
+                                    <button class="btn btn-sm btn-warning" type="submit" onclick="return confirm('Are you sure you want to delete this visit?')">Del</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p>No visits recorded yet.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

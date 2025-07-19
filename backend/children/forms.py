@@ -57,6 +57,7 @@ class ChildVisitForm(forms.ModelForm):
             'drug_given': forms.Select(attrs={'class': 'form-select'}),
             'cpt_given': forms.NumberInput(attrs={'class': 'form-control'}),
             'follow_up_outcome': forms.Select(attrs={'class': 'form-select'}),
+            'art_number' : forms.NumberInput(attrs={'class' : 'form-control'}),
             'next_appointment_or_outcome_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
@@ -93,6 +94,7 @@ class HTSSampleForm(forms.ModelForm):
         widgets = {
             'sample_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'test_type': forms.Select(attrs={'class': 'form-select'}),
+            'reason': forms.Select(attrs={'class' : 'form-control'}),
             'sample_id': forms.TextInput(attrs={'class': 'form-control'}),
             'result': forms.Select(attrs={'class': 'form-select'}),
             'date_received': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),

@@ -16,6 +16,10 @@
     padding-right: 16px !important;
     justify-content: center;
 }
+
+.visit-add {
+    width: 100px;
+}
 .sidebar-toggle-btn {
     position: absolute;
     top: 18px;

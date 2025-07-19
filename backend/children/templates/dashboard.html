@@ -98,17 +98,22 @@
     </div> 
 {% endcomment %}
     
-    
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Outcome Distribution</h3>
+            </div>
+            <div id="outcomeDistributionChart"></div>
+        </div>   
 <div class="row">
     <!-- Visit Trend (Last 7 Days) -->
     <div class="col-12 col-md-6">
         <div class="chart-container full-width">
             <div class="chart-header">
                 <h3>Visit Trend (Last 7 Days)</h3>
-                <div class="chart-actions">
+                {% comment %} <div class="chart-actions">
                     <button class="btn-metric active" data-metric="visits">Visits</button>
                     <button class="btn-metric" data-metric="children">Unique Children</button>
-                </div>
+                </div> {% endcomment %}
             </div>
             <div id="visitTrendsChart"></div>
         </div>
@@ -118,10 +123,7 @@
     <div class="col-12 col-md-6">
         <div class="chart-container full-width">
             <div class="chart-header">
-                <h3>Visit Trend (Next 7 Days)</h3>
-                <div class="chart-actions">
-                    <button class="btn-metric active" data-metric="visits">Visits</button>
-                </div>
+                <h3>Appointments Trend (Next 7 Days)</h3>
             </div>
             <div id="appsTrendsChart"></div>
         </div>
@@ -253,6 +255,11 @@
     const uniqueChildrenTrendsData = JSON.parse('{{ unique_children_trends_data|escapejs }}');
     const appTrendsLabels = JSON.parse('{{ app_trends_labels|escapejs }}');
     const appTrendsData = JSON.parse('{{ app_trends_data|escapejs }}');
+
+    const outcomeData = JSON.parse('{{ outcomeData|escapejs }}');
+    const outcomeLabels = ['Defaulted', 'Missed Appointment', 'Alive', 'Died', 'Transferred Out', 'Discharged', 'Started ART', 'No Outcome']
+
+    console.log(outcomeLabels)
 
     // Children Registered Per Month Chart
     const childrenPerMonthOptions = {
@@ -388,6 +395,94 @@
     );
     genderDistributionChart.render();
 
+    // Gender Distribution Chart
+   const outcomeDistributonOptions = {
+  series: [{
+    name: 'Total ',
+    data: outcomeData
+  }],
+  chart: {
+    type: 'bar',
+    height: '98%',
+    width: '97%',
+    animations: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800,
+      animateGradually: {
+        enabled: true,
+        delay: 150
+      },
+      dynamicAnimation: {
+        enabled: true,
+        speed: 350
+      }
+    },
+    zoom: {
+      enabled: true
+    },
+    toolbar: {
+      show: true
+    }
+  },
+  plotOptions: {
+    bar: {
+      columnWidth: '60%',
+      horizontal: false,
+      borderRadius: 4,
+      dataLabels: {
+        position: 'end'  // label above the bar
+      }
+    }
+  },
+  dataLabels: {
+    enabled: true,
+    offsetY: -20,
+    style: {
+      colors: ['#000']  // black text
+    }
+  },
+  colors: ['#5e60ce', '#4ea8de'],
+  xaxis: {
+    categories: outcomeLabels,
+    labels: {
+      style: {
+        fontSize: '12px'
+      }
+    }
+  },
+  yaxis: {
+    title: {
+      text: 'Count of Outcomes'
+    },
+    min: 0
+  },
+  tooltip: {
+    shared: true,
+    intersect: false,
+    y: {
+      formatter: function (val) {
+        return val + (val !== 1 ? '' : '');
+      }
+    }
+  },
+  responsive: [{
+    breakpoint: 768,
+    options: {
+      chart: {
+        height: 300
+      }
+    }
+  }]
+};
+
+
+    const outcomeDistributionChart = new ApexCharts(
+        document.querySelector("#outcomeDistributionChart"), 
+        outcomeDistributonOptions
+    );
+    outcomeDistributionChart.render();
+
     // Visit Trends Chart
     const visitTrendsOptions = {
         series: [{
@@ -476,7 +571,13 @@
             }
         }]
     };
-
+    const visitTrendsChart = new ApexCharts(
+        document.querySelector("#visitTrendsChart"), 
+        visitTrendsOptions
+    );
+    visitTrendsChart.render();
+    
+    
     const appTrendsOptions = {
         series: [{
             name: 'Total Appointments',
@@ -486,6 +587,18 @@
             type: 'area',
             height: '98%',
             width: '97%',
+            events: {
+                dataPointSelection: function (event, chartContext, config) {
+                // Triggered when a series (data point) is clicked
+                const seriesIndex = config.seriesIndex;
+                const dataPointIndex = config.dataPointIndex;
+                const value = config.w.config.series[seriesIndex].data[dataPointIndex];
+                console.log('Clicked series value:', value);
+
+                // 👉 Do something with the value
+                alert('You clicked: ' + value);
+                }
+            },
             animations: {
                 enabled: true,
                 easing: 'easeinout',
@@ -564,18 +677,12 @@
             }
         }]
     };
-
+ 
     const appsTrendsChart = new ApexCharts(
         document.querySelector("#appsTrendsChart"), 
         appTrendsOptions
     );
     appsTrendsChart.render();
-
-    const visitTrendsChart = new ApexCharts(
-        document.querySelector("#visitTrendsChart"), 
-        visitTrendsOptions
-    );
-    visitTrendsChart.render();
 
     // Chart view toggle functionality
     document.querySelectorAll('.btn-view').forEach(btn => {

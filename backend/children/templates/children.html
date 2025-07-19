@@ -16,7 +16,7 @@
             </select>
         </div>
         <div class="col-md-5">
-            <input type="text" name="query" class="form-control" placeholder="Enter search value" value="{{ request.GET.query }}" required>
+            <input type="text" id='id_search_value' name="query" class="form-control" placeholder="Enter search value" value="{{ request.GET.query }}" required>
         </div>
         <div class="col-md-3">
             <button type="submit" class="btn btn-success w-100">Search</button>
@@ -101,4 +101,8 @@
 
 
 </div>
+
+<script>
+    document.querySelector('#id_search_value').focus()
+</script>
 {% endblock %}

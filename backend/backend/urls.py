@@ -28,6 +28,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('', app_selector, name='app_selector'),
+    path('accounts/login/', app_selector, name="app_selector"),
     path('select-app/', app_selector, name='app_selector'),
     path('tingathe_tools/', include('tingathe_tools.urls')),
 ]

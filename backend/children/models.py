@@ -35,7 +35,6 @@ class Child(models.Model):
     
 
 class ChildVisit(models.Model):
-
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='visits')
     visit_date = models.DateField(null=True, blank=True)
 
@@ -103,6 +102,8 @@ class ChildVisit(models.Model):
     ]
     follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES,default='Con')
 
+    art_number = models.IntegerField(max_length=4, null=True, blank=True)
+
     next_appointment_or_outcome_date = models.DateField(null=True, blank=True)
 
     def age_in_months(self):
@@ -129,6 +130,16 @@ class HTSSample(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='hts_samples')
     sample_date = models.DateField()
     test_type = models.CharField(max_length=10, choices=TEST_TYPE_CHOICES)
+
+    REASON_CHOICES = [
+        ('DBS_6wks_Ini', 'DBS 6 Weeks Initial'),
+        ('DBS_6wks_Con', 'DBS 6 Weeks Confirmatory'),
+        ('DBS_Rapid_Conf', 'DBS Rapid Confirmatory'),
+        ('Rapid_1yr', 'Rapid @ 1yr'),
+        ('Rapid_2yr', 'Rapid @ 2yr'),
+    ]
+
+    reason = models.CharField(max_length=30, choices=REASON_CHOICES, null=True, blank=True)
     sample_id = models.CharField(max_length=50)
     result = models.CharField(max_length=20, choices=RESULT_CHOICES, null=True, blank=True)
     date_received = models.DateField(null=True, blank=True)
