@@ -5,9 +5,9 @@ app_name = "children"
 
 urlpatterns = [
     path('exposed/dashboard/', views.dashboard, name='dashboard'),
-    path('exposed/children/', views.children_view, name='children'),
+    path('exposed/children/', views.children_views, name='children'),
+    path('exposed/childrens/', views.children_view, name='childrens'),
     path('exposed/children/add_child/', views.add_child, name='add_child'),
-    path('exposed/reports/', views.reports, name='reports'),
 
     path('exposed/reminders/', views.reminders, name='reminders'),
     path('exposed/import-export/', views.import_export, name='import_export'),
@@ -34,5 +34,11 @@ urlpatterns = [
     path('user-management/<int:user_id>/delete/', views.delete_user, name='delete_user'),
     path('change-password/', views.change_password, name='change_password'),
     path('select-app/', views.app_selector, name='app_selector'),
-    path('', views.app_selector, name='app_selector')
+    path('', views.app_selector, name='app_selector'),
+
+    # Reports urls here
+    path('exposed/reports/', views.reports, name='reports'),
+    path("exposed/reports/defaulters", views.defaulters, name="defaulters"),
+    path("exposed/reports/missed_appointment", views.missed, name="missed"),
+    path('exposed/reports/defaulters/view', views.defaulters_view, name='defaulters_view'),
 ]

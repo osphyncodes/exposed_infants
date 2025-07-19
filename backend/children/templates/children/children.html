@@ -1,6 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'children/base.html' %}
 
 {% block content %}
+{% load static %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Children Management</h2>
@@ -33,7 +34,7 @@
     </select>
 </form>
 
-<table class="table table-bordered">
+<table class="table table-bordered" id="id-children-table">
     <thead>
         <tr>
             <th>HCC #</th>
@@ -46,7 +47,7 @@
             <th>Actions</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody data-url="{% url 'children:childrens' %}" data-view = "{% url 'children:child_dashboard' 1106 %}" >
         {% for child in page_obj %}
         <tr>
             <td>{{ child.hcc_number }}</td>
@@ -95,14 +96,7 @@
 </nav>
 {% endif %}
 
-
-
-
-
-
 </div>
 
-<script>
-    document.querySelector('#id_search_value').focus()
-</script>
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% endblock %}

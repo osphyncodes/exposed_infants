@@ -3,6 +3,7 @@ from django.contrib.auth import update_session_auth_hash
 # Change password view for standard users
 
 from django.contrib.auth.models import User
+from django.utils.dateparse import parse_date
 from .forms_user import UserForm
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDay
@@ -21,11 +22,16 @@ from django.forms.models import model_to_dict
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 import json
+from django.http import JsonResponse
 
 from django.utils import timezone
-from datetime import date, timedelta
 
 from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.http import require_POST
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Max
+from datetime import timedelta, date
+from dateutil.relativedelta import relativedelta
 
 def is_superuser(user):
     return user.is_superuser
@@ -50,7 +56,7 @@ def change_password(request):
 @user_passes_test(is_superuser)
 def user_management(request):
     users = User.objects.all()
-    return render(request, 'user_management.html', {'users': users})
+    return render(request, 'children/user_management.html', {'users': users})
 
 @login_required
 @user_passes_test(is_superuser)
@@ -112,7 +118,7 @@ def change_hcc_number(request, hcc_number):
                 return redirect('children:child_dashboard', hcc_number=new_hcc)
     else:
         form = ChangeHCCNumberForm(initial={'new_hcc_number': child.hcc_number})
-    return render(request, 'change_hcc_number.html', {'form': form, 'child': child, 'error': error})
+    return render(request, 'children/change_hcc_number.html', {'form': form, 'child': child, 'error': error})
 
 @login_required
 def dashboard(request):
@@ -330,7 +336,7 @@ def dashboard(request):
         'app_trends_labels': json.dumps(app_trends_labels),
         'app_trends_data': json.dumps(app_trends_data),
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'children/dashboard.html', context)
 
 @login_required
 def children_view(request):
@@ -349,11 +355,17 @@ def add_child(request):
             return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = ChildForm()
-    return render(request, 'add_child.html', {'form': form})
-
+    return render(request, 'children/add_child.html', {'form': form})
 
 @login_required
 def children_view(request):
+    if request.method == 'POST':
+        children = Child.objects.all().values()
+
+        return JsonResponse(list(children), safe=False)
+    
+@login_required
+def children_views(request):
     children_list = Child.objects.all()
 
     # Handle search
@@ -388,24 +400,24 @@ def children_view(request):
         'per_page': per_page,
         'is_paginated': is_paginated,
     }
-    return render(request, 'children.html', context)
+    return render(request, 'children/children.html', context)
 
 @login_required
 def reports(request):
-    return render(request, 'reports.html')
+    return render(request, 'children/reports.html')
 
 @login_required
 def reminders(request):
-    return render(request, 'reminders.html')
+    return render(request, 'children/reminders.html')
 
 @login_required
 def import_export(request):
-    return render(request, 'import_export.html')
+    return render(request, 'children/import_export.html')
 
 @login_required
 def logs(request):
     logs = SystemLog.objects.select_related('user').order_by('-timestamp')[:100]
-    return render(request, 'logs.html', {'logs': logs})
+    return render(request, 'children/logs.html', {'logs': logs})
 
 @login_required
 def child_dashboard_view(request, hcc_number):
@@ -474,7 +486,7 @@ def child_dashboard_view(request, hcc_number):
         current_result = 'No HTS Samples'
 
 
-    return render(request, 'child_dashboard.html', {
+    return render(request, 'children/child_dashboard.html', {
         'child': child,
         'art_number': art_number,
         'hts_samples': hts_samples,
@@ -499,7 +511,7 @@ def edit_child_field_view(request, hcc_number, field=None):
             return redirect('children:child_dashboard', hcc_number=hcc_number)
     else:
         form = ChildForm(instance=child)
-    return render(request, 'edit_field.html', {
+    return render(request, 'children/edit_field.html', {
         'child': child,
         'form': form,
     })
@@ -532,7 +544,7 @@ def view_child_visits(request, hcc_number):
 
     print(count)
 
-    return render(request, 'view_visits.html', {
+    return render(request, 'children/view_visits.html', {
         'child': child,
         'visits': visits,
         'count': count
@@ -548,7 +560,7 @@ def delete_child_view(request, hcc_number):
         from django.contrib import messages
         messages.success(request, 'Child deleted successfully.')
         return redirect('children:children')
-    return render(request, 'confirm_delete.html', {'child': child})
+    return render(request, 'children/confirm_delete.html', {'child': child})
 
 @login_required
 def add_visit(request, hcc_number):
@@ -583,7 +595,7 @@ def add_visit(request, hcc_number):
     else:
         form = ChildVisitForm(child=child)
 
-    return render(request, 'add_visit.html', {'form': form, 'child': child, 'show_weight_muac': show_weight_muac})
+    return render(request, 'children/add_visit.html', {'form': form, 'child': child, 'show_weight_muac': show_weight_muac})
 
 @login_required
 def add_hts_result(request, hcc_number):
@@ -601,7 +613,7 @@ def add_hts_result(request, hcc_number):
     else:
         form = HTSSampleForm(child=child)  # also pass child on GET
 
-    return render(request, 'add_hts.html', {'form': form, 'child': child})
+    return render(request, 'children/add_hts.html', {'form': form, 'child': child})
 
 @login_required
 def update_outcome(request, hcc_number):
@@ -619,7 +631,7 @@ def update_outcome(request, hcc_number):
             return redirect('children:child_dashboard', hcc_number=child.hcc_number)
     else:
         form = OutcomeVisitForm()
-    return render(request, 'add_visit.html', {'form': form, 'child': child, 'show_weight_muac': False, 'outcome_only': True})
+    return render(request, 'children/add_visit.html', {'form': form, 'child': child, 'show_weight_muac': False, 'outcome_only': True})
 
 @login_required
 def app_selector(request):
@@ -636,3 +648,212 @@ def delete_visit(request, visit_id):
         visit.delete()
         messages.success(request, 'Visit deleted successfully.')
     return redirect('children:view_visits', hcc_number = hcc_number) 
+
+
+@login_required
+def defaulters(request):
+
+    context = {
+        'title':  'Defaulters Report',
+        'what': 'Def',
+        'date_what': 'Date Defaulted'
+    }
+    return render(request, 'children/reports/defaulters.html', context)
+
+@login_required
+def missed(request):
+
+    context = {
+        'title':  'Missed Appointment Report',
+        'what': 'MA',
+        'date_what': 'Date Became Missed'
+    }
+    return render(request, 'children/reports/defaulters.html', context)
+from django.core.serializers.json import DjangoJSONEncoder
+
+@login_required
+def defaulters_view(request):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from request body
+            data = json.loads(request.body)
+            start_date_str = data.get('start_date')
+            end_date_str = data.get('end_date')
+
+            # Validate and parse dates
+            try:
+                start_date = parse_date(start_date_str)
+                end_date = parse_date(end_date_str)
+            except Exception:
+                return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+            if not start_date or not end_date:
+                return JsonResponse({'error': 'Start and end dates are required'}, status=400)
+
+            defaulters = []
+            missed=[]
+
+            missedCount = 0
+            defCount = 0
+
+            today = date.today()
+            delta_days = delta_days = (today - start_date).days 
+
+            print(f"date difference is {delta_days}")
+
+
+            for child in Child.objects.all():
+                latest_visit = child.visits.order_by('-visit_date').first()
+
+                if latest_visit and latest_visit.follow_up_outcome == 'Con':
+                    appointment_date = latest_visit.next_appointment_or_outcome_date
+                    days_since = (timezone.now().date() - appointment_date).days
+                    
+                    if 7 < days_since <= 27:
+                        if appointment_date:
+                            defaulting_date = appointment_date + timedelta(days=7)
+
+                            # Check if defaulting_date is within the filter range
+                            if start_date <= defaulting_date <= end_date:
+                                missedCount += 1
+                                missed.append({
+                                    'hcc_number': child.hcc_number,
+                                    'child_name': child.child_name,
+                                    'child_gender': child.child_gender,
+                                    'child_dob': child.child_dob,
+                                    'guardian_name': child.guardian_name,
+                                    'relationship': child.relationship,
+                                    'guardian_phone': child.guardian_phone,
+                                    'physical_address': child.physical_address,
+                                    'mother_status': child.mother_status,
+                                    'mother_art_number': child.mother_art_number,
+                                    'mother_art_start_date': child.mother_art_start_date,
+                                    'defaulting_date': defaulting_date
+                                })
+                    else:
+                        if appointment_date:
+                            defaulting_date = appointment_date + timedelta(days=28)
+
+                            # Check if defaulting_date is within the filter range
+                            if start_date <= defaulting_date <= end_date:
+                                defCount += 1
+                                defaulters.append({
+                                    'hcc_number': child.hcc_number,
+                                    'child_name': child.child_name,
+                                    'child_gender': child.child_gender,
+                                    'child_dob': child.child_dob,
+                                    'guardian_name': child.guardian_name,
+                                    'relationship': child.relationship,
+                                    'guardian_phone': child.guardian_phone,
+                                    'physical_address': child.physical_address,
+                                    'mother_status': child.mother_status,
+                                    'mother_art_number': child.mother_art_number,
+                                    'mother_art_start_date': child.mother_art_start_date,
+                                    'defaulting_date': defaulting_date
+                                })
+            response = {
+                'count': defCount,
+                'missedCount': missedCount,
+                'defaulters': defaulters,
+                'missed_apps': missed
+            }
+
+            return JsonResponse(response, encoder=DjangoJSONEncoder)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+def appointments_view(request):
+    try:
+        data = json.loads(request.body)
+        start_date_str = data.get('start_date')
+        end_date_str = data.get('end_date')
+
+        # Validate and parse dates
+        try:
+            start_date = date.fromisoformat(start_date_str)
+            end_date = date.fromisoformat(end_date_str)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+        if not start_date or not end_date:
+            return JsonResponse({'error': 'Start and end dates are required'}, status=400)
+
+        appointments = []
+
+        # Get all children with latest visit outcome = 'Con'
+        children = Child.objects.annotate(
+            latest_visit_date=Max('visits__visit_date')
+        ).filter(
+            visits__follow_up_outcome='Con',
+            visits__next_appointment_or_outcome_date__range=(start_date, end_date)
+        ).distinct()
+
+        for child in children:
+            latest_visit = child.visits.order_by('-visit_date').first()
+            if not latest_visit or not latest_visit.next_appointment_or_outcome_date:
+                continue
+
+            appointment_date = latest_visit.next_appointment_or_outcome_date
+            dob = child.child_dob
+            
+            # Calculate age in months at appointment date
+            delta = relativedelta(appointment_date, dob)
+            age_in_months = delta.years * 12 + delta.months
+
+            action_needed = None
+            hts_test_required = False
+            hts_test_reason = None
+
+            # Determine required tests based on age
+            if age_in_months >= 24:
+                # Check for Rapid @ 2yr test
+                hts_test_reason = 'Rapid_2yr'
+                if not child.hts_samples.filter(reason='Rapid_2yr').exists():
+                    hts_test_required = True
+                    action_needed = 'Needs Rapid Test @ 2 years'
+            elif age_in_months >= 12:
+                # Check for Rapid @ 1yr test
+                hts_test_reason = 'Rapid_1yr'
+                if not child.hts_samples.filter(reason='Rapid_1yr').exists():
+                    hts_test_required = True
+                    action_needed = 'Needs Rapid Test @ 1 year'
+            elif age_in_months >= 1.5:  # 6 weeks = ~1.5 months
+                # Check for DBS 6 weeks test
+                hts_test_reason = 'DBS_6wks_Ini'
+                if not child.hts_samples.filter(reason='DBS_6wks_Ini').exists():
+                    hts_test_required = True
+                    action_needed = 'Needs DBS 6 Weeks Initial Test'
+            else:
+                action_needed = 'No HTS test required at this age'
+
+            appointments.append({
+                'hcc_number': child.hcc_number,
+                'child_name': child.child_name,
+                'child_dob': child.child_dob,
+                'child_gender': child.child_gender,
+                'guardian_name': child.guardian_name,
+                'guardian_phone': child.guardian_phone,
+                'physical_address': child.physical_address,
+                'appointment_date': appointment_date,
+                'age_in_months': age_in_months,
+                'hts_test_required': hts_test_required,
+                'hts_test_reason': hts_test_reason,
+                'action_needed': action_needed,
+                'mother_status': child.mother_status,
+                'mother_art_number': child.mother_art_number,
+            })
+
+        return JsonResponse({
+            'count': len(appointments),
+            'appointments': appointments
+        }, encoder=DjangoJSONEncoder)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

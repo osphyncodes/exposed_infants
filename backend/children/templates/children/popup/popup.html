@@ -1,0 +1,32 @@
+<!-- popup.html -->
+<div class="modal-fullscreen fade" id="customPopup" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content position-relative">
+
+      <!-- Close Button (Top-Left) -->
+      <button type="button" class="btn position-absolute top-0 start-0 m-2 text-danger"
+              data-bs-dismiss="modal" aria-label="Close" style="z-index: 1056;">
+        <i class="fas fa-times fa-lg"></i>
+      </button>
+
+      <!-- Optional Header -->
+      <div class="modal-header border-0 pt-4">
+        <h5 class="modal-title">Popup Title</h5>
+      </div>
+
+      <!-- Custom Content Area -->
+      <div class="modal-body">
+        {% block contents %}
+        <!-- Default content -->
+        <p>This is default popup content.</p>
+        {% endblock %}
+      </div>
+
+      <!-- Optional Footer -->
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
