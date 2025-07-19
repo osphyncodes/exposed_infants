@@ -3,84 +3,181 @@
 {% load field_tags %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="card container-fluid px-4" style="max-width: 1600px; padding-top: 70px;">  <!-- Added padding-top -->
 
-    <h2 class="mb-4">Child Dashboard</h2>
+  <!-- Fixed Navigation Menu -->
+  <nav id="nav_bar" class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" style="z-index: 1030;">
+    <div class="container-fluid">
+      <!-- Child Name and HCC -->
+      <div class="d-flex align-items-center">
+        <span class="navbar-brand fw-bold me-3">
+          <i class="fas fa-child me-2"></i>{{ child.child_name }} ({{ child.hcc_number }})
+        </span>
+      </div>
 
-    <!-- Top Section: Child Details and Current Outcome -->
-    <div id="cd-top-section" class="card mb-4 p-3 shadow">
-        <div class="row mb-2">
-            <div class="col-md-3"><strong>HCC Number:</strong> {{ child.hcc_number }}</div>
-            <div class="col-md-3"><strong>Name:</strong> {{ child.child_name }}</div>
-            <div class="col-md-3"><strong>DOB:</strong> {{ child.child_dob }}</div>
-            <div class="col-md-3"><strong>Gender:</strong> {{ child.child_gender }}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-3"><strong>Birth Weight:</strong> {{ child.child_birth_weight }} kg</div>
-            <div class="col-md-3"><strong>Agrees to FUP:</strong> {{ child.agrees_to_fup }}</div>
-            <div class="col-md-3"><strong>Guardian Name:</strong> {{ child.guardian_name }}</div>
-            <div class="col-md-3"><strong>Guardian Phone:</strong> {{ child.guardian_phone }}</div>  
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-3"><strong>Relationship:</strong> {{ child.relationship }}</div>
-            <div class="col-md-3"><strong>Address:</strong> {{ child.physical_address }}</div>
-            <div class="col-md-3"><strong>Mother Status:</strong> {{ child.mother_status }} </div>
-            <div class="col-md-3"><strong>ART Number:</strong> {{ child.mother_art_number }}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-3"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
-            <div class="col-md-3">
-                <strong>Current Outcome:</strong> 
-                {% if current_outcome %}
-                    {% if current_outcome == 'Started ART' %}
-                        <span class="badge bg-info text-dark">{{ current_outcome }} ({{art_number}})</span>
-                    {% else %}
-                        <span class="badge bg-info text-dark">{{ current_outcome }}</span>
-                    {% endif%}
+      <!-- Navigation Buttons -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav me-auto">
+          <!-- Visits Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="visitsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-calendar-check me-1"></i>Visits
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="visitsDropdown">
+              <li><a class="dropdown-item" href="{% url 'children:view_visits' child.hcc_number %}">
+                <i class="fas fa-eye me-2"></i>View Visits
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'children:add_visit' child.hcc_number %}">
+                <i class="fas fa-plus me-2"></i>Add Visit
+              </a></li>
+            </ul>
+          </li>
 
-                    {% if current_outcome == 'Missed Appointment' and missed_or_defaulted_date %}
-                        <span class="text-muted">(became missed on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
-                    {% elif current_outcome == 'Defaulted' and missed_or_defaulted_date %}
-                        <span class="text-muted">(became defaulted on {{ missed_or_defaulted_date|date:'Y-m-d' }})</span>
-                    {% endif %}
-                {% else %}
-                    <span class="text-muted">N/A</span>
-                {% endif %}
-            </div>
-            <div class="col-md-3">
-                <strong>Current HTS Result:</strong>
-                {% if current_result %}
-                    <span class="badge bg-success">{{ current_result }}</span>
-                {% else %}
-                    <span class="text-muted">No HTS Result</span>
-                {% endif %}
+          <!-- HTS Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="htsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-vial me-1"></i>HTS Results
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="htsDropdown">
+              <li><a class="dropdown-item" href="{% url 'children:add_hts_result' child.hcc_number %}">
+                <i class="fas fa-plus me-2"></i>Add Result
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'children:edit_hts_result' child.hcc_number %}">
+                <i class="fas fa-edit me-2"></i>Edit Result
+              </a></li>
+            </ul>
+          </li>
+
+          {% if user.is_superuser %}
+          <!-- Admin Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user-shield me-1"></i>Admin
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+              <li><a class="dropdown-item" href="{% url 'children:update_outcome' child.hcc_number %}">
+                <i class="fas fa-exchange-alt me-2"></i>Update Outcome
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'children:edit_field' child.hcc_number 'all' %}">
+                <i class="fas fa-user-edit me-2"></i>Edit Demographics
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'children:change_hcc_number' child.hcc_number %}">
+                <i class="fas fa-id-card me-2"></i>Change HCC Number
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'children:delete_child' child.hcc_number %}">
+                <i class="fas fa-trash-alt me-2"></i>Delete Record
+              </a></li>
+            </ul>
+          </li>
+          {% endif %}
+        </ul>
+
+        <!-- Back Button -->
+        <a href="{% url 'children:children' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">
+                <i class="fas fa-child me-2"></i>Child Information
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Column 1 -->
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-id-card me-2"></i>Basic Info</h5>
+                        <div class="mb-2"><strong>HCC Number:</strong> {{ child.hcc_number }}</div>
+                        <div class="mb-2"><strong>Name:</strong> {{ child.child_name }}</div>
+                        <div class="mb-2"><strong>DOB:</strong> {{ child.child_dob }}</div>
+                        <div class="mb-2"><strong>Gender:</strong> {{ child.child_gender }}</div>
+                        <div class="mb-2"><strong>Birth Weight:</strong> {{ child.child_birth_weight }} kg</div>
+                    </div>
+                </div>
+                
+                <!-- Column 2 -->
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-user-friends me-2"></i>Guardian Info</h5>
+                        <div class="mb-2"><strong>Guardian Name:</strong> {{ child.guardian_name }}</div>
+                        <div class="mb-2"><strong>Relationship:</strong> {{ child.relationship }}</div>
+                        <div class="mb-2"><strong>Phone:</strong> {{ child.guardian_phone }}</div>
+                        <div class="mb-2"><strong>Address:</strong> {{ child.physical_address }}</div>
+                        <div class="mb-2"><strong>Agrees to FUP:</strong> {{ child.agrees_to_fup }}</div>
+                    </div>
+                </div>
+                
+                <!-- Column 3 -->
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-user-md me-2"></i>Medical Status</h5>
+                        <div class="mb-2"><strong>Mother Status:</strong> {{ child.mother_status }}</div>
+                        <div class="mb-2"><strong>ART Number:</strong> {{ child.mother_art_number }}</div>
+                        <div class="mb-2"><strong>ART Start Date:</strong> {{ child.mother_art_start_date }}</div>
+                        <div class="mb-2">
+                            <strong>Current Outcome:</strong> 
+                            {% if current_outcome %}
+                                {% if current_outcome == 'Started ART' %}
+                                    <span class="badge bg-info text-dark">{{ current_outcome }} ({{art_number}})</span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark">{{ current_outcome }}</span>
+                                {% endif%}
+                                {% if missed_or_defaulted_date %}
+                                    <small class="text-muted">(since {{ missed_or_defaulted_date|date:'Y-m-d' }})</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Current HTS Result:</strong>
+                            {% if current_result %}
+                                <span class="badge bg-success">{{ current_result }}</span>
+                            {% else %}
+                                <span class="text-muted">No HTS Result</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Middle Section: Visits Table -->
-    <div id="cd-middle-section" class="card mb-4">
-        <div class="card-header bg-secondary text-white">Visit History</div>
+    <!-- Visits Table Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h3 class="card-title mb-0">
+                <i class="fas fa-history me-2"></i>Visit History
+            </h3>
+        </div>
         <div class="card-body">
             {% if visits %}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead class="table-secondary">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead class="table-light">
                         <tr>
-                            <th>Age (months)</th>
+                            <th>Age</th>
                             <th>Visit Date</th>
-                            <th>Height (cm)</th>
-                            <th>Weight (kg)</th>
-                            <th>MUAC (cm)</th>
-                            <th>Wasting</th>
-                            <th>Breastfeeding</th>
-                            <th>Mother ART Status</th>
-                            <th>Clinical Monitoring</th>
+                            <th>Anthropometrics</th>
+                            <th>Feeding</th>
+                            <th>Mother Status</th>
+                            <th>Clinical</th>
                             <th>HIV Testing</th>
                             <th>Infection Status</th>
-                            <th>CPT Given</th>
-                            <th>Follow-Up Outcome</th>
-                            <th>Next Appointment</th>
+                            <th>CPT</th>
+                            <th>Outcome</th>
+                            <th>Next Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,53 +185,117 @@
                         <tr>
                             <td>
                                 {% if child.child_dob and visit.visit_date %}
-                                    {# Calculate age in months using a custom template filter #}
-                                    {{ visit.visit_date|age_in_months:child.child_dob }}
+                                    {{ visit.visit_date|age_in_months:child.child_dob }}m
                                 {% else %}
                                     N/A
                                 {% endif %}
                             </td>
-                            <td>{{ visit.visit_date }}</td>
-                            <td>{{ visit.height }}</td>
-                            <td>{{ visit.weight }}</td>
-                            <td>{{ visit.muac }}</td>
-                            <td>{{ visit.get_wasting_display }}</td>
-                            <td>{{ visit.get_breastfeeding_display }}</td>
-                            <td>{{ visit.get_mother_art_status_display }}</td>
-                            <td>{{ visit.get_clinical_monitoring_display }}</td>
-                            <td>{{ visit.get_hiv_testing_display }}</td>
-                            <td>{{ visit.get_infection_status_display }}</td>
-                            <td>{{ visit.cpt_given }}</td>
-                            <td>{{ visit.get_follow_up_outcome_display }}</td>
-                            <td>{{ visit.next_appointment_or_outcome_date }}</td>
+                            <td>{{ visit.visit_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <small>
+                                    H: {{ visit.height|default:"-" }}cm<br>
+                                    W: {{ visit.weight|default:"-" }}kg<br>
+                                    MUAC: {{ visit.muac|default:"-" }}cm
+                                </small>
+                            </td>
+                            <td>
+                                <small>
+                                    {{ visit.get_breastfeeding_display|default:"-" }}<br>
+                                    {{ visit.get_wasting_display|default:"-" }}
+                                </small>
+                            </td>
+                            <td>{{ visit.get_mother_art_status_display|default:"-" }}</td>
+                            <td>{{ visit.get_clinical_monitoring_display|default:"-" }}</td>
+                            <td>{{ visit.get_hiv_testing_display|default:"-" }}</td>
+                            <td>{{ visit.get_infection_status_display|default:"-" }}</td>
+                            <td>{{ visit.cpt_given|default:"-" }}</td>
+                            <td>{{ visit.get_follow_up_outcome_display|default:"-" }}</td>
+                            <td>{{ visit.next_appointment_or_outcome_date|date:"Y-m-d"|default:"-" }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-                <p>No visits recorded yet.</p>
-            {% endif %}
-        </div>
-    </div>
-
-
-    <!-- Bottom Section: Actions -->
-    <div id="cd-bottom-section" class="cd-fixed-bottom-bar">
-        <div class="container-fluid d-flex flex-wrap justify-content-center gap-2 py-3">
-            <a href="{% url 'children:view_visits' child.hcc_number %}" class="btn btn-success flex-fill">View Visit</a>
-            {% if user.is_superuser %}
-                <a href="{% url 'children:add_hts_result' child.hcc_number %}" class="btn btn-info flex-fill w-auto">Add HTS Result</a>
-                <a href="{% url 'children:edit_hts_result' child.hcc_number %}" class="btn btn-info flex-fill">Edit HTS Result</a>
-                <a href="{% url 'children:update_outcome' child.hcc_number %}" class="btn btn-warning flex-fill">Update Outcome</a>
-                <a href="{% url 'children:edit_field' child.hcc_number 'all' %}" class="btn btn-secondary flex-fill">Demographics Edit</a>
-                <a href="{% url 'children:change_hcc_number' child.hcc_number %}" class="btn btn-warning flex-fill">Change HCC Number</a>
-                <a href="{% url 'children:delete_child' child.hcc_number %}" class="btn btn-danger flex-fill">Delete</a>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>No visits recorded yet.
+                </div>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Demographics Modal removed: now using full page edit form -->
-{% endblock %}
+</div>
 
+<!-- Ensure Bootstrap JS is loaded -->
+<script src="{% static 'js/bootstrap.js'%}"></script>
+
+<style>
+    .card:nth-child(2) {
+        margin-top: -45px;
+    }
+  /* Fixed navbar styles */
+  .navbar {
+    transition: all 1s;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .dropdown-menu {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    border: none;
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Adjust content spacing */
+  body {
+    padding-top: 60px;
+  }
+</style>
+
+<script>
+    
+    const nav = document.getElementById("nav_bar")
+    const sidebars = document.getElementById('sidebarToggle')
+
+    console.log(sidebars);
+    var state
+    var state2 = localStorage.getItem("sidebar-collapsed") 
+    
+    sidebars.addEventListener('click', ()=> {
+      state = localStorage.getItem("sidebar-collapsed")  
+      console.log(state);
+    
+        if (state == 0) {
+            nav.style.left = '60px'
+        }else {
+            nav.style.left = '220px'
+        }
+    })
+
+     if (state2 == 1) {
+            nav.style.left = '60px'
+        }else {
+            nav.style.left = '220px'
+        }
+</script>
+{% endblock %}
