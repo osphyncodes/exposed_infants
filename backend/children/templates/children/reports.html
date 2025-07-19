@@ -1,110 +1,219 @@
 {% extends "children/base.html" %}
-
+{% load static %}
 
 {% block content %}
 <!-- Full screen modal -->
-<!-- Extra-large Modal -->
 <div class="modal fade" id="customPopup" tabindex="-1" aria-labelledby="customPopupLabel" aria-hidden="true" style="z-index: 1056;">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content border-0 shadow-lg">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
       
-      <!-- Modal Header with Font Awesome Close Icon -->
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="customPopupLabel">Popup Title</h5>
-        <button type="button" class="btn btn-link text-danger fs-4 ms-auto" data-bs-dismiss="modal" aria-label="Close">
-          <i class="fas fa-times"></i>
-        </button>
+      <!-- Gradient Modal Header -->
+      <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <h5 class="modal-title fw-bold" id="customPopupLabel">
+          <i class="fas fa-chart-line me-2"></i>Report Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body">
+      <div class="modal-body p-4" style="background-color: #f8f9fa;">
         {% block contents %}
-        <p>This is the main modal content.</p>
+        <div class="text-center py-4">
+          <i class="fas fa-chart-pie fa-4x mb-3" style="color: #667eea;"></i>
+          <p class="lead">This is the main modal content.</p>
+        </div>
         {% endblock %}
       </div>
 
-      <!-- Modal Footer with "Close" Button -->
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
+      <!-- Modal Footer -->
+      <div class="modal-footer border-0" style="background-color: #f8f9fa;">
+        <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Close
         </button>
       </div>
-
     </div>
   </div>
 </div>
 
-
+<!-- Main Content -->
 <div class="container py-5">
-  <h2 class="text-left mb-4">📊 Reports</h2>
+  <!-- Animated Header -->
+  <div class="text-center mb-5" data-aos="fade-down">
+    <h1 class="display-5 fw-bold text-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <i class="fas fa-chart-bar me-2"></i>Reports Dashboard
+    </h1>
+    <p class="lead text-muted">Comprehensive analytics and tracking for infant healthcare</p>
+  </div>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
-
+  <!-- Report Cards -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" data-aos="fade-up">
     <!-- EID Report -->
     <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title"><i class="fas fa-vial me-2 text-primary"></i> EID Report</h5>
-          <p class="card-text">Early Infant Diagnosis report for HIV-exposed infants.</p>
-          <a href="" class="btn btn-outline-primary mt-auto">View Report</a>
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(102, 126, 234, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-vial fa-lg text-primary"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">EID Report</h5>
+            <p class="card-text text-muted">Early Infant Diagnosis report for HIV-exposed infants with detailed analytics.</p>
+          </div>
+          <a href="" class="btn btn-primary mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
+            <i class="fas fa-eye me-2"></i>View Report
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Defaulters -->
     <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title"><i class="fas fa-user-slash me-2 text-danger"></i> Defaulters</h5>
-          <p class="card-text">List of clients who have defaulted on their appointments.</p>
-          <a href="{% url 'children:defaulters' %}" class="btn btn-outline-danger mt-auto">View Report</a>
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #fff5f5 0%, #ffebeb 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(220, 53, 69, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-user-slash fa-lg text-danger"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">Defaulters</h5>
+            <p class="card-text text-muted">Track and manage clients who have defaulted on their appointments.</p>
+          </div>
+          <a href="{% url 'children:defaulters' %}" class="btn btn-danger mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
+            <i class="fas fa-chart-line me-2"></i>Analyze
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Missed Appointments -->
     <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title"><i class="fas fa-calendar-times me-2 text-warning"></i> Missed Appointments</h5>
-          <p class="card-text">Clients who missed scheduled clinic appointments.</p>
-          <a href="{% url 'children:missed' %}" class="btn btn-outline-warning mt-auto">View Report</a>
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #fff9e6 0%, #fff2cc 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(255, 193, 7, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-calendar-times fa-lg text-warning"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">Missed Appointments</h5>
+            <p class="card-text text-muted">Monitor clients who missed scheduled clinic visits with follow-up tools.</p>
+          </div>
+          <a href="{% url 'children:missed' %}" class="btn btn-warning mt-3 rounded-pill align-self-start shadow-sm text-white" style="border: none;">
+            <i class="fas fa-bell me-2"></i>Remind
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Appointments -->
     <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title"><i class="fas fa-calendar-check me-2 text-success"></i> Appointments</h5>
-          <p class="card-text">Overview of all upcoming and completed appointments.</p>
-          <a href="" class="btn btn-outline-success mt-auto">View Report</a>
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #e6f7e6 0%, #ccffcc 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(25, 135, 84, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-calendar-check fa-lg text-success"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">Appointments</h5>
+            <p class="card-text text-muted">Comprehensive overview of all upcoming and completed appointments.</p>
+          </div>
+          <a href="{% url 'children:appointments' %}" class="btn btn-success mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
+            <i class="fas fa-calendar-alt me-2"></i>Schedule
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Missed EID Milestone -->
     <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title"><i class="fas fa-exclamation-circle me-2 text-secondary"></i> Missed EID Milestone</h5>
-          <p class="card-text">Infants who missed key EID milestones.</p>
-          <a href="" class="btn btn-outline-secondary mt-auto">View Report</a>
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(108, 117, 125, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-exclamation-circle fa-lg text-secondary"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">Missed EID Milestone</h5>
+            <p class="card-text text-muted">Identify infants who missed key EID milestones with actionable insights.</p>
+          </div>
+          <a href="{% url 'children:missed_milestones' %}" class="btn btn-secondary mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
+            <i class="fas fa-search me-2"></i>Investigate
+          </a>
         </div>
       </div>
     </div>
 
+    <!-- Additional Report (Example) -->
+    <div class="col">
+      <div class="card h-100 border-0 shadow-hover" style="border-radius: 15px; transition: all 0.3s ease; background: linear-gradient(135deg, #f0e6ff 0%, #d9b3ff 100%);">
+        <div class="card-body d-flex flex-column justify-content-between p-4">
+          <div>
+            <div class="icon-wrapper mb-3" style="width: 50px; height: 50px; background: rgba(111, 66, 193, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-chart-pie fa-lg" style="color: #6f42c1;"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-2">Analytics Dashboard</h5>
+            <p class="card-text text-muted">Comprehensive visual analytics for program performance monitoring.</p>
+          </div>
+          <a href="#" class="btn mt-3 rounded-pill align-self-start shadow-sm" style="border: none; background: #6f42c1; color: white;">
+            <i class="fas fa-chart-bar me-2"></i>Explore
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Floating Action Button -->
+<button class="btn btn-primary rounded-circle shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; z-index: 1000;" onclick="showPopup()">
+  <i class="fas fa-question fa-lg"></i>
+</button>
+
+<!-- Custom CSS -->
+<style>
+  /* Card hover effect */
+  .shadow-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+  }
+  
+  /* Text gradient */
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Smooth transitions */
+  .card, .btn, .icon-wrapper {
+    transition: all 0.3s ease;
+  }
+  
+  /* Button hover effects */
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  /* Animation classes */
+  [data-aos] {
+    visibility: hidden;
+  }
+  [data-aos].aos-animate {
+    visibility: visible;
+  }
+</style>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
+  // Initialize animations
+  document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+  });
+
+  // Show modal popup
   function showPopup() {
     const popup = new bootstrap.Modal(document.getElementById('customPopup'));
     popup.show();
   }
-
 </script>
 {% endblock %}

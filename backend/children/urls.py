@@ -41,4 +41,9 @@ urlpatterns = [
     path("exposed/reports/defaulters", views.defaulters, name="defaulters"),
     path("exposed/reports/missed_appointment", views.missed, name="missed"),
     path('exposed/reports/defaulters/view', views.defaulters_view, name='defaulters_view'),
+
+    path("exposed/reports/appointments", views.appointments, name="appointments"),
+    path('exposed/reports/appointments/view', views.appointments_view, name='appointments_view'),
+
+    path('missed-milestones/', views.missed_milestones_view, name='missed_milestones'),
 ]

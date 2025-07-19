@@ -635,7 +635,7 @@ def update_outcome(request, hcc_number):
 
 @login_required
 def app_selector(request):
-    return render(request, 'app_selector.html')
+    return render(request, 'children/app_selector.html')
 
 from django.contrib import messages
 
@@ -765,6 +765,16 @@ def defaulters_view(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
+def appointments(request):
+
+    context = {
+        'what': "App",
+        'date_what': "Appointment Date",
+        'title': "Appointment Report"
+    }
+    return render(request, 'children/reports/appointments.html', context=context)
+
 @require_POST
 def appointments_view(request):
     try:
@@ -857,3 +867,73 @@ def appointments_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
+def missed_milestones_view(request):
+    if request.method == 'GET':
+        return render(request, 'children/reports/missed_milestone.html')
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            birth_year = data.get('birth_year')
+            reason = data.get('reason')
+            
+            today = date.today()
+            children = Child.objects.all()
+            
+            if birth_year:
+                children = children.filter(child_dob__year=birth_year)
+            
+            missed_milestones = []
+            
+            for child in children:
+                dob = child.child_dob
+                age_months = (today.year - dob.year) * 12 + (today.month - dob.month)
+                
+                # Determine expected tests
+                required_tests = []
+                if age_months >= 1.5:  # 6 weeks
+                    required_tests.append(('DBS_6wks_Ini', dob + timedelta(weeks=6)))
+                if age_months >= 12:
+                    required_tests.append(('Rapid_1yr', dob + timedelta(days=365)))
+                if age_months >= 24:
+                    required_tests.append(('Rapid_2yr', dob + timedelta(days=730)))
+                
+                # Check for missing tests
+                for test_reason, due_date in required_tests:
+                    if reason and test_reason != reason:
+                        continue
+                        
+                    if not child.hts_samples.filter(reason=test_reason).exists():
+                        days_overdue = (today - due_date).days
+                        if days_overdue > 0:
+                            missed_milestones.append({
+                                'hcc_number': child.hcc_number,
+                                'child_name': child.child_name,
+                                'child_dob': child.child_dob,
+                                'age_months': age_months,
+                                'guardian_name': child.guardian_name,
+                                'guardian_phone': child.guardian_phone,
+                                'test_reason': test_reason,
+                                'due_date': due_date,
+                                'days_overdue': days_overdue,
+                                'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+                            })
+            
+            # Get unique birth years for filter (modified to ensure uniqueness)
+            birth_years = Child.objects.dates('child_dob', 'year')\
+                          .order_by('-child_dob')\
+                          .values_list('child_dob__year', flat=True)\
+                          .distinct()
+            
+            return JsonResponse({
+                'missed_milestones': missed_milestones,
+                'birth_years': get_recent_years()  # Convert QuerySet to list
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        
+def get_recent_years():
+    current_year = date.today().year
+    return [year for year in range(current_year, current_year - 4, -1)]
