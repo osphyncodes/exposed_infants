@@ -46,4 +46,5 @@ urlpatterns = [
     path('exposed/reports/appointments/view', views.appointments_view, name='appointments_view'),
 
     path('missed-milestones/', views.missed_milestones_view, name='missed_milestones'),
+    path('exposed/reports/eid_report/view/', views.eid_report, name='eid_report'),
 ]

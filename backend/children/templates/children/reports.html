@@ -58,7 +58,7 @@
             <h5 class="card-title fw-bold mb-2">EID Report</h5>
             <p class="card-text text-muted">Early Infant Diagnosis report for HIV-exposed infants with detailed analytics.</p>
           </div>
-          <a href="" class="btn btn-primary mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
+          <a href="{% url 'children:eid_report' %}" class="btn btn-primary mt-3 rounded-pill align-self-start shadow-sm" style="border: none;">
             <i class="fas fa-eye me-2"></i>View Report
           </a>
         </div>
@@ -163,6 +163,8 @@
 </button>
 
 <!-- Custom CSS -->
+
+<link 
 <style>
   /* Card hover effect */
   .shadow-hover:hover {

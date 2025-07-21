@@ -940,3 +940,34 @@ def missed_milestones_view(request):
 def get_recent_years():
     current_year = date.today().year
     return [year for year in range(current_year, current_year - 4, -1)]
+
+@login_required()
+def eid_report(request):
+    if request.method == 'GET':
+        return render(request, 'children/reports/eid_report.html')
+    
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        cohort2Date = data.get('cohort2Date')
+        cohort12Date = data.get('cohort12Date')
+        cohort24Date = data.get('cohort24Date')
+
+        count1 = getcount(cohort2Date)
+        count2 = getcount(cohort12Date)
+        count3 = getcount(cohort24Date)
+
+        return JsonResponse({
+            'count1': count1,
+            'count2': count2,
+            'count3': count3,
+            'message': 'Recieved'
+        })
+
+def getcount(dateobject):
+    start_date = date.fromisoformat(dateobject['firstDate'])
+    last_date = date.fromisoformat(dateobject['lastDate'])
+
+    children = Child.objects.filter(child_dob__range = (start_date, last_date))
+    
+    return children.count()

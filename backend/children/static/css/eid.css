@@ -1,0 +1,105 @@
+ body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+            background-color: #f9f9f9;
+        }
+        .word-container {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 0.5in;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .table td, .table th {
+            border: 1px solid #e0e0e0;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .table tr:hover {
+            background-color: #e6e6e6;
+        }
+        .vertical-text {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            white-space: nowrap;
+            width: 22px;
+            vertical-align: middle;
+            padding: 5px 2px;
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 4px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #333;
+        }
+        .birth_cohorts {
+            white-space: nowrap;
+        }
+        p {
+            margin: 8px 0;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+
+        .black-cell {
+            background-color: #333;
+        }
+        .number-cell {
+            width: 5%;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .category-cell {
+            width: 40%;
+        }
+        .arrow-cell {
+            text-align: center;
+            font-size: 14px;
+        }
+        .section-title {
+            background-color: #e6f2ff;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+         .cell {
+            text-align: center;
+        }
