@@ -1,0 +1,129 @@
+{% extends 'pact/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Import Patient Data</h4>
+            <p class="mb-0">ARV#, Gender, and Weight only</p>
+        </div>
+        <div class="card-body">
+            <form id="importForm">
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="csvFile" accept=".csv" required>
+                        <label class="custom-file-label" for="csvFile">Choose CSV file</label>
+                    </div>
+                    <small class="form-text text-muted">
+                        Required columns: ARV#, Gender, Weight(Kg)
+                    </small>
+                </div>
+                <button type="button" id="importBtn" class="btn btn-primary">
+                    <i class="fas fa-file-import mr-2"></i> Import Data
+                </button>
+            </form>
+            
+            <div id="results" class="mt-4" style="display:none;">
+                <div class="alert alert-info">
+                    <h5>Import Results</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p>New Records: <span id="createdCount" class="badge badge-success">0</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p>Updated Records: <span id="updatedCount" class="badge badge-warning">0</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p>Errors: <span id="errorCount" class="badge badge-danger">0</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="errorDetails" style="display:none;">
+                    <h5>Error Details</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>ARV#</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="errorList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const importBtn = document.getElementById('importBtn');
+    const csvFile = document.getElementById('csvFile');
+    const resultsDiv = document.getElementById('results');
+    const errorDetails = document.getElementById('errorDetails');
+    
+    // Update file input label
+    csvFile.addEventListener('change', function() {
+        const fileName = this.files[0]?.name || 'Choose file';
+        this.nextElementSibling.textContent = fileName;
+    });
+    
+    // Handle import
+    importBtn.addEventListener('click', async function() {
+        if (!csvFile.files.length) {
+            alert('Please select a CSV file first');
+            return;
+        }
+        
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Importing...';
+        
+        const formData = new FormData();
+        formData.append('csv_file', csvFile.files[0]);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        try {
+            const response = await fetch('{% url "pact:api_regimen_import" %}', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                resultsDiv.style.display = 'block';
+                document.getElementById('createdCount').textContent = data.results.created;
+                document.getElementById('updatedCount').textContent = data.results.updated;
+                document.getElementById('errorCount').textContent = data.results.errors.length;
+                
+                if (data.results.errors.length) {
+                    errorDetails.style.display = 'block';
+                    const errorList = document.getElementById('errorList');
+                    errorList.innerHTML = '';
+                    
+                    data.results.errors.forEach(error => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${error.row}</td>
+                            <td class="text-danger">${error.error}</td>
+                        `;
+                        errorList.appendChild(row);
+                    });
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('Import failed: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-import mr-2"></i> Import Data';
+        }
+    });
+});
+</script>
+{% endblock %}

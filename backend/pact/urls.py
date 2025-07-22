@@ -9,4 +9,9 @@ urlpatterns = [
     path('reminders/', views.reminders, name='reminders'),
     path('import-export/', views.import_export, name='import_export'),
     path('logs/', views.logs, name='logs'),
+    path('api/import/', views.import_patients, name='api_patient_import'),
+    path('lab/import/', views.lab_import_view, name='lab_import'),
+    path('api/lab/import/', views.import_lab_results, name='api_lab_import'),
+    path('import/', views.import_view, name='patient_import'),
+    path('api/regimen/import/', views.import_patient_data, name='api_regimen_import'),
 ]

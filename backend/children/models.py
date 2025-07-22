@@ -102,7 +102,7 @@ class ChildVisit(models.Model):
     ]
     follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES,default='Con')
 
-    art_number = models.IntegerField(max_length=4, null=True, blank=True)
+    art_number = models.IntegerField(null=True, blank=True)
 
     next_appointment_or_outcome_date = models.DateField(null=True, blank=True)
 

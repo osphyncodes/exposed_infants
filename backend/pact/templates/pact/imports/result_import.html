@@ -1,0 +1,160 @@
+{% extends 'pact/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-flask mr-2"></i>Import Laboratory Results
+            </h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                CSV format should include: ARV#, Accession #, Status, Order Date, Result, 
+                Date received, Mode of Delivery, Test reason, TAT(Days)
+            </div>
+            
+            <form id="labImportForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="labCsvFile" accept=".csv" required>
+                        <label class="custom-file-label" for="labCsvFile">Choose CSV file</label>
+                    </div>
+                </div>
+                
+                <button type="button" id="importLabBtn" class="btn btn-success btn-lg">
+                    <i class="fas fa-file-import mr-2"></i>Import Results
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="labResults" class="mt-4" style="display: none;">
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Import Results</h4>
+            </div>
+            
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Successfully Imported</h5>
+                            <p class="mb-0"><span id="labCreatedCount">0</span> records</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Successfully Updated</h5>
+                            <p class="mb-0"><span id="labUpdatedCount">0</span> records</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Successfully Skipped</h5>
+                            <p class="mb-0"><span id="labSkippedCount">0</span> records</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">Errors</h5>
+                            <p class="mb-0"><span id="labErrorCount">0</span> records</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="labErrorList" style="display: none;">
+                    <h5><i class="fas fa-exclamation-triangle text-danger mr-2"></i>Error Details:</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>ART#</th>
+                                    <th>Succession #</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="labErrors">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+$(document).ready(function() {
+    // Update file input label
+    $('#labCsvFile').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName);
+    });
+    
+    $('#importLabBtn').click(function() {
+        const fileInput = $('#labCsvFile')[0];
+        if (!fileInput.files.length) {
+            alert('Please select a CSV file first');
+            return;
+        }
+        
+        const btn = $(this);
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Importing...');
+        
+        const formData = new FormData();
+        formData.append('csv_file', fileInput.files[0]);
+        
+        fetch('{% url "pact:api_lab_import" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            $('#labResults').show();
+            $('#labCreatedCount').text(data.results.created || 0);
+            $('#labUpdatedCount').text(data.results.updated || 0);
+            $('#labSkippedCount').text(data.results.skipped || 0);
+            $('#labErrorCount').text(data.results.errors.length || 0);
+            
+            if (data.results.errors && data.results.errors.length > 0) {
+                const errorTable = $('#labErrors');
+                errorTable.empty();
+                
+                data.results.errors.forEach(error => {
+                    errorTable.append(`
+                        <tr>
+                            <td>${error.row['ARV#'] || 'N/A'}</td>
+                            <td>${error.row['Accession #'] || 'N/A'}</td>
+                            <td class="text-danger">${error.error}</td>
+                        </tr>
+                    `);
+                });
+                
+                $('#labErrorList').show();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during import');
+        })
+        .finally(() => {
+            btn.prop('disabled', false);
+            btn.html('<i class="fas fa-file-import mr-2"></i>Import Results');
+        });
+    });
+});
+</script>
+{% endblock %}

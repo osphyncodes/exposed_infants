@@ -1,9 +1,44 @@
 {% extends 'pact/base.html' %}
 
+{% load static %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Import/Export</h2>
-    <div class="alert alert-info">This page is a placeholder. Please use the <a href="{% url 'pact:pact_dashboard' %}">Dashboard</a> section for full import/export features.</div>
-    <p>Import/Export will be available here soon. Please check back later.</p>
+<div class="container mt-5">
+    <h2>Import Patient Data</h2>
+    <p>Upload a CSV file to import patient records. Existing records will be updated if the outcome has changed.</p>
+    
+    <div class="card">
+        <div class="card-body">
+            <form id="csvImportForm">
+                <div class="form-group">
+                    <label for="csvFile">Select CSV File</label>
+                    <input type="file" class="form-control-file" id="csvFile" accept=".csv" required>
+                </div>
+                <button data-url="{% url 'pact:api_patient_import' %}" type="button" id="importBtn" class="btn btn-primary">
+                    <i class="fas fa-file-import"></i> Import Cumulative
+                </button>
+                <a href="{% url 'pact:lab_import' %}">Lab Result</a>
+                <a href="{% url 'pact:patient_import' %}">Lab Result</a>
+            </form>
+        </div>
+    </div>
+    
+    <div id="results" class="mt-4" style="display: none;">
+        <h4>Import Results</h4>
+        <div class="card">
+            <div class="card-body">
+                <p>Created: <span id="createdCount">0</span> records</p>
+                <p>Updated: <span id="updatedCount">0</span> records</p>
+                <p>Unchanged: <span id="unchangedCount">0</span> records</p>
+                <div id="errorList" class="mt-3" style="display: none;">
+                    <h5>Errors:</h5>
+                    <ul id="errors" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="{% static "js/import.js" %}">
+
+</script>
 {% endblock %}
