@@ -956,6 +956,7 @@ def eid_report(request):
         count1 = getcount(cohort2Date)
         count2 = getcount(cohort12Date)
         count3 = getcount(cohort24Date)
+        
 
         return JsonResponse({
             'count1': count1,
@@ -965,9 +966,12 @@ def eid_report(request):
         })
 
 def getcount(dateobject):
-    start_date = date.fromisoformat(dateobject['firstDate'])
-    last_date = date.fromisoformat(dateobject['lastDate'])
+    start_date = date.fromisoformat(dateobject['dates']['firstDate'])
+    last_date = date.fromisoformat(dateobject['dates']['lastDate'])
 
     children = Child.objects.filter(child_dob__range = (start_date, last_date))
     
+    # Getting NVP/ CPT Data
+    
+    print(dateobject)
     return children.count()

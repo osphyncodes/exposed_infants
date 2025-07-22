@@ -20,7 +20,10 @@
         {% if user.is_superuser%}
             <a href="{% url 'children:add_visit' child.hcc_number %}" class="visit-add btn btn-success w-auto h-auto" style="height: 20px">Add Visit</a>
         {% endif %}
+
+            <a href="{% url 'children:child_dashboard' child.hcc_number %}" class="visit-add btn btn-primary w-auto h-auto" style="height: 20px">Back</a>
     </div>
+
 
     <!-- Middle Section: Visits Table -->
     <div id="cd-middle-section" class="card mb-4">

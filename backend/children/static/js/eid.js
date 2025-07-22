@@ -49,9 +49,18 @@ document.addEventListener('DOMContentLoaded', ()=> {
                 "X-CSRFToken": csrfToken
             },
             body: JSON.stringify({
-                cohort2Date: c2date,
-                cohort12Date: c12date,
-                cohort24Date: c24date   
+                cohort2Date: {
+                    dates: c2date,
+                    type: 1
+                },
+                cohort12Date: {
+                    dates: c12date,
+                    type: 2
+                },
+                cohort24Date: {
+                    dates: c24date,
+                    type: 3
+                }   
             })
         })
 
