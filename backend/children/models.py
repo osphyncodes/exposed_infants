@@ -100,7 +100,7 @@ class ChildVisit(models.Model):
         ('Def', 'Defaulted'),
         ('Died', 'Died')
     ]
-    follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES,default='Con')
+    follow_up_outcome = models.CharField(max_length=10, choices=FOLLOW_UP_CHOICES,default='Con', null=True, blank=True)
 
     art_number = models.IntegerField(null=True, blank=True)
 

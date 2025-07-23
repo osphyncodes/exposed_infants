@@ -20,12 +20,14 @@ urlpatterns = [
     path('exposed/children/child_dashboard/<str:hcc_number>/view_visits/', views.view_child_visits, name='view_visits'),
     
     path('exposed/children/child_dashboard/<str:hcc_number>/add_hts/', views.add_hts_result, name='add_hts_result'),
-    path('exposed/children/child_dashboard/<str:hcc_number>/edit_hts/', views.edit_hts_result, name='edit_hts_result'),
+    path('exposed/children/child_dashboard/<str:hts_id>/edit_hts/', views.edit_hts_result, name='edit_hts_result'),
+    path('exposed/children/child_dashboard/<str:hcc_number>/view_hts/', views.view_hts_samples, name='view_hts_samples'),
+    path('exposed/children/child_dashboard/delete_hts_result/<str:hts_id>/', views.delete_hts_sample, name='delete_hts_sample'),
 
     path('exposed/children/child_dashboard/<str:hcc_number>/update_outcome/', views.update_outcome, name='update_outcome'),
     path('exposed/children/child_dashboard/<str:hcc_number>/delete/', views.delete_child_view, name='delete_child'),
     path('exposed/children/child_dashboard/<str:hcc_number>/change_hcc/', views.change_hcc_number, name='change_hcc_number'),
-    path('exposed/children/child_dashboard/<str:hcc_number>/view_visits/', views.edit_hts_result, name='view_visits'),
+
     path('exposed/children/child_dashboard/delete-visit/<int:visit_id>/', views.delete_visit, name='delete_visit'),
     
     path('user-management/', views.user_management, name='user_management'),

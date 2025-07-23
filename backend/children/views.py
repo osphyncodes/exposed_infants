@@ -518,7 +518,7 @@ def edit_child_field_view(request, hcc_number, field=None):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
-def edit_hts_result(request, hcc_number, field=None):
+def edit_hts_resulst(request, hcc_number, field=None):
     child = get_object_or_404(Child, hcc_number=hcc_number)
     hts_sample = get_object_or_404(HTSSample, child=child)
     from .forms import HTSSampleForm
@@ -547,6 +547,18 @@ def view_child_visits(request, hcc_number):
     return render(request, 'children/view_visits.html', {
         'child': child,
         'visits': visits,
+        'count': count
+    })
+
+@login_required
+def view_hts_samples(request, hcc_number):
+    child = get_object_or_404(Child, hcc_number=hcc_number)
+    htss = child.hts_samples.order_by('-sample_date')
+    count = htss.count()
+
+    return render(request, 'children/view_hts.html', {
+        'child': child,
+        'htss': htss,
         'count': count
     })
 
@@ -615,6 +627,23 @@ def add_hts_result(request, hcc_number):
 
     return render(request, 'children/add_hts.html', {'form': form, 'child': child})
 
+def edit_hts_result(request, hts_id):
+    hts_result = get_object_or_404(HTSSample, id=hts_id)
+    child = hts_result.child
+
+    if request.method == "POST":
+        form = HTSSampleForm(request.POST, instance=hts_result)
+        if form.is_valid():
+            form.save()
+            return redirect('children:view_hts_samples', child.hcc_number)
+    else:
+        form = HTSSampleForm(instance=hts_result)
+
+    return render(request, 'children/edit_hts_result.html', {
+        'form': form,
+        'child': child
+    })
+
 @login_required
 def update_outcome(request, hcc_number):
     from django.contrib import messages
@@ -648,6 +677,17 @@ def delete_visit(request, visit_id):
         visit.delete()
         messages.success(request, 'Visit deleted successfully.')
     return redirect('children:view_visits', hcc_number = hcc_number) 
+
+def delete_hts_sample(request, hts_id):
+    hts = get_object_or_404(HTSSample, id=hts_id)
+
+    hcc_number = request.POST.get('hcc_number')
+
+    if request.method == 'POST':
+        hts.delete()
+        messages.success(request, 'HTS Result deleted successfully.')
+
+    return redirect('children:view_hts_samples', hcc_number = hcc_number) 
 
 
 @login_required
@@ -893,21 +933,39 @@ def missed_milestones_view(request):
                 dob = child.child_dob
                 age_months = (today.year - dob.year) * 12 + (today.month - dob.month)
                 
-                # Determine expected tests
-                required_tests = []
-                if age_months >= 1.5:  # 6 weeks
-                    required_tests.append(('DBS_6wks_Ini', dob + timedelta(weeks=6)))
-                if age_months >= 12:
-                    required_tests.append(('Rapid_1yr', dob + timedelta(days=365)))
-                if age_months >= 24:
-                    required_tests.append(('Rapid_2yr', dob + timedelta(days=730)))
+                # Skip if child is too young (less than 6 weeks)
+                if age_months < 1.5:
+                    continue
                 
-                # Check for missing tests
-                for test_reason, due_date in required_tests:
-                    if reason and test_reason != reason:
-                        continue
-                        
-                    if not child.hts_samples.filter(reason=test_reason).exists():
+                # Check for children <12 months
+                if age_months < 12:
+                    # Must have initial DBS
+                    initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
+                    if not initial_dbs:
+                        due_date = dob + timedelta(weeks=6)
+                        days_overdue = (today - due_date).days
+                        if days_overdue > 0 and (not reason or reason == 'DBS_6wks_Ini'):
+                            missed_milestones.append({
+                                'hcc_number': child.hcc_number,
+                                'child_name': child.child_name,
+                                'child_dob': child.child_dob,
+                                'age_months': age_months,
+                                'guardian_name': child.guardian_name,
+                                'guardian_phone': child.guardian_phone,
+                                'test_reason': 'DBS_6wks_Ini',
+                                'due_date': due_date,
+                                'days_overdue': days_overdue,
+                                'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+                            })
+                
+                # Check for children 12-23 months
+                elif 12 <= age_months < 24:
+                    # Must have either 1yr rapid or initial DBS
+                    rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
+                    initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
+                    
+                    if not rapid_1yr and (not reason or reason == 'Rapid_1yr'):
+                        due_date = dob + timedelta(days=365)
                         days_overdue = (today - due_date).days
                         if days_overdue > 0:
                             missed_milestones.append({
@@ -917,13 +975,37 @@ def missed_milestones_view(request):
                                 'age_months': age_months,
                                 'guardian_name': child.guardian_name,
                                 'guardian_phone': child.guardian_phone,
-                                'test_reason': test_reason,
+                                'test_reason': 'Rapid_1yr',
                                 'due_date': due_date,
                                 'days_overdue': days_overdue,
                                 'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
                             })
+                
+                # Check for children 24+ months
+                elif age_months >= 24:
+                    # Must have either 2yr rapid or 1yr rapid
+                    rapid_2yr = child.hts_samples.filter(reason='Rapid_2yr').exists()
+                    rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
+                    
+                    if not rapid_2yr and (not reason or reason == 'Rapid_2yr'):
+                        if not rapid_1yr:  # Only flag if missing both tests
+                            due_date = dob + timedelta(days=730)
+                            days_overdue = (today - due_date).days
+                            if days_overdue > 0:
+                                missed_milestones.append({
+                                    'hcc_number': child.hcc_number,
+                                    'child_name': child.child_name,
+                                    'child_dob': child.child_dob,
+                                    'age_months': age_months,
+                                    'guardian_name': child.guardian_name,
+                                    'guardian_phone': child.guardian_phone,
+                                    'test_reason': 'Rapid_2yr',
+                                    'due_date': due_date,
+                                    'days_overdue': days_overdue,
+                                    'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+                                })
             
-            # Get unique birth years for filter (modified to ensure uniqueness)
+            # Get unique birth years for filter
             birth_years = Child.objects.dates('child_dob', 'year')\
                           .order_by('-child_dob')\
                           .values_list('child_dob__year', flat=True)\
@@ -931,7 +1013,7 @@ def missed_milestones_view(request):
             
             return JsonResponse({
                 'missed_milestones': missed_milestones,
-                'birth_years': get_recent_years()  # Convert QuerySet to list
+                'birth_years': list(birth_years)
             })
             
         except Exception as e:

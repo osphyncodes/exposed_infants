@@ -1,0 +1,41 @@
+{% extends "children/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit HTS Result for {{ child.child_name }}</h2>
+    <form method="post" class="row g-3 shadow p-4 bg-light rounded">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label for="id_sample_date" class="form-label">Sample Date</label>
+            {{ form.sample_date|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_test_type" class="form-label">Test Type</label>
+            {{ form.test_type|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_reason" class="form-label">Reason</label>
+            {{ form.reason|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_sample_id" class="form-label">Sample ID / HTC Serial No.</label>
+            {{ form.sample_id|add_class:"form-control" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_result" class="form-label">Result</label>
+            {{ form.result|add_class:"form-select" }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_date_received" class="form-label">Date Received from Lab</label>
+            {{ form.date_received|add_class:"form-control" }}
+        </div>
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary">Save Sample</button>
+            <a href="{% url 'children:view_hts_samples' child.hcc_number %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
