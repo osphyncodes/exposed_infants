@@ -175,6 +175,7 @@
                             <th>Clinical</th>
                             <th>HIV Testing</th>
                             <th>Infection Status</th>
+                            <th>Drug Given</th>
                             <th>CPT</th>
                             <th>Outcome</th>
                             <th>Next Date</th>
@@ -208,6 +209,7 @@
                             <td>{{ visit.get_clinical_monitoring_display|default:"-" }}</td>
                             <td>{{ visit.get_hiv_testing_display|default:"-" }}</td>
                             <td>{{ visit.get_infection_status_display|default:"-" }}</td>
+                            <td>{{ visit.drug_given|default:"-" }}</td>
                             <td>{{ visit.cpt_given|default:"-" }}</td>
                             <td>{{ visit.get_follow_up_outcome_display|default:"-" }}</td>
                             <td>{{ visit.next_appointment_or_outcome_date|date:"Y-m-d"|default:"-" }}</td>

@@ -88,8 +88,8 @@ html, body {
     box-shadow: 2px 0 5px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    z-index: 1100;
     transition: width 0.2s;
+    z-index: 100;
 }
 
 .sidebar-header {
@@ -202,3 +202,12 @@ html, body {
 #cd-top-section strong {
     color: #2c3e50;
 }
+
+#mainContent {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+

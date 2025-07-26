@@ -7,10 +7,12 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dash.css' %}">
-
+    
     <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    <script src="{% static "js/encryption.js" %}"></script>
+    <script src="{% static "js/encrypt.js" %}"></script>
+    <script src="{% static "js/jquery.js" %}"></script>
     <script src="{% static "js/apexcharts.js" %}"></script>
     <script src="{% static "js/moment.js" %}"></script>
     {% comment %} <script src="{% static "js/moment.js" %}"></script> {% endcomment %}
@@ -54,12 +56,11 @@
     <div class="content" id="mainContent">
         {% block content %}{% endblock %}
         
-    </div>
-    <div class="popview">
-        {% block popview %}{% endblock %}
-    </div>
+        
+    </div>   
 
-    
+    {% include "children/spinner.html" %}
+    {% include "children/popup/showTable.html" %}
     <script src="{% static 'js/base.js' %}"></script>
 </body>
 </html>

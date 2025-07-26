@@ -31,7 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '*']
 
-
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Application definition
 
 INSTALLED_APPS = [
@@ -47,7 +48,12 @@ INSTALLED_APPS = [
     'pact',
     'widget_tweaks',  # Optional: for development tools like shell_plus
     'tingathe_tools',  # Optional: if you have custom tools
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'art'
 ]
+
+# 0985772677
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,7 +73,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,6 +84,21 @@ TEMPLATES = [
         },
     },
 ]
+
+# LOGGING = {
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         },
+#     },
+# }
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
@@ -137,6 +158,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "children" / "static",
     BASE_DIR / "tingathe_tools" / "static",
+    BASE_DIR / "pact" / "static",
+    BASE_DIR / "art" / "static",
 ]
 
 LOGIN_URL = 'login'

@@ -2,6 +2,7 @@
 const sidebar = document.getElementById('sidebar');
 const mainContent = document.getElementById('mainContent');
 const toggleBtn = document.getElementById('sidebarToggle');
+
 function setSidebarState(collapsed) {
     if (collapsed) {
         sidebar.classList.add('sidebar-collapsed');

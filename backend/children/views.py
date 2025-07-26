@@ -8,6 +8,7 @@ from .forms_user import UserForm
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDay
 from django.db.models import OuterRef, Subquery
+from django.contrib import messages
 
 from .forms_change_hcc import ChangeHCCNumberForm
 
@@ -68,7 +69,7 @@ def add_user(request):
             return redirect('children:user_management')
     else:
         form = UserForm()
-    return render(request, 'user_form.html', {'form': form, 'action': 'Add'})
+    return render(request, 'children/user_form.html', {'form': form, 'action': 'Add'})
 
 @login_required
 @user_passes_test(is_superuser)
@@ -666,8 +667,6 @@ def update_outcome(request, hcc_number):
 def app_selector(request):
     return render(request, 'children/app_selector.html')
 
-from django.contrib import messages
-
 def delete_visit(request, visit_id):
     visit = get_object_or_404(ChildVisit, id=visit_id)
 
@@ -856,7 +855,7 @@ def appointments_view(request):
             delta = relativedelta(appointment_date, dob)
             age_in_months = delta.years * 12 + delta.months
 
-            action_needed = None
+            action_needed = 'No HTS test required at this age'
             hts_test_required = False
             hts_test_reason = None
 
@@ -934,62 +933,64 @@ def missed_milestones_view(request):
                 age_months = (today.year - dob.year) * 12 + (today.month - dob.month)
                 
                 # Skip if child is too young (less than 6 weeks)
-                if age_months < 1.5:
-                    continue
-                
-                # Check for children <12 months
-                if age_months < 12:
-                    # Must have initial DBS
-                    initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
-                    if not initial_dbs:
-                        due_date = dob + timedelta(weeks=6)
-                        days_overdue = (today - due_date).days
-                        if days_overdue > 0 and (not reason or reason == 'DBS_6wks_Ini'):
-                            missed_milestones.append({
-                                'hcc_number': child.hcc_number,
-                                'child_name': child.child_name,
-                                'child_dob': child.child_dob,
-                                'age_months': age_months,
-                                'guardian_name': child.guardian_name,
-                                'guardian_phone': child.guardian_phone,
-                                'test_reason': 'DBS_6wks_Ini',
-                                'due_date': due_date,
-                                'days_overdue': days_overdue,
-                                'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
-                            })
-                
-                # Check for children 12-23 months
-                elif 12 <= age_months < 24:
-                    # Must have either 1yr rapid or initial DBS
-                    rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
-                    initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
+                recentVisit = child.visits.order_by('-visit_date').first()
+
+                if recentVisit.follow_up_outcome == 'Con':
+                    if age_months < 1.5:
+                        continue
                     
-                    if not rapid_1yr and (not reason or reason == 'Rapid_1yr'):
-                        due_date = dob + timedelta(days=365)
-                        days_overdue = (today - due_date).days
-                        if days_overdue > 0:
-                            missed_milestones.append({
-                                'hcc_number': child.hcc_number,
-                                'child_name': child.child_name,
-                                'child_dob': child.child_dob,
-                                'age_months': age_months,
-                                'guardian_name': child.guardian_name,
-                                'guardian_phone': child.guardian_phone,
-                                'test_reason': 'Rapid_1yr',
-                                'due_date': due_date,
-                                'days_overdue': days_overdue,
-                                'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
-                            })
-                
-                # Check for children 24+ months
-                elif age_months >= 24:
-                    # Must have either 2yr rapid or 1yr rapid
-                    rapid_2yr = child.hts_samples.filter(reason='Rapid_2yr').exists()
-                    rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
+                    # Check for children <12 months
+                    if age_months < 12:
+                        # Must have initial DBS
+                        initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
+                        if not initial_dbs:
+                            due_date = dob + timedelta(weeks=6)
+                            days_overdue = (today - due_date).days
+                            if days_overdue > 0 and (not reason or reason == 'DBS_6wks_Ini'):
+                                missed_milestones.append({
+                                    'hcc_number': child.hcc_number,
+                                    'child_name': child.child_name,
+                                    'child_dob': child.child_dob,
+                                    'age_months': age_months,
+                                    'guardian_name': child.guardian_name,
+                                    'guardian_phone': child.guardian_phone,
+                                    'test_reason': 'DBS_6wks_Ini',
+                                    'due_date': due_date,
+                                    'days_overdue': days_overdue,
+                                    'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+                                })
                     
-                    if not rapid_2yr and (not reason or reason == 'Rapid_2yr'):
-                        if not rapid_1yr:  # Only flag if missing both tests
-                            due_date = dob + timedelta(days=730)
+                    # Check for children 12-23 months
+                    elif 12 <= age_months < 24:
+                        # Must have either 1yr rapid or initial DBS
+                        rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
+                        initial_dbs = child.hts_samples.filter(reason='DBS_6wks_Ini').exists()
+                        
+                        if not rapid_1yr and (not reason or reason == 'Rapid_1yr'):
+                            due_date = dob + timedelta(days=365)
+                            days_overdue = (today - due_date).days
+                            if days_overdue > 0:
+                                missed_milestones.append({
+                                    'hcc_number': child.hcc_number,
+                                    'child_name': child.child_name,
+                                    'child_dob': child.child_dob,
+                                    'age_months': age_months,
+                                    'guardian_name': child.guardian_name,
+                                    'guardian_phone': child.guardian_phone,
+                                    'test_reason': 'Rapid_1yr',
+                                    'due_date': due_date,
+                                    'days_overdue': days_overdue,
+                                    'view_url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+                                })
+                    
+                    # Check for children 24+ months
+                    elif age_months >= 24:
+                        # Must have either 2yr rapid or 1yr rapid
+                        rapid_2yr = child.hts_samples.filter(reason='Rapid_2yr').exists()
+                        rapid_1yr = child.hts_samples.filter(reason='Rapid_1yr').exists()
+                        
+                        if not rapid_2yr and (not reason or reason == 'Rapid_2yr'):
+                            due_date = dob + timedelta(days=731)
                             days_overdue = (today - due_date).days
                             if days_overdue > 0:
                                 missed_milestones.append({
@@ -1030,30 +1031,282 @@ def eid_report(request):
     
     if request.method == 'POST':
         data = json.loads(request.body)
-
-        cohort2Date = data.get('cohort2Date')
-        cohort12Date = data.get('cohort12Date')
-        cohort24Date = data.get('cohort24Date')
-
-        count1 = getcount(cohort2Date)
-        count2 = getcount(cohort12Date)
-        count3 = getcount(cohort24Date)
         
+        # Process each cohort
+        cohort2_data = process_cohort_data(data.get('cohort2Date'), type=1)
+        cohort12_data = process_cohort_data(data.get('cohort12Date'), type=2)
+        cohort24_data = process_cohort_data(data.get('cohort24Date'), type=3)
+        
+        # Prepare response data
+        response_data = {
+            # 2 Months cohort
+            'count1': cohort2_data['count'],
+            'count1_children': cohort2_data['children'],
+            'count4': cohort2_data['uninfected']['count'],
+            'count4_children': cohort2_data['uninfected']['children'],
+            'count7': cohort2_data['infected']['count'],
+            'count7_children': cohort2_data['infected']['children'],
+            'count10': cohort2_data['not_eligible']['count'],
+            'count10_children': cohort2_data['not_eligible']['children'],
+            'count13': cohort2_data['pshd']['count'],
+            'count13_children': cohort2_data['pshd']['children'],
+            'count16': cohort2_data['nvp']['count'],
+            'count16_children': cohort2_data['nvp']['children'],
+            'count17': cohort2_data['2p']['count'],
+            'count17_children': cohort2_data['2p']['children'],
+            'count18': cohort2_data['none']['count'],
+            'count18_children': cohort2_data['none']['children'],
+            'count19': cohort2_data['cpt']['count'],
+            'count19_children': cohort2_data['cpt']['children'],
+            'count20': cohort2_data['not_on_cpt']['count'],
+            'count20_children': cohort2_data['not_on_cpt']['children'],
+            'count25': cohort2_data['con']['count'],
+            'count25_children': cohort2_data['con']['children'],
+            'count26': cohort2_data['dis']['count'],
+            'count26_children': cohort2_data['dis']['children'],
+            'count27': cohort2_data['art']['count'],
+            'count27_children': cohort2_data['art']['children'],
+            'count28': cohort2_data['to']['count'],
+            'count28_children': cohort2_data['to']['children'],
+            'count29': cohort2_data['def']['count'],
+            'count29_children': cohort2_data['def']['children'],
+            'count30': cohort2_data['died']['count'],
+            'count30_children': cohort2_data['died']['children'],
+            
+            # 12 Months cohort
+            'count2': cohort12_data['count'],
+            'count2_children': cohort12_data['children'],
+            'count5': cohort12_data['uninfected']['count'],
+            'count5_children': cohort12_data['uninfected']['children'],
+            'count8': cohort12_data['infected']['count'],
+            'count8_children': cohort12_data['infected']['children'],
+            'count11': cohort12_data['not_eligible']['count'],
+            'count11_children': cohort12_data['not_eligible']['children'],
+            'count14': cohort12_data['pshd']['count'],
+            'count14_children': cohort12_data['pshd']['children'],
+            'count21': cohort12_data['cpt']['count'],
+            'count21_children': cohort12_data['cpt']['children'],
+            'count22': cohort12_data['not_on_cpt']['count'],
+            'count22_children': cohort12_data['not_on_cpt']['children'],
+            'count31': cohort12_data['con']['count'],
+            'count31_children': cohort12_data['con']['children'],
+            'count32': cohort12_data['dis']['count'],
+            'count32_children': cohort12_data['dis']['children'],
+            'count33': cohort12_data['art']['count'],
+            'count33_children': cohort12_data['art']['children'],
+            'count34': cohort12_data['to']['count'],
+            'count34_children': cohort12_data['to']['children'],
+            'count35': cohort12_data['def']['count'],
+            'count35_children': cohort12_data['def']['children'],
+            'count36': cohort12_data['died']['count'],
+            'count36_children': cohort12_data['died']['children'],
+            
+            # 24 Months cohort
+            'count3': cohort24_data['count'],
+            'count3_children': cohort24_data['children'],
+            'count6': cohort24_data['uninfected']['count'],
+            'count6_children': cohort24_data['uninfected']['children'],
+            'count9': cohort24_data['infected']['count'],
+            'count9_children': cohort24_data['infected']['children'],
+            'count12': cohort24_data['not_eligible']['count'],
+            'count12_children': cohort24_data['not_eligible']['children'],
+            'count15': cohort24_data['pshd']['count'],
+            'count15_children': cohort24_data['pshd']['children'],
+            'count23': cohort24_data['cpt']['count'],
+            'count23_children': cohort24_data['cpt']['children'],
+            'count24': cohort24_data['not_on_cpt']['count'],
+            'count24_children': cohort24_data['not_on_cpt']['children'],
+            'count37': cohort24_data['con']['count'],
+            'count37_children': cohort24_data['con']['children'],
+            'count38': cohort24_data['dis']['count'],
+            'count38_children': cohort24_data['dis']['children'],
+            'count39': cohort24_data['art']['count'],
+            'count39_children': cohort24_data['art']['children'],
+            'count40': cohort24_data['to']['count'],
+            'count40_children': cohort24_data['to']['children'],
+            'count41': cohort24_data['def']['count'],
+            'count41_children': cohort24_data['def']['children'],
+            'count42': cohort24_data['died']['count'],
+            'count42_children': cohort24_data['died']['children'],
+            
+            'message': 'Received'
+        }
+        
+        return JsonResponse(response_data)
 
-        return JsonResponse({
-            'count1': count1,
-            'count2': count2,
-            'count3': count3,
-            'message': 'Recieved'
-        })
-
-def getcount(dateobject):
-    start_date = date.fromisoformat(dateobject['dates']['firstDate'])
-    last_date = date.fromisoformat(dateobject['dates']['lastDate'])
-
-    children = Child.objects.filter(child_dob__range = (start_date, last_date))
+def process_cohort_data(date_object, type=0):
+    if not date_object:
+        return empty_result()
     
-    # Getting NVP/ CPT Data
+    start_date = date.fromisoformat(date_object['dates']['firstDate'])
+    last_date = date.fromisoformat(date_object['dates']['lastDate'])
     
-    print(dateobject)
-    return children.count()
+    children = Child.objects.filter(child_dob__range=(start_date, last_date))
+    result = empty_result()
+    result['count'] = children.count()
+    result['children'] = [get_child_info(child) for child in children]
+    
+    for child in children:
+        process_child_data(child, type, result)
+    
+    return result
+
+def get_child_info(child):
+    return {
+        'hcc_number': child.hcc_number,
+        'child_name': child.child_name,
+        'birthdate': child.child_dob.isoformat() if child.child_dob else None,
+        'gender': child.child_gender,
+        'locator':child.physical_address,
+        'guardian':child.guardian_name,
+        'guardian_phone': child.guardian_phone,
+        'mother_art_number': child.mother_art_number,
+        'url': f"/children/exposed/children/child_dashboard/{child.hcc_number}/"
+    }
+
+def process_child_data(child, cohort_type, result):
+    latest_visit = child.visits.order_by('-visit_date').first()
+    if not latest_visit:
+        return
+    
+    child_info = get_child_info(child)
+    hiv_status = latest_visit.infection_status
+    
+    # Process HIV status
+    if hiv_status and hiv_status != 'C':
+        process_known_hiv_status(hiv_status, child_info, result)
+    else:
+        process_unknown_hiv_status(child, cohort_type, child_info, result)
+    
+    # Process prophylaxis (only for 2-month cohort)
+    if cohort_type == 1:
+        process_prophylaxis(child, child_info, result)
+    
+    # Process CPT status
+    process_cpt_status(latest_visit, child_info, result)
+    
+    # Process follow-up outcome
+    process_follow_up_outcome(latest_visit, child_info, result)
+
+def process_known_hiv_status(hiv_status, child_info, result):
+    status_mapping = {
+        'A': 'uninfected',
+        'B': 'infected',
+        'D': 'pshd'
+    }
+    if hiv_status in status_mapping:
+        category = status_mapping[hiv_status]
+        result[category]['count'] += 1
+        result[category]['children'].append(child_info)
+
+def process_unknown_hiv_status(child, cohort_type, child_info, result):
+    latest_sample = child.hts_samples.order_by('-sample_date').first()
+    if not latest_sample:
+        result['not_eligible']['count'] += 1
+        result['not_eligible']['children'].append(child_info)
+        return
+    
+    if cohort_type == 1:  # 2-month cohort
+        process_2month_hiv_status(latest_sample, child_info, result)
+    elif cohort_type == 2:  # 12-month cohort
+        process_12month_hiv_status(latest_sample, child_info, result)
+    elif cohort_type == 3:  # 24-month cohort
+        process_24month_hiv_status(latest_sample, child_info, result)
+
+def process_2month_hiv_status(sample, child_info, result):
+    if sample.result == "Negative":
+        result['uninfected']['count'] += 1
+        result['uninfected']['children'].append(child_info)
+    elif sample.result == 'Positive':
+        result['infected']['count'] += 1
+        result['infected']['children'].append(child_info)
+        print(f"Child on ART: {sample.child.hcc_number}")
+    else:
+        result['not_eligible']['count'] += 1
+        result['not_eligible']['children'].append(child_info)
+
+def process_12month_hiv_status(sample, child_info, result):
+    if sample.result == "Negative" and sample.reason == "Rapid_1yr":
+        result['uninfected']['count'] += 1
+        result['uninfected']['children'].append(child_info)
+    elif (sample.result == "Positive" and 
+          (sample.reason == "Rapid_1yr" or 
+           sample.reason == "DBS_Rapid_Conf" or 
+           sample.reason == "DBS_6wks_Ini")):
+        result['infected']['count'] += 1
+        result['infected']['children'].append(child_info)
+        print(f"Child on ART: {sample.child.hcc_number}")
+    else:
+        result['not_eligible']['count'] += 1
+        result['not_eligible']['children'].append(child_info)
+
+def process_24month_hiv_status(sample, child_info, result):
+    if sample.result == "Negative" and sample.reason == "Rapid_2yr":
+        result['uninfected']['count'] += 1
+        result['uninfected']['children'].append(child_info)
+    elif (sample.result == "Positive" and 
+          (sample.reason in ["Rapid_2yr", "Rapid_1yr", "DBS_Rapid_Conf", "DBS_6wks_Ini"])):
+        result['infected']['count'] += 1
+        result['infected']['children'].append(child_info)
+        print(f"Child on ART: {sample.child.hcc_number}")
+    else:
+        result['not_eligible']['count'] += 1
+        result['not_eligible']['children'].append(child_info)
+
+def process_prophylaxis(child, child_info, result):
+    child_niverapine = child.visits.filter(drug_given='NVP').exists()
+    child_2p = child.visits.filter(drug_given='2P').exists()
+    
+    if child_niverapine:
+        result['nvp']['count'] += 1
+        result['nvp']['children'].append(child_info)
+    elif child_2p:
+        result['2p']['count'] += 1
+        result['2p']['children'].append(child_info)
+    else:
+        result['none']['count'] += 1
+        result['none']['children'].append(child_info)
+
+def process_cpt_status(visit, child_info, result):
+    if visit.drug_given == 'CPT':
+        result['cpt']['count'] += 1
+        result['cpt']['children'].append(child_info)
+    else:
+        result['not_on_cpt']['count'] += 1
+        result['not_on_cpt']['children'].append(child_info)
+
+def process_follow_up_outcome(visit, child_info, result):
+    outcome_mapping = {
+        'Con': 'con',
+        'Dis': 'dis',
+        'ART': 'art',
+        'To': 'to',
+        'Died': 'died'
+    }
+    
+    if visit.follow_up_outcome in outcome_mapping:
+        category = outcome_mapping[visit.follow_up_outcome]
+        result[category]['count'] += 1
+        result[category]['children'].append(child_info)
+    else:
+        result['def']['count'] += 1
+        result['def']['children'].append(child_info)
+
+def empty_result():
+    categories = [
+        'uninfected', 'infected', 'not_eligible', 'pshd', 'nvp', '2p', 'none',
+        'cpt', 'not_on_cpt', 'con', 'dis', 'art', 'to', 'died', 'def'
+    ]
+    
+    result = {
+        'count': 0,
+        'children': []
+    }
+    
+    for category in categories:
+        result[category] = {
+            'count': 0,
+            'children': []
+        }
+    
+    return result

@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reasonFilter = document.getElementById('reason-filter');
     const applyFiltersBtn = document.getElementById('apply-filters');
     const refreshBtn = document.getElementById('refresh-btn');
-    const loadingSpinner = document.getElementById('loading-spinner');
     const downloadCsvBtn = document.getElementById('download-csv');
     const downloadPdfBtn = document.getElementById('download-pdf');
     const pagination = document.getElementById('pagination');
@@ -56,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadMissedMilestones() {
-        showLoading();
+        showLoading('Loading. Please wait...');
         
         try {
             const response = await fetch(window.location.pathname, {
@@ -304,14 +303,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         html2pdf().from(element).set(opt).save();
-    }
-
-    function showLoading() {
-        loadingSpinner.style.display = 'flex';
-    }
-
-    function hideLoading() {
-        loadingSpinner.style.display = 'none';
     }
 
     // Helper function to get CSRF token

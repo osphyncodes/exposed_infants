@@ -2,9 +2,28 @@ document.addEventListener('DOMContentLoaded', ()=> {
     const monthSelect = document.getElementById('month')
     const periodContainers = document.querySelectorAll('.period')
     const search_btn = document.getElementById('search-btn')
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const tops = document.querySelector('.tops')
+    
 
+    // toggleBtn.addEventListener('click', ()=> {
+    //     state = localStorage.getItem('sidebar-collapsed')
 
-    monthSelect.addEventListener('change', ()=> {
+    //     if (state == 1){
+    //         tops.style.left = '90px'
+    //     }else{
+    //         tops.style.left = '250px'
+    //     }
+    // })
+    for (let index = 1; index <=42; index++) {
+
+        var cnt = document.getElementById(`id-total-count${index}`)
+        if(cnt){
+            cnt.innerText = "Not Run"
+        }
+    }
+
+    function changeMonthcolor() {
         var id = getMonthInt(monthSelect.value)
 
         periodContainers.forEach((item) => {
@@ -20,27 +39,25 @@ document.addEventListener('DOMContentLoaded', ()=> {
                 item.fontweight = 'bold'
             }
         })
-    })
+    }
 
     search_btn.addEventListener('click', async function(){
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const yearSelect = document.getElementById('year').value
-        var id = parseInt(getMonthInt(monthSelect.value))
-        
+        const id = parseInt(getMonthInt(monthSelect.value))
         const month = getMonthInt2(id)
-
         const monthYear = `${month} ${yearSelect}`
         const cohort = getBirthCohorts(monthYear)
-        console.log(monthSelect.value)
+        const c2date = getMonthRange(cohort.twoMonths)
+        const c12date = getMonthRange(cohort.twelveMonths)
+        const c24date = getMonthRange(cohort.twentyFourMonths)
+
         if (yearSelect == 'Select Reporting Year' || monthSelect.value == 'Select Reporting Month'){
             alert('Reporting year and month is required')
             return
         }
 
-        const c2date = getMonthRange(cohort.twoMonths)
-        const c12date = getMonthRange(cohort.twelveMonths)
-        const c24date = getMonthRange(cohort.twentyFourMonths)
-
+        showLoading('Generating. Please wait...');
         url = search_btn.dataset.url
         const response = await fetch(url, {
             method: 'POST',
@@ -73,11 +90,85 @@ document.addEventListener('DOMContentLoaded', ()=> {
 
         const data = await response.json()
 
-        for (let index = 1; index <=3; index++) {
+        for (let index = 1; index <=42; index++) {
 
-            var cnt = document.getElementById(`id-count${index}`)
-            cnt.innerText = data[`count${index}`]
-        }
+            var cnt = document.getElementById(`id-total-count${index}`)
+
+            
+
+            if (cnt) {
+                cnt_id = `count${index}`
+                cnt.innerText = data[cnt_id]
+                list = data[`count${index}_children`]
+                
+                localStorage.removeItem(cnt.id)
+                if (cnt.innerText != 0){
+                    setEncryptedItem(cnt.id, list)
+
+                    cnt.addEventListener('click', (event)=>{
+                        var gotten_data = []
+                        var table_data = []
+                        var num = 0
+                        gotten_data = getDecryptedItem(event.target.id)
+                        title_what = event.target.dataset.what
+
+                        count_data = gotten_data.length
+                        headers = [
+                            '#',
+                            'HCC Number',
+                            'Name',
+                            'Gender',
+                            'Date of Birth',
+                            'Locator',
+                            'Guardian',
+                            'Phone Number',
+                            'Mother ART#',
+                            'Action'
+                        ]
+
+                        gotten_data.forEach((e)=>{
+                            num += 1
+
+                            table_data += `
+                                <tr>
+                                    <td>${num}</td>
+                                    <td>${e.hcc_number}</td>
+                                    <td>${e.child_name}</td>
+                                    <td>${e.gender}</td>
+                                    <td>${e.birthdate}</td>
+                                    <td>${e.locator}</td>
+                                    <td>${e.guardian}</td>
+                                    <td>${e.guardian_phone}</td>
+                                    <td>${e.mother_art_number}</td>
+                                    <td>
+                                        <a href="${e.url}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                    </td>
+                                </tr>
+                            `
+                        })
+                        showDynamicTable(headers, table_data, 2,`${title_what} (${count_data})`)
+                        console.log(table_data)
+                    })
+                }
+                
+                changeMonthcolor()
+                if (parseInt(cnt.innerText) != 0){
+                    cnt.style.color = 'blue'
+                    cnt.style.fontweight = 'bold'
+                    cnt.style.cursor = 'pointer'
+                }else {
+                    cnt.style.color = 'black'
+                    cnt.style.fontweight = ''
+                    cnt.style.cursor = ''   
+                }
+                
+            };
+            
+        };
+
+        hideLoading()
     })
 
     function getMonthRange(monthYearStr) {

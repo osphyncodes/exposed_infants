@@ -2,335 +2,350 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid" style="max-width: 1400px;">
   <!-- Header Section -->
-  <div class="sticky-top bg-white pt-3 pb-2 shadow-sm" style="z-index: 1020;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">
-        <i class="fas fa-calendar-times text-danger me-2"></i>Missed Milestones
-      </h2>
-      <div class="d-flex gap-2">
-        <button id="download-csv" class="btn btn-success">
-          <i class="fas fa-file-csv me-1"></i> CSV
-        </button>
-        <button id="download-pdf" class="btn btn-danger">
-          <i class="fas fa-file-pdf me-1"></i> PDF
-        </button>
-        <button id="search-btn" data-url="{% url 'children:eid_report'%}" class="btn btn-outline-primary">
-          <i class="fas fa-sync-alt me-1"></i> Refresh
-        </button>
-      </div>
+    <div class="sticky-top bg-white pt-3 pb-2 shadow-sm" style="z-index: 1;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">
+            <i class="fas fa-calendar-times text-danger me-2"></i>Missed Milestones
+            </h2>
+            
+            <div class="d-flex gap-2">
+                <button id="search-btn" data-url="{% url 'children:eid_report'%}" class="btn btn-outline-primary">
+                <i class="fas fa-sync-alt me-1"></i> Run
+                </button>
+                <button id="download-csv" class="btn btn-success">
+                <i class="fas fa-file-csv me-1"></i> CSV
+                </button>
+                <button id="download-pdf" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i> PDF
+                </button>
+            </div>
+        </div>
     </div>
 
+
+  <div class="word-container">
+      <h3>Exposed Child Under 24 Months - Monthly Follow-Up Reporting Form</h3>
+
+      <table class="table">
+          <tr>
+              <td width="5%">1</td>
+              <td width="20%">Clinic Name</td>
+              <td colspan="2">Lungwena Health Centre</td>
+          </tr>
+          <tr>
+              <td>2</td>
+              <td>Reporting year and month</td>
+              <td width="30%">
+                  <label for="year">Year</label>
+                  <select name="year" id="year">
+                      <option selected disabled>Select Reporting Year</option>
+                      <option value="2023">2023</option>
+                      <option value="2024">2024</option>
+                      <option value="2025">2025</option>
+                  </select>
+              </td>
+              <td width="30%">
+                  <label for="month">Month</label>
+                  <select name="month" id="month">
+                      <option selected disabled>Select Reporting Month</option>
+                      <option value="jan">January</option>
+                      <option value="feb">February</option>
+                      <option value="mar">March</option>
+                      <option value="apr">April</option>
+                      <option value="may">May</option>
+                      <option value="jun">June</option>
+                      <option value="jul">July</option>
+                      <option value="aug">August</option>
+                      <option value="sep">September</option>
+                      <option value="oct">October</option>
+                      <option value="nov">November</option>
+                      <option value="dec">December</option>
+                  </select>
+              </td>
+          </tr>
+      </table>
+
+      <p>Selection of birth cohorts</p>
+
+      <table id="cohort" class="table">
+          <tr>
+              <td colspan="2">Reporting Month</td>
+              <td class="period" data-id="1">Jan</td>
+              <td class="period" data-id="2">Feb</td>
+              <td class="period" data-id="3">Mar</td>
+              <td class="period" data-id="4">Apr</td>
+              <td class="period" data-id="5">May</td>
+              <td class="period" data-id="6">Jun</td>
+              <td class="period" data-id="7">Jul</td>
+              <td class="period" data-id="8">Aug</td>
+              <td class="period" data-id="9">Sep</td>
+              <td class="period" data-id="10">Oct</td>
+              <td class="period" data-id="11">Nov</td>
+              <td class="period" data-id="12">Dec</td>
+          </tr>
+              <tr>
+              <td></td>
+              <td>(circle)</td>
+              <td class="period" data-id="1">&darr;</td>
+              <td class="period" data-id="2">&darr;</td>
+              <td class="period" data-id="3">&darr;</td>
+              <td class="period" data-id="4">&darr;</td>
+              <td class="period" data-id="5">&darr;</td>
+              <td class="period" data-id="6">&darr;</td>
+              <td class="period" data-id="7">&darr;</td>
+              <td class="period" data-id="8">&darr;</td>
+              <td class="period" data-id="9">&darr;</td>
+              <td class="period" data-id="10">&darr;</td>
+              <td class="period" data-id="11">&darr;</td>
+              <td class="period" data-id="12">&darr;</td>
+          </tr>
+          <tr>
+              <td>Age 2 Months Cohort</td>
+              <td class="birth_cohorts">Birth Month</td>
+              <td class="period" data-id="1">Oct</td>
+              <td class="period" data-id="2">Nov</td>
+              <td class="period" data-id="3">Dec</td>
+              <td class="period" data-id="4">Jan</td>
+              <td class="period" data-id="5">Feb</td>
+              <td class="period" data-id="6">Mar</td>
+              <td class="period" data-id="7">Apr</td>
+              <td class="period" data-id="8">May</td>
+              <td class="period" data-id="9">Jun</td>
+              <td class="period" data-id="10">Jul</td>
+              <td class="period" data-id="11">Aug</td>
+              <td class="period" data-id="12">Sep</td>
+          </tr>
+          <tr>
+              <td>Age at 12 and 24m. cohort</td>
+              <td>Birth Month</td>
+              <td class="period" data-id="1">Nov</td>
+              <td class="period" data-id="2">Dec</td>
+              <td class="period" data-id="3">Jan</td>
+              <td class="period" data-id="4">Feb</td>
+              <td class="period" data-id="5">Mar</td>
+              <td class="period" data-id="6">Apr</td>
+              <td class="period" data-id="7">May</td>
+              <td class="period" data-id="8">Jun</td>
+              <td class="period" data-id="9">Jul</td>
+              <td class="period" data-id="10">Aug</td>
+              <td class="period" data-id="11">Sep</td>
+              <td class="period" data-id="12">Oct</td>
+          </tr>
+      </table>
+
+      <br/>
+      <table class="table">
+              <td style="border: none;" colspan="3" width="55%">Birth cohorts (current age)</td>
+              <td style="border: none; font-weight: bold; text-align: center;" width="15%">2 months</td>
+              <td style="border: none;font-weight: bold;text-align: center" width="15%">23 months</td>
+              <td style="border: none;font-weight: bold;text-align: center" width="15%">24 Months</td>
+          </tr>
+          <tr>
+              <td>3</td>
+              <td colspan="2">Total registered in birth cohort</td>
+              <td data-what="Total Registerd 2 Months Cohort" id="id-total-count1" style="text-align: center;">13</td>
+              <td data-what="Total Registerd 12 Months Cohort" id="id-total-count2" style="text-align: center;">9</td>
+              <td data-what="Total Registerd 24 Months Cohort" id="id-total-count3" style="text-align: center;">8</td>
+          </tr>
+      </table>
+      <br/>
+      <p>Outcome status as of last visit</p>
+      <table class="table">
+          <tr>
+              <td width="5%">4</td>
+              <th style="text-align: center;" class="vertical-text" rowspan="4">HIV status</th>
+              <td width="40%">A: Confirmed uninfected</td>
+              <td data-what="Confirmed Uninfected 2 Months Cohort" id="id-total-count4" style="text-align: center;" width="15%">9</td>
+              <td data-what="Confirmed Uninfected 12 Months Cohort" id="id-total-count5" style="text-align: center;" width="15%">9</td>
+              <td data-what="Confirmed Uninfected 24 Months Cohort" id="id-total-count6" style="text-align: center;" width="15%">6</td>
+          </tr>
+          <tr>
+              <td>5</td>
+              <td>B: Confirmed infected</td>
+              <td data-what="Confirmed Infected 2 Months Cohort" id="id-total-count7" style="text-align: center;">9</td>
+              <td data-what="Confirmed Infected 12 Months Cohort" id="id-total-count8" style="text-align: center;">9</td>
+              <td data-what="Confirmed Infected 24 Months Cohort" id="id-total-count9" style="text-align: center;">6</td>
+          </tr>
+          <tr>
+              <td>6</td>
+              <td>C: Not conf., not eligible for ART</td>
+              <td data-what="Not Confirmed, Not Eligible for ART 2 Months Cohort" id="id-total-count10" style="text-align: center;">9</td>
+              <td data-what="Not Confirmed, Not Eligible for ART 12 Months Cohort" id="id-total-count11" style="text-align: center;">9</td>
+              <td data-what="Not Confirmed, Not Eligible for ART 24 Months Cohort" id="id-total-count12" style="text-align: center;">6</td>
+          </tr>
+          <tr>
+              <td>7</td>
+              <td>D: Not confirmed, PSHD → ART</td>
+              <td data-what="Not confirmed, PSHD → ART 2 Months Cohort" id="id-total-count13" style="text-align: center;">9</td>
+              <td data-what="Not confirmed, PSHD → ART 12 Months Cohort" id="id-total-count14" style="text-align: center;">9</td>
+              <td data-what="Not confirmed, PSHD → ART 24 Months Cohort" id="id-total-count15" style="text-align: center;">6</td>
+          </tr>
+      </table>
+
+      <table class="table">
+          <tr>
+              <td width="5%">8</td>
+              <th style="text-align: center;" class="vertical-text" rowspan="3">ARV prophylaxis</th>
+              <td width="40%">NVP syrup (low risk)</td>
+              <td data-what="NVP syrup (low risk) 2 Months Cohort" id="id-total-count16" style="text-align: center;" width="15%">13</td>
+              <td data-what="NVP syrup (low risk) 12 Months Cohort" style="text-align: center;" width="15%" class="black-cell"></td>
+              <td data-what="NVP syrup (low risk) 24 Months Cohort" style="text-align: center;" width="15%" class="black-cell"></td>
+          </tr>
+          <tr>
+              <td>9</td>
+              <td>2P (high risk)</td>
+              <td data-what="2P (high risk) 2 Months Cohort" id="id-total-count17" style="text-align: center;">0</td>
+              <td class="black-cell"></td>
+              <td class="black-cell"></td>
+          </tr>
+          <tr>
+              <td>10</td>
+              <td>None</td>
+              <td data-what="Prophylaxis None 2 Months Cohort" id="id-total-count18" style="text-align: center;">0</td>
+              <td class="black-cell"></td>
+              <td class="black-cell"></td>
+          </tr>
+      </table>
+      
+      <table class="table">
+          <tr>
+              <td width="5%">11</td>
+              <th style="text-align: center;" class="vertical-text" rowspan="2">CPT</th>
+              <td width="40%">On CPT</td>
+              <td data-what="On CPT 2 Months Cohort" id="id-total-count19" style="text-align: center;" width="15%">13</td>
+              <td data-what="On CPT 12 Months Cohort" id="id-total-count21" style="text-align: center;" width="15%">9</td>
+              <td data-what="On CPT 24 Months Cohort" id="id-total-count23" style="text-align: center;" width="15%">0</td>
+          </tr>
+          <tr>
+              <td>12</td>
+              <td>Not on CPT</td>
+              <td data-what="Not on CPT 2 Months Cohort" id="id-total-count20" style="text-align: center;">0</td>
+              <td data-what="Not on CPT 12 Months Cohort" id="id-total-count22" style="text-align: center;">0</td>
+              <td data-what="Not on CPT 24 Months Cohort" id="id-total-count24" style="text-align: center;">8</td>
+          </tr>
+      </table>
+
+      <table class="table">
+          <tr>
+              <td width="5%">13</td>
+              <th style="text-align: center;" class="vertical-text" rowspan="6">Primary Outcome</th>
+              <td width="40%">Continue follow-up</td>
+              <td data-what="Continue follow-up 2 Months Cohort" id="id-total-count25" style="text-align: center;" width="15%">13</td>
+              <td data-what="Continue follow-up 12 Months Cohort" id="id-total-count31" style="text-align: center;" width="15%">9</td>
+              <td data-what="Continue follow-up 24 Months Cohort" id="id-total-count37" style="text-align: center;" width="15%">0</td>
+          </tr>
+          <tr>
+              <td>14</td>
+              <td>Discharged uninfected</td>
+              <td data-what="Discharged uninfected 2 Months Cohort" id="id-total-count26" style="text-align: center;">0</td>
+              <td data-what="Discharged uninfected 12 Months Cohort" id="id-total-count32" style="text-align: center;">0</td>
+              <td data-what="Discharged uninfected 24 Months Cohort" id="id-total-count38" style="text-align: center;">6</td>
+          </tr>
+          <tr>
+              <td>15</td>
+              <td>Started ART</td>
+              <td data-what="Started ART 2 Months Cohort" id="id-total-count27" style="text-align: center;">0</td>
+              <td data-what="Started ART 12 Months Cohort" id="id-total-count33" style="text-align: center;">0</td>
+              <td data-what="Started ART 24 Months Cohort" id="id-total-count39" style="text-align: center;">6</td>
+          </tr>
+          <tr>
+              <td>16</td>
+              <td>Transferred Out</td>
+              <td data-what="Transferred Out 2 Months Cohort" id="id-total-count28" style="text-align: center;">0</td>
+              <td data-what="Transferred Out 12 Months Cohort" id="id-total-count34" style="text-align: center;">0</td>
+              <td data-what="Transferred Out 24 Months Cohort" id="id-total-count40" style="text-align: center;">2</td>
+          </tr>
+          <tr>
+              <td>17</td>
+              <td>Defaulted</td>
+              <td data-what="Defaulted 2 Months Cohort" id="id-total-count29" style="text-align: center;">0</td>
+              <td data-what="Defaulted 12 Months Cohort" id="id-total-count35" style="text-align: center;">0</td>
+              <td data-what="Defaulted 24 Months Cohort" id="id-total-count41" style="text-align: center;">6</td>
+          </tr>
+          <tr>
+              <td>18</td>
+              <td>Died</td>
+              <td data-what="Died 2 Months Cohort" id="id-total-count30" style="text-align: center;">0</td>
+              <td data-what="Died 12 Months Cohort" id="id-total-count36" style="text-align: center;">0</td>
+              <td data-what="Died 24 Months Cohort" id="id-total-count42" style="text-align: center;">0</td>
+          </tr>
+      </table>
+
+      <br>
+      <p>For the page 12 moths cohort, select the children born in the indicated month 1 year ago. For the age 24 moths cohort, select the children born in the indicated month 2 years ago.</p>
+  </div>
+
+  <link rel="stylesheet" href="{% static 'css/eid.css' %}">
+  <style>
+      .tops {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          padding: 5px;
+          padding-top: 10px;
+          padding-left: 30px;
+      }
+
+      .word-container{
+        margin-top: 30px;
+      }
+
+    .table-container {
+      position: relative;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+    }
+
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #f8f9fa;
+    }
+
+    .spinner-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1100;
+      transition: opacity 0.3s ease;
+    }
     
-
-    <div class="word-container">
-       <h3>Exposed Child Under 24 Months - Monthly Follow-Up Reporting Form</h3>
-
-       <table class="table">
-            <tr>
-                <td width="5%">1</td>
-                <td width="20%">Clinic Name</td>
-                <td colspan="2">Lungwena Health Centre</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>Reporting year and month</td>
-                <td width="30%">
-                    <label for="year">Year</label>
-                    <select name="year" id="year">
-                        <option selected disabled>Select Reporting Year</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                    </select>
-                </td>
-                <td width="30%">
-                    <label for="month">Month</label>
-                    <select name="month" id="month">
-                        <option selected disabled>Select Reporting Month</option>
-                        <option value="jan">January</option>
-                        <option value="feb">February</option>
-                        <option value="mar">March</option>
-                        <option value="apr">April</option>
-                        <option value="may">May</option>
-                        <option value="jun">June</option>
-                        <option value="jul">July</option>
-                        <option value="aug">August</option>
-                        <option value="sep">September</option>
-                        <option value="oct">October</option>
-                        <option value="nov">November</option>
-                        <option value="dec">December</option>
-                    </select>
-                </td>
-            </tr>
-       </table>
-
-       <p>Selection of birth cohorts</p>
+    .spinner-container {
+      text-align: center;
+    }
     
-        <table id="cohort" class="table">
-            <tr>
-                <td colspan="2">Reporting Month</td>
-                <td class="period" data-id="1">Jan</td>
-                <td class="period" data-id="2">Feb</td>
-                <td class="period" data-id="3">Mar</td>
-                <td class="period" data-id="4">Apr</td>
-                <td class="period" data-id="5">May</td>
-                <td class="period" data-id="6">Jun</td>
-                <td class="period" data-id="7">Jul</td>
-                <td class="period" data-id="8">Aug</td>
-                <td class="period" data-id="9">Sep</td>
-                <td class="period" data-id="10">Oct</td>
-                <td class="period" data-id="11">Nov</td>
-                <td class="period" data-id="12">Dec</td>
-            </tr>
-             <tr>
-                <td></td>
-                <td>(circle)</td>
-                <td class="period" data-id="1">&darr;</td>
-                <td class="period" data-id="2">&darr;</td>
-                <td class="period" data-id="3">&darr;</td>
-                <td class="period" data-id="4">&darr;</td>
-                <td class="period" data-id="5">&darr;</td>
-                <td class="period" data-id="6">&darr;</td>
-                <td class="period" data-id="7">&darr;</td>
-                <td class="period" data-id="8">&darr;</td>
-                <td class="period" data-id="9">&darr;</td>
-                <td class="period" data-id="10">&darr;</td>
-                <td class="period" data-id="11">&darr;</td>
-                <td class="period" data-id="12">&darr;</td>
-            </tr>
-            <tr>
-                <td>Age 2 Months Cohort</td>
-                <td class="birth_cohorts">Birth Month</td>
-                <td class="period" data-id="1">Oct</td>
-                <td class="period" data-id="2">Nov</td>
-                <td class="period" data-id="3">Dec</td>
-                <td class="period" data-id="4">Jan</td>
-                <td class="period" data-id="5">Feb</td>
-                <td class="period" data-id="6">Mar</td>
-                <td class="period" data-id="7">Apr</td>
-                <td class="period" data-id="8">May</td>
-                <td class="period" data-id="9">Jun</td>
-                <td class="period" data-id="10">Jul</td>
-                <td class="period" data-id="11">Aug</td>
-                <td class="period" data-id="12">Sep</td>
-            </tr>
-            <tr>
-                <td>Age at 12 and 24m. cohort</td>
-                <td>Birth Month</td>
-                <td class="period" data-id="1">Nov</td>
-                <td class="period" data-id="2">Dec</td>
-                <td class="period" data-id="3">Jan</td>
-                <td class="period" data-id="4">Feb</td>
-                <td class="period" data-id="5">Mar</td>
-                <td class="period" data-id="6">Apr</td>
-                <td class="period" data-id="7">May</td>
-                <td class="period" data-id="8">Jun</td>
-                <td class="period" data-id="9">Jul</td>
-                <td class="period" data-id="10">Aug</td>
-                <td class="period" data-id="11">Sep</td>
-                <td class="period" data-id="12">Oct</td>
-            </tr>
-        </table>
+    .table-hover tbody tr {
+      transition: all 0.2s ease;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .badge-missed {
+      background-color: #ff6b6b;
+      color: white;
+    }
+    
+    .badge-upcoming {
+      background-color: #51cf66;
+      color: white;
+    }
+  </style>
 
-        <br/>
-        <table class="table">
-                <td style="border: none;" colspan="3" width="55%">Birth cohorts (current age)</td>
-                <td style="border: none; font-weight: bold; text-align: center;" width="15%">2 months</td>
-                <td style="border: none;font-weight: bold;text-align: center" width="15%">23 months</td>
-                <td style="border: none;font-weight: bold;text-align: center" width="15%">24 Months</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td colspan="2">Total registered in birth cohort</td>
-                <td id="id-count1" style="text-align: center;">13</td>
-                <td id="id-count2" style="text-align: center;">9</td>
-                <td id="id-count3" style="text-align: center;">8</td>
-            </tr>
-        </table>
-        <br/>
-        <p>Outcome status as of last visit</p>
-        <table class="table">
-            <tr>
-                <td width="5%">4</td>
-                <th style="text-align: center;" class="vertical-text" rowspan="4">HIV status</th>
-                <td width="40%">A: Confirmed uninfected</td>
-                <td style="text-align: center;" width="15%">9</td>
-                <td style="text-align: center;" width="15%">9</td>
-                <td style="text-align: center;" width="15%">6</td>
-            </tr>
-            <tr>
-                <td>5</td>
-                <td>B: Confirmed infected</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-            <tr>
-                <td>6</td>
-                <td>C: Not conf., not eligible for ART</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-            <tr>
-                <td>7</td>
-                <td>D: Not confirmed, PSHD → ART</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">9</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-        </table>
+  <script src="{% static 'js/eid.js' %}"></script>
+  <script src="{% static 'js/bootstrap.js'%}"></script>
 
-        <table class="table">
-            <tr>
-                <td width="5%">8</td>
-                <th style="text-align: center;" class="vertical-text" rowspan="3">ARV prophylaxis</th>
-                <td width="40%">NVP syrup (low risk)</td>
-                <td style="text-align: center;" width="15%">13</td>
-                <td style="text-align: center;" width="15%" class="black-cell"></td>
-                <td style="text-align: center;" width="15%" class="black-cell"></td>
-            </tr>
-            <tr>
-                <td>9</td>
-                <td>2P (high risk)</td>
-                <td style="text-align: center;">0</td>
-                <td class="black-cell"></td>
-                <td class="black-cell"></td>
-            </tr>
-            <tr>
-                <td>10</td>
-                <td>None</td>
-                <td style="text-align: center;">0</td>
-                <td class="black-cell"></td>
-                <td class="black-cell"></td>
-            </tr>
-        </table>
-        
-        <table class="table">
-            <tr>
-                <td width="5%">11</td>
-                <th style="text-align: center;" class="vertical-text" rowspan="2">CPT</th>
-                <td width="40%">On CPT</td>
-                <td style="text-align: center;" width="15%">13</td>
-                <td style="text-align: center;" width="15%">9</td>
-                <td style="text-align: center;" width="15%">0</td>
-            </tr>
-            <tr>
-                <td>12</td>
-                <td>Not on CPT</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">8</td>
-            </tr>
-        </table>
-
-        <table class="table">
-            <tr>
-                <td width="5%">13</td>
-                <th style="text-align: center;" class="vertical-text" rowspan="6">Primary Outcome</th>
-                <td width="40%">Continue follow-up</td>
-                <td style="text-align: center;" width="15%">13</td>
-                <td style="text-align: center;" width="15%">9</td>
-                <td style="text-align: center;" width="15%">0</td>
-            </tr>
-            <tr>
-                <td>14</td>
-                <td>Discharged uninfected</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-            <tr>
-                <td>15</td>
-                <td>Started ART</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-            <tr>
-                <td>16</td>
-                <td>Transferred Out</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">2</td>
-            </tr>
-            <tr>
-                <td>17</td>
-                <td>Defaulted</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">6</td>
-            </tr>
-            <tr>
-                <td>18</td>
-                <td>Died</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-                <td style="text-align: center;">0</td>
-            </tr>
-        </table>
-
-        <br>
-        <p>For the page 12 moths cohort, select the children born in the indicated month 1 year ago. For the age 24 moths cohort, select the children born in the indicated month 2 years ago.</p>
-    </div>
-
-<link rel="stylesheet" href="{% static 'css/eid.css' %}">
-<style>
-  .table-container {
-    position: relative;
-    overflow-y: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-  }
-
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #f8f9fa;
-  }
-
-  .spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1100;
-    transition: opacity 0.3s ease;
-  }
-  
-  .spinner-container {
-    text-align: center;
-  }
-  
-  .table-hover tbody tr {
-    transition: all 0.2s ease;
-  }
-  
-  .table-hover tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-  }
-  
-  .badge-missed {
-    background-color: #ff6b6b;
-    color: white;
-  }
-  
-  .badge-upcoming {
-    background-color: #51cf66;
-    color: white;
-  }
-</style>
-
-<script src="{% static 'js/eid.js' %}"></script>
-
-{% comment %} <script src="{% static 'pdfParser.js'}"></script>
-<script src="{% static 'js/milestone.js' %}"></script> {% endcomment %}
+  {% comment %} <script src="{% static 'pdfParser.js'}"></script>
+  <script src="{% static 'js/milestone.js' %}"></script> {% endcomment %}
 {% endblock %}

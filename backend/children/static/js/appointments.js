@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("defaulter-search-form");
   const defmiss = document.getElementById('defmiss')
   const what = defmiss.dataset.what
-  console.log(what);
   
 
 
@@ -18,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
       const url = form.dataset.url;
       const loadingSpinner = document.getElementById("loading-spinner");
+      const id = `osphyncodes_${startDate}${endDate}`
 
     //   if (endDate > today) {
     //       alert("End date cannot be greater than today.");
@@ -28,40 +28,48 @@ document.addEventListener("DOMContentLoaded", function () {
       submitButton.disabled = true;
       loadingSpinner.style.display = "flex";
 
-      try {
-          const response = await fetch(url, {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRFToken": csrfToken
-              },
-              body: JSON.stringify({
-                  start_date: startDate,
-                  end_date: endDate
-              }),
-          });
+      available = localStorage.getItem(id)     
 
-          if (!response.ok) {
-              const errorData = await response.json();
-              console.error("Error:", errorData.error || "Unknown error");
-              alert(errorData.error || "An error occurred");
-              return;
-          }
+      if(!available){
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                }),
+            });
 
-          const data = await response.json();
-          console.log(data.appointments); // Process your data here
-          // You might want to display the data in a table or something
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error:", errorData.error || "Unknown error");
+                alert(errorData.error || "An error occurred");
+                return;
+            }
 
-          renderResults(data)
+            const data = await response.json();
 
-      } catch (error) {
-          console.error("Network error:", error);
-          alert("Network error occurred");
-      } finally {
-          // Re-enable the submit button and hide spinner
-          submitButton.disabled = false;
-          loadingSpinner.style.display = "none";
+            setEncryptedItem(id, data)
+            renderResults(data)
+
+        } catch (error) {
+            console.error("Network error:", error);
+            alert("Network error occurred");
+        } finally {
+            // Re-enable the submit button and hide spinner
+            submitButton.disabled = false;
+            loadingSpinner.style.display = "none";
+        }
+      }else {
+        renderResults(getDecryptedItem(id))
+        submitButton.disabled = false;
+        loadingSpinner.style.display = "none";
       }
+      
   });
 
   
@@ -88,8 +96,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const defTile = document.getElementById('report_defaulter')
 
     var datas = clients.appointments
-
-    console.log(datas);
     
 
     if (datas.length === 0) {
@@ -110,12 +116,16 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${index + 1}</td>
           <td>${client.hcc_number}</td>
           <td>${client.child_name}</td>
-          <td>${client.child_dob}</td>
+          <td>${client.child_dob} (${client.age_in_months})</td>
           <td>${client.mother_art_number}</td>
           <td>${client.guardian_phone}</td>
           <td>${client.appointment_date}</td>
           <td>${client.action_needed}</td>
-          <td><button class="btn btn-primary">View</button></td>
+          <td>
+            <a href="${client.view_url}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-eye me-1"></i>View
+            </a>
+          </td>
         </tr>
       `;
     });
@@ -199,8 +209,6 @@ document.addEventListener("DOMContentLoaded", function () {
       downloadCSV('tables'); // Pass your table ID
   });
 });
-
-// Function to download CSV
 
 
 

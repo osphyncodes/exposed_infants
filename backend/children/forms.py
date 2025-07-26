@@ -1,5 +1,7 @@
 from django import forms
 from .models import Child, ChildVisit, HTSSample
+from datetime import date
+from django.core.exceptions import ValidationError
 
 class ChildForm(forms.ModelForm):
     class Meta:
@@ -60,6 +62,29 @@ class ChildVisitForm(forms.ModelForm):
             'art_number' : forms.NumberInput(attrs={'class' : 'form-control'}),
             'next_appointment_or_outcome_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        visit_date = cleaned_data.get('visit_date')
+        next_appointment_date = cleaned_data.get('next_appointment_or_outcome_date')
+        infection_status = cleaned_data.get('infection_status')
+        follow_up_outcome = cleaned_data.get('follow_up_outcome')
+
+        if not visit_date:
+            raise ValidationError('Visit date is a required fied')
+        
+        if visit_date > date.today():
+            raise ValidationError("Visit date cannot be greater than today")
+        
+        if follow_up_outcome and not next_appointment_date:
+            raise ValidationError('Outcome date is required for each selected outcome')
+        
+        if next_appointment_date <= visit_date:
+            raise ValidationError("Next Appointment date should be greater that visit date.")
+
+
+        return cleaned_data
+
 
     def __init__(self, *args, **kwargs):
         self.child = kwargs.pop('child', None)

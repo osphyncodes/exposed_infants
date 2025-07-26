@@ -1,6 +1,7 @@
 {% extends "children/base.html" %}
 {% load static %}
 {% load widget_tweaks %}
+{% load crispy_forms_tags %}
 
 {% block content %}
     <h2>Child Dashboard - Add Visit for ({{ child.child_name }})</h2>
@@ -8,80 +9,43 @@
 
 <div class="container mt-5">
 
-    <form method="post" class="row g-3 shadow p-4 bg-light rounded">
+    <form id="id_add_vist_form" method="post" class="row g-3 shadow p-4 bg-light rounded">
         {% csrf_token %}
 
-        <div class="col-md-6">
-            <label for="id_visit_date" class="form-label">Visit Date</label>
-            {{ form.visit_date|add_class:"form-control" }}
-        </div>
+        {% if form.errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
 
-        <div class="col-md-6">
-            <label for="id_height" class="form-label">Height (cm)</label>
-            {{ form.height|add_class:"form-control" }}
-        </div>
-
-    
-        <div class="col-md-6">
-            <label for="id_weight" class="form-label">Weight (kg)</label>
-            {{ form.weight|add_class:"form-control" }}
-        </div>
-
-
-        {% if not outcome_only and show_weight_muac %}
-        <div class="col-md-6">
-            <label for="id_muac" class="form-label">MUAC (cm)</label>
-            {{ form.muac|add_class:"form-control" }}
-        </div>
+                    {% for error in form.non_field_errors %}
+                    <li><strong>Error:</strong> {{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% endif %}
 
-        {% if not outcome_only %}
-        <div class="col-md-6">
-            <label for="id_wasting" class="form-label">Wasting</label>
-            {{ form.wasting|add_class:"form-select" }}
+        <div class="form_controls">
+            {{ form.visit_date|as_crispy_field }}
+            {{ form.height|as_crispy_field }}
+            {{ form.weight|as_crispy_field }}
+            {{ form.muac|as_crispy_field }}
+            {{ form.wasting|as_crispy_field }}
+            {{ form.breastfeeding|as_crispy_field }}
+            {{ form.mother_art_status|as_crispy_field }}
+            {{ form.clinical_monitoring|as_crispy_field }}
+            {{ form.hiv_testing|as_crispy_field }}
+            {{ form.infection_status|as_crispy_field }}
+            {{ form.drug_given|as_crispy_field }}
+            {{ form.cpt_given|as_crispy_field }}
+            {{ form.follow_up_outcome|as_crispy_field }}
+            {{ form.art_number|as_crispy_field }}
+            {{ form.next_appointment_or_outcome_date|as_crispy_field }}
         </div>
-        <div class="col-md-6">
-            <label for="id_breastfeeding" class="form-label">Breastfeeding</label>
-            {{ form.breastfeeding|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_mother_art_status" class="form-label">Mother ART Status</label>
-            {{ form.mother_art_status|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_clinical_monitoring" class="form-label">Clinical Monitoring</label>
-            {{ form.clinical_monitoring|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_hiv_testing" class="form-label">HIV Testing</label>
-            {{ form.hiv_testing|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_infection_status" class="form-label">Infection Status</label>
-            {{ form.infection_status|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_drug_given" class="form-label">Drug Given</label>
-            {{ form.drug_given|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_cpt_given" class="form-label">CPT Given (tabs)</label>
-            {{ form.cpt_given|add_class:"form-control" }}
-        </div>
-        {% endif %}
-        <div class="col-md-6">
-            <label for="id_follow_up_outcome" class="form-label">Follow-Up Outcome</label>
-            {{ form.follow_up_outcome|add_class:"form-select" }}
-        </div>
-        <div class="col-md-6" id="id_art_container">
-            <label for="id_follow_up_outcome" class="form-label">ART Number</label>
-            {{ form.art_number|add_class:"form-control" }}
-        </div>
-        <div class="col-md-6">
-            <label for="id_next_appointment_or_outcome_date" class="form-label">Next Appointment / Outcome Date</label>
-            {{ form.next_appointment_or_outcome_date|add_class:"form-control" }}
-        </div>
-
+            
         <div class="col-12 text-end">
             <button type="submit" class="btn btn-primary">Save Visit</button>
             <a href="{% url 'children:child_dashboard' child.hcc_number %}" class="btn btn-secondary">Cancel</a>
@@ -89,12 +53,31 @@
     </form>
 </div>
 
+<style>
+    .form_controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    .form-errors {
+    background-color: #ffe5e5;
+    border: 1px solid #cc0000;
+    color: #cc0000;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    }
+</style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const artNumberInput = document.querySelector('#id_art_number')
-        const artContainer = document.querySelector('#id_art_container')
+        const artContainer = document.querySelector('#div_id_art_number')
         const outcomeInput = document.querySelector('#id_follow_up_outcome')
+        const form_div = document.getElementById('id_add_vist_form')
 
+        form_div.style.display = 'grid'
         artContainer.style.display = "None" 
 
         outcomeInput.addEventListener('change', (event)=> {
