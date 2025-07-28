@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -152,177 +152,6 @@ def import_patient_data(request):
 def import_view(request):
     return render(request, 'pact/imports/regimen.html')
 
-
-def pact_dashboards(request):
-    today = timezone.now().date()
-    
-    # Common age annotation for all queries
-    age_annotation = {
-        'birth_month': ExtractMonth(F('birthdate')),
-        'birth_day': ExtractDay(F('birthdate')),
-        'current_month': ExtractMonth(Now()),
-        'current_day': ExtractDay(Now()),
-        'age': ExtractYear(Now()) - ExtractYear(F('birthdate')) - 
-            Case(
-                When(
-                    Q(birth_month__gt=F('current_month')) |
-                    (Q(birth_month=F('current_month')) & 
-                     Q(birth_day__gt=F('current_day'))),
-                    then=Value(1)
-                ),
-                default=Value(0),
-                output_field=IntegerField()
-            )
-    }
-
-    # 1. Total children < 20 years on ART
-    children_on_art = Patient.objects.under_age(20).filter(outcome = 'On antiretrovirals').count()
-    #children_on_art = Patient.objects.under_age(20).count()
-
-    # 2. Total children with recent VL results
-    recent_vl_count = LabResult.objects.filter(
-        result__isnull=False,
-        arv_number__in=Patient.objects.under_age(20).filter(outcome = 'On antiretrovirals').values('arv_number')
-    ).order_by('-order_date').values('arv_number').distinct().count()
-    
-    # 3. Total children with suppressed VL
-    suppressed_vl = LabResult.objects.filter(
-        result__isnull=False,
-        arv_number__in=Patient.objects.under_age(20).filter(outcome = 'On antiretrovirals').values('arv_number')
-    ).annotate(
-        clean_result=Replace(
-            Replace(
-                Replace('result', Value('='), Value('')), 
-                Value('<'), Value('')), 
-            Value('>'), Value(''))
-    ).filter(
-        Q(clean_result__iexact='LDL') | 
-        Q(clean_result__lt=1000)
-    ).values('arv_number').distinct().count()
-    
-    # 4. Total children with high VL
-    high_vl = LabResult.objects.filter(
-        result__isnull=False,
-        arv_number__in=Patient.objects.annotate(
-            **age_annotation
-        ).filter(age__lt=20).values('arv_number')
-    ).annotate(
-        clean_result=Replace(
-            Replace(
-                Replace('result', Value('='), Value('')), 
-                Value('<'), Value('')), 
-            Value('>'), Value(''))
-    ).exclude(
-        Q(clean_result__iexact='LDL') | 
-        Q(clean_result__lt=1000)
-    ).values('arv_number').distinct().count()
-    
-    # 5. Age band distribution
-    age_bands_high = [
-        ('0-4', (0, 4)),
-        ('5-9', (5, 9)),
-        ('10-14', (10, 14)),
-        ('15-19', (15, 19))
-    ]
-    
-    age_data = []
-    for label, (min_age, max_age) in age_bands_high:
-        # Get suppressed count for age band
-        suppressed = LabResult.objects.filter(
-            result__isnull=False,
-            arv_number__in=Patient.objects.annotate(
-                **age_annotation
-            ).filter(
-                age__gte=min_age,
-                age__lte=max_age
-            ).values('arv_number')
-        ).annotate(
-            clean_result=Replace(
-                Replace(
-                    Replace('result', Value('='), Value('')), 
-                    Value('<'), Value('')), 
-                Value('>'), Value(''))
-        ).filter(
-            Q(clean_result__iexact='LDL') | 
-            Q(clean_result__lt=1000)
-        ).count()
-        
-        # Get high VL count for age band
-        high = LabResult.objects.filter(
-            result__isnull=False,
-            arv_number__in=Patient.objects.annotate(
-                **age_annotation
-            ).filter(
-                age__gte=min_age,
-                age__lte=max_age
-            ).values('arv_number')
-        ).annotate(
-            clean_result=Replace(
-                Replace(
-                    Replace('result', Value('='), Value('')), 
-                    Value('<'), Value('')), 
-                Value('>'), Value(''))
-        ).exclude(
-            Q(clean_result__iexact='LDL') | 
-            Q(clean_result__lt=1000)
-        ).count()
-        
-        age_data.append({
-            'age_band': label,
-            'suppressed': suppressed,
-            'high_vl': high
-        })
-    
-    # 6. Gender distribution
-    gender_data = Patient.objects.annotate(
-        **age_annotation
-    ).filter(
-        age__lt=20
-    ).values('gender').annotate(
-        total=Count('id'),
-        suppressed=Count('labresult', filter=Q(
-            labresult__result__isnull=False,
-            labresult__result__regex=r'^(<|=)?(LDL|\d+)$',
-            labresult__result__in=['LDL', '<1000']
-        )),
-        high_vl=Count('labresult', filter=Q(
-            labresult__result__isnull=False
-        ) & ~Q(
-            labresult__result__in=['LDL', '<1000']
-        ))
-    )
-    
-    context = {
-        'children_on_art': children_on_art,
-        'recent_vl_count': recent_vl_count,
-        'suppressed_vl': suppressed_vl,
-        'high_vl': high_vl,
-        'age_data': age_data,
-        'gender_data': list(gender_data),
-        'high_vl_patients': LabResult.objects.filter(
-            result__isnull=False,
-            arv_number__in=Patient.objects.annotate(
-                **age_annotation
-            ).filter(age__lt=20).values('arv_number')
-        ).annotate(
-            clean_result=Replace(
-                Replace(
-                    Replace('result', Value('='), Value('')), 
-                    Value('<'), Value('')), 
-                Value('>'), Value(''))
-        ).exclude(
-            Q(clean_result__iexact='LDL') | 
-            Q(clean_result__lt=1000)
-        ).select_related('arv_number')[:50],
-        'pending_results': LabResult.objects.filter(
-            result__isnull=True,
-            arv_number__in=Patient.objects.annotate(
-                **age_annotation
-            ).filter(age__lt=20).values('arv_number')
-        ).order_by('-order_date').select_related('arv_number')[:50]
-    }
-    return render(request, 'pact/pact_dashboard.html', context)
-
 def pact_dashboard(request):
     # 1. Total children < 20 years on ART
     children = Patient.objects.filter(outcome = 'On antiretrovirals').all()
@@ -362,12 +191,9 @@ def pact_dashboard(request):
 
             arv_number = child.arv_number
 
-            latest_result = LabResult.objects.filter(
-                arv_number = arv_number
-            ).order_by('-order_date').first()
+            latest_result = child.results.order_by('-order_date').first()
 
-            curr_results = LabResult.objects.filter(
-                arv_number = arv_number,
+            curr_results = child.results.filter(
                 result__isnull = False
             ).order_by('-order_date').all()
 
@@ -532,7 +358,68 @@ def children_view(request):
     }
     return render(request, 'pact/children.html', context)
 
+def vl_status(result):
+    if result:
+        result = clean_string(result)
+        if can_convert_to_int(result):
+            if int(result) >= 1000:
+                High = True
+            else:
+                High = False
+        else:
+            if result == 'LDL':
+                High = False
+
+        return High
+    
+def consHigh(resultArray):
+    if resultArray and resultArray.count() >= 3:
+        consCount = 0
+
+        for result in resultArray[:3]:
+            
+            resultyo = clean_string(result.result)
+            print(resultyo)
+            if can_convert_to_int(resultyo):
+                if int(resultyo) >= 1000:
+                    consCount += 1
+
+
+        if consCount == 3:
+            return True
+        else:
+            return False
+    
+
 @login_required
 def children_dashboard_view(request, art_number):
+    child = get_object_or_404(Patient, arv_number=art_number)
 
-    return render(request, 'pact/child_dashboard.html')
+    results = child.results.order_by('-order_date')
+    recent_result = results.filter(result__isnull = False).first()
+    result = recent_result.result
+    status = vl_status(result)
+    p = child.guardians.filter(type = 'Primary')
+    s = child.guardians.filter(type = 'Secondary')
+
+    consArray = results.filter(result__isnull = False)
+
+    conshigh = consHigh(consArray)
+
+    context = {
+        'child': child,
+        'age': child.age(),
+        'regimen': child.regimens.first(),
+        'p': p.first(),
+        's': s.first(),
+        'results': results.all(),
+        'village': child.village.first(),
+        'school': child.school.first(),
+        'months_on_art': child.months_on_art(),
+        'high': status,
+        'recent_result': result,
+        'surveys': child.surveys,
+        'conshigh': conshigh
+
+    }
+    return render(request, 'pact/child_dashboard.html', context)

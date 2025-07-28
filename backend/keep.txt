@@ -1,0 +1,24 @@
+            
+
+            
+
+            patient = Patient.objects.filter(art_number = arv_num).first()
+            print(patient)
+            return
+            lab_result = cls(
+                patient=patient,
+                accession_number=cls.clean_accession_number(row.get('Accession #', '')),
+                status=cls.clean_result_value(row.get('Status', '')),
+                order_date=cls.parse_date(row.get('Order Date', '')),
+                result=cls.clean_result_value(row.get('Result', '')),
+                date_received=cls.parse_date(row.get('Date received', '')),
+                mode_of_delivery=cls.clean_result_value(row.get('Mode of Delivery', '')),
+                test_reason=cls.clean_result_value(row.get('Test reason', '')),
+                tat_days=int(row['TAT(Days)']) if row.get('TAT(Days)') and row['TAT(Days)'].isdigit() else None
+            )
+            to_create.append(lab_result)
+
+        # Bulk create all valid records
+        with transaction.atomic():
+            cls.objects.bulk_create(to_create)
+            results['created'] = len(to_create)

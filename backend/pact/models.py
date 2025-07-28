@@ -47,6 +47,7 @@ class Patient(models.Model):
     ]
     
     arv_number = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=255, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     birthdate = models.DateField()
     outcome = models.CharField(max_length=50, choices=OUTCOME_CHOICES)
@@ -56,9 +57,21 @@ class Patient(models.Model):
 
     objects = PatientManager()
 
+    def __str__(self):
+        return f"{self.arv_number} DOB:{self.birthdate} Gender: {self.gender}"
+
     def age(self):
         today = date.today()
         return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+
+
+    def months_on_art(self):
+        today = date.today()
+        months = (today.year - self.art_start_date.year) * 12 + today.month - self.art_start_date.month
+        if today.day < self.art_start_date.day:
+            months -= 1
+        return max(0, months)
+
 
     @classmethod
     def parse_date(cls, date_str):
@@ -159,12 +172,7 @@ class LabResult(models.Model):
         ('Follow-up', 'Follow-up'),
     ]
     
-    arv_number = models.ForeignKey(
-        'Patient',
-        to_field='arv_number',
-        on_delete=models.CASCADE,
-        db_column='arv_number'
-    )
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='results')
     accession_number = models.CharField(max_length=20)
     status = models.CharField(max_length=50, blank=True, null=True)
     order_date = models.DateField()
@@ -287,81 +295,64 @@ class LabResult(models.Model):
             'errors': []
         }
 
-        try:
-            # First delete ALL existing records
-            with transaction.atomic():
-                deleted_count, _ = cls.objects.all().delete()
-                results['deleted'] = deleted_count
 
-            # Then import all new records from CSV
-            file_content = csv_file.read().decode('utf-8')
-            reader = csv.DictReader(StringIO(file_content))
-            
-            to_create = []
-            
-            for row in reader:
-                try:
-                    arv_num = cls.parse_arv_number(row.get('ARV#', ''))
-                    if not arv_num:
-                        results['errors'].append({
-                            'row': row,
-                            'error': "Invalid ARV number"
-                        })
-                        continue
+        # First delete ALL existing records
+        with transaction.atomic():
+            deleted_count, _ = cls.objects.all().delete()
+            results['deleted'] = deleted_count
 
-                    # Check patient exists (if needed)
-                    if not Patient.objects.filter(arv_number=arv_num).exists():
-                        results['errors'].append({
-                            'row': row,
-                            'error': f"Patient ARV#{arv_num} not found"
-                        })
-                        continue
+        # Then import all new records from CSV
+        file_content = csv_file.read().decode('utf-8')
+        reader = csv.DictReader(StringIO(file_content))
+        
+        to_create = []
+        
+        for row in reader:
+            arv_num = cls.parse_arv_number(row.get('ARV#', ''))
 
-                    # Create new record
-                    lab_result = cls(
-                        arv_number_id=arv_num,
-                        accession_number=cls.clean_accession_number(row.get('Accession #', '')),
-                        status=cls.clean_result_value(row.get('Status', '')),
-                        order_date=cls.parse_date(row.get('Order Date', '')),
-                        result=cls.clean_result_value(row.get('Result', '')),
-                        date_received=cls.parse_date(row.get('Date received', '')),
-                        mode_of_delivery=cls.clean_result_value(row.get('Mode of Delivery', '')),
-                        test_reason=cls.clean_result_value(row.get('Test reason', '')),
-                        tat_days=int(row['TAT(Days)']) if row.get('TAT(Days)') and row['TAT(Days)'].isdigit() else None
-                    )
-                    to_create.append(lab_result)
-                    
-                except Exception as e:
+            if arv_num:
+                patient = Patient.objects.filter(arv_number = arv_num)
+
+                # Check patient exists (if needed)
+                if not patient.exists():
                     results['errors'].append({
                         'row': row,
-                        'error': str(e)
+                        'error': f"Patient ARV#{arv_num} not found"
                     })
                     continue
 
-            # Bulk create all valid records
-            with transaction.atomic():
-                cls.objects.bulk_create(to_create)
-                results['created'] = len(to_create)
+                lab_result = cls(
+                    patient=patient.first(),
+                    accession_number=cls.clean_accession_number(row.get('Accession #', '')),
+                    status=cls.clean_result_value(row.get('Status', '')),
+                    order_date=cls.parse_date(row.get('Order Date', '')),
+                    result=cls.clean_result_value(row.get('Result', '')),
+                    date_received=cls.parse_date(row.get('Date received', '')),
+                    mode_of_delivery=cls.clean_result_value(row.get('Mode of Delivery', '')),
+                    test_reason=cls.clean_result_value(row.get('Test reason', '')),
+                    tat_days=int(row['TAT(Days)']) if row.get('TAT(Days)') and row['TAT(Days)'].isdigit() else None
+                )
 
-            return results
+                to_create.append(lab_result)
 
-        except Exception as e:
-            results['errors'].append({
-                'error': f"File processing error: {str(e)}"
-            })
-            return results
+            else:
+                results['errors'].append({
+                    'row': row,
+                    'error': "Invalid ARV number"
+                })
+                continue
+
+        with transaction.atomic():
+            cls.objects.bulk_create(to_create)
+            results['created'] = len(to_create)
+        return results
         
 class Regimen(models.Model):
-    
-    arv_number = models.ForeignKey(
-        'Patient',
-        to_field='arv_number',
-        on_delete=models.CASCADE,
-        db_column='arv_number'
-    )
+    patient=models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="regimens")
     gender = models.CharField(max_length=20)
     weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     regimen = models.CharField(max_length=5, blank=True, null=True)
+    arvs = models.CharField(max_length=255)
 
     class Meta:
         db_table = 'regimen'
@@ -425,7 +416,8 @@ class Regimen(models.Model):
                         continue
 
                     # Check patient exists (if needed)
-                    if not Patient.objects.filter(arv_number=arv_num).exists():
+                    patient = Patient.objects.filter(arv_number = arv_num)
+                    if not patient.exists():
                         results['errors'].append({
                             'row': row,
                             'error': f"Patient ARV#{arv_num} not found"
@@ -434,10 +426,11 @@ class Regimen(models.Model):
 
                     # Create new record
                     lab_result = cls(
-                        arv_number_id=arv_num,
+                        patient = patient.first(),
                         gender=row.get('Gender', ''),
                         weight=row.get('Weight(Kg)', ''),
                         regimen=row.get('Curr.Reg', ''),
+                        arvs=row.get('ARVs')
                     )
                     to_create.append(lab_result)
                     
@@ -488,7 +481,7 @@ class Staff(models.Model):
     cadre = models.CharField(max_length=255, choices=CADRE_CHOICES)
 
     def __str__(self):
-        return f"{self.name}, Position: {self.cadre}"
+        return f"{self.name}"
 
 class Survey(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name= 'surveys')
@@ -613,6 +606,7 @@ class Guardian(models.Model):
     type = models.CharField(max_length=9, choices=GUARDIAN_TYPE_CHOICES)
     name = models.CharField(max_length=255)
     birthdate = models.DateField()
+    contact = models.CharField(max_length=10, null=True)
     GENDER_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female')
@@ -628,8 +622,14 @@ class Guardian(models.Model):
         ('Unknown', 'Unknown')
     ]
 
+    vl_status = models.CharField(max_length=255, null=True, choices=VL_STATUS_CHOICES)
+
     def __str__(self):
         return f"{self.name}, Type: {self.type}"
+    
+    def age(self):
+        today = date.today()
+        return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
     
 class BoardingType(models.TextChoices):
     SELF_BOARDING = 'self_boarding', 'Self-Boarding'
@@ -667,8 +667,8 @@ class School(models.Model):
 
 class village(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='village')
-    name = models.CharField(max_length=255),
-    chw = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    chw = models.ForeignKey(Staff, on_delete=models.SET_NULL, related_name='villages', null=True)
 
     def __str__(self):
         return f"{self.name}: Assigned CHW: {self.chw}"
