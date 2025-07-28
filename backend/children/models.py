@@ -1,10 +1,10 @@
 from django.db import models
 
 class Child(models.Model):
-    hcc_number = models.CharField(max_length=20, primary_key=True)
+    hcc_number = models.IntegerField(primary_key=True)
     child_name = models.CharField(max_length=200)
     child_dob = models.DateField()
-
+ 
     CHILD_GENDER_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female')

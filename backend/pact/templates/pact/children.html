@@ -1,9 +1,88 @@
 {% extends 'pact/base.html' %}
 
 {% block content %}
+{% load static %}
 <div class="container mt-4">
-    <h2>Children</h2>
-    <div class="alert alert-info">This page is a placeholder. Please use the <a href="{% url 'pact:pact_dashboard' %}">Dashboard</a> section for full children features.</div>
-    <p>Children management will be available here soon. Please check back later.</p>
+    {% comment %} <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Children Management</h2>
+        <a href="{% url 'children:add_child' %}" class="btn btn-primary">Add New Child</a>
+    </div> {% endcomment %}
+
+    <form method="post" class="row g-3 mb-4">
+        {% csrf_token %}
+        <div class="col-md-5">
+            <input type="text" id='id_search_value' name="query" class="form-control" placeholder="Enter search value" value="{{ request.GET.query }}" required>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success w-100">Search</button>
+        </div>
+    </form>
+
+<form method="get" class="mb-3 d-flex align-items-center">
+    <label for="per_page" class="me-2">Rows per page:</label>
+    <select name="per_page" id="per_page" class="form-select w-auto me-2" onchange="this.form.submit()">
+        <option value="10" {% if per_page == '10' %}selected{% endif %}>10</option>
+        <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
+        <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
+        <option value="all" {% if per_page == 'all' %}selected{% endif %}>Show All</option>
+    </select>
+</form>
+
+<table class="table table-bordered" id="id-children-table">
+    <thead>
+        <tr>
+            <th>ART #</th>
+            <th>Gender</th>
+            <th>DOB</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody data-url="{% url 'pact:children' %}" data-view = "{% url 'pact:child_dashboard' 1106 %}" >
+        {% for child in page_obj %}
+        <tr>
+            <td>{{ child.arv_number }}</td>
+            <td>{{ child.gender }}</td>
+            <td>{{ child.birthdate }}</td>
+            <td>
+                <a href="{% url 'pact:child_dashboard' child.arv_number %}" class="btn btn-sm btn-primary">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No children found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination controls -->
+{% if is_paginated %}
+<nav aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}&per_page={{ per_page }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 </div>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% endblock %}

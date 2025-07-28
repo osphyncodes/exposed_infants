@@ -1,0 +1,504 @@
+{% extends 'pact/base.html'%}
+{% load static %}
+
+{% block content %}
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --info-color: #36b9cc;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+            font-size: 0.875rem;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        .header-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #224abe 100%);
+            color: white;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+        }
+        
+        .info-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.35em 0.65em;
+        }
+        
+        .info-item {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-label {
+            width: 140px;
+            font-weight: 600;
+            color: #5a5c69;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        .nav-pills .nav-link {
+            color: #5a5c69;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-good {
+            background-color: var(--success-color);
+        }
+        
+        .status-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .status-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .quick-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            flex: 1;
+            margin: 0 0.5rem;
+            padding: 1rem;
+            border-radius: 0.35rem;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-card:first-child {
+            margin-left: 0;
+        }
+        
+        .stat-card:last-child {
+            margin-right: 0;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        .table-responsive {
+            border-radius: 0.35rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #5a5c69;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            margin-right: 0.25rem;
+        }
+    </style>
+
+    <div class="dashboard-container">
+        <!-- Header with Patient Info -->
+        <div class="header-card p-3 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-1"><i class="fas fa-child me-2"></i> Patient: John Doe</h4>
+                    <div class="d-flex flex-wrap">
+                        <div class="me-3"><strong>ART:</strong> ART-12345678</div>
+                        <div class="me-3"><strong>Age:</strong> 8 years</div>
+                        <div class="me-3"><strong>Gender:</strong> Male</div>
+                        <div><strong>Location:</strong> Mlimani Village</div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="badge bg-light text-dark me-2"><i class="fas fa-user-nurse me-1"></i> CHW: Jane Doe</span>
+                    <span class="badge bg-light text-dark"><i class="fas fa-school me-1"></i> STD 4 (Boarding)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card" style="background-color: var(--primary-color);">
+                <div><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-value">5.2 yrs</div>
+                <div class="stat-label">On ART</div>
+            </div>
+            <div class="stat-card" style="background-color: var(--info-color);">
+                <div><i class="fas fa-weight"></i></div>
+                <div class="stat-value">28.5 kg</div>
+                <div class="stat-label">Current Weight</div>
+            </div>
+            <div class="stat-card" style="background-color: var(--warning-color);">
+                <div><i class="fas fa-percentage"></i></div>
+                <div class="stat-value">85%</div>
+                <div class="stat-label">Adherence</div>
+            </div>
+            <div class="stat-card" style="background-color: var(--danger-color);">
+                <div><i class="fas fa-virus"></i></div>
+                <div class="stat-value">1,250</div>
+                <div class="stat-label">Viral Load</div>
+            </div>
+            <div class="stat-card" style="background-color: var(--success-color);">
+                <div><i class="fas fa-clipboard-check"></i></div>
+                <div class="stat-value">3</div>
+                <div class="stat-label">PACT Surveys</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-4">
+                <!-- Treatment Overview -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-pills me-2"></i>Treatment Overview</span>
+                        <span class="badge bg-success info-badge">Active</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">Regimen</div>
+                            <div class="info-value">ABC/3TC/Dolutegravir</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Start Date</div>
+                            <div class="info-value">15/03/2018</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Last Visit</div>
+                            <div class="info-value">12/05/2023 <span class="text-muted">(2 weeks ago)</span></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Next Appointment</div>
+                            <div class="info-value text-danger">26/05/2023 <span class="text-muted">(Overdue)</span></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Adherence</div>
+                            <div class="info-value">
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 85%"></div>
+                                </div>
+                                <small class="text-muted">3 missed doses this month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guardians -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user-friends me-2"></i>Guardians
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills mb-3" id="guardian-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="primary-tab" data-bs-toggle="pill" data-bs-target="#primary" type="button">Primary</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="secondary-tab" data-bs-toggle="pill" data-bs-target="#secondary" type="button">Secondary</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="primary">
+                                <div class="info-item">
+                                    <div class="info-label">Name</div>
+                                    <div class="info-value">Mary Johnson</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Relationship</div>
+                                    <div class="info-value">Mother</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Contact</div>
+                                    <div class="info-value">+255 123 456 789</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">HIV Status</div>
+                                    <div class="info-value">
+                                        <span class="status-indicator status-good"></span>
+                                        On ART (ART-87654321)
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">VL Status</div>
+                                    <div class="info-value">
+                                        <span class="badge bg-success info-badge">Suppressed</span>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-2">
+                                    <button class="btn btn-sm btn-outline-primary action-btn"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger action-btn"><i class="fas fa-trash"></i> Remove</button>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="secondary">
+                                <div class="info-item">
+                                    <div class="info-label">Name</div>
+                                    <div class="info-value">John Johnson</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Relationship</div>
+                                    <div class="info-value">Father</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Contact</div>
+                                    <div class="info-value">+255 987 654 321</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">HIV Status</div>
+                                    <div class="info-value">
+                                        <span class="status-indicator status-danger"></span>
+                                        Negative
+                                    </div>
+                                </div>
+                                <div class="text-end mt-2">
+                                    <button class="btn btn-sm btn-outline-primary action-btn"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger action-btn"><i class="fas fa-trash"></i> Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column -->
+            <div class="col-lg-4">
+                <!-- Viral Load History -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chart-line me-2"></i>Viral Load History</span>
+                        <span class="badge bg-danger info-badge">High VL</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Result</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-danger">
+                                        <td>20/04/2023</td>
+                                        <td>1,250</td>
+                                        <td><span class="badge bg-danger">High</span></td>
+                                    </tr>
+                                    <tr class="table-danger">
+                                        <td>15/01/2023</td>
+                                        <td>980</td>
+                                        <td><span class="badge bg-danger">High</span></td>
+                                    </tr>
+                                    <tr class="table-danger">
+                                        <td>10/10/2022</td>
+                                        <td>1,500</td>
+                                        <td><span class="badge bg-danger">High</span></td>
+                                    </tr>
+                                    <tr class="table-success">
+                                        <td>18/06/2022</td>
+                                        <td>Undetectable</td>
+                                        <td><span class="badge bg-success">Suppressed</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-warning mt-2 p-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>3 consecutive high VL results detected
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case Management -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-medical me-2"></i>Case Management
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">Last Presented</div>
+                            <div class="info-value">02/05/2023</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Recommendations</div>
+                            <div class="info-value">Enhanced adherence counseling, consider regimen switch</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Action Plan</div>
+                            <div class="info-value">
+                                <ul class="mb-0 ps-3">
+                                    <li>Conduct 3 PACT surveys</li>
+                                    <li>Schedule genotype test</li>
+                                    <li>CHW home visit</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm btn-primary action-btn"><i class="fas fa-plus"></i> Add Note</button>
+                            <button class="btn btn-sm btn-outline-primary action-btn"><i class="fas fa-share"></i> Present Case</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Adherence Interventions -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-clipboard-check me-2"></i>Adherence Interventions</span>
+                        <span class="badge bg-success info-badge">3 Completed</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info p-2 mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Intensive adherence counseling required
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>10/05/2023</td>
+                                        <td>PACT Survey</td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>03/05/2023</td>
+                                        <td>PACT Survey</td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25/04/2023</td>
+                                        <td>PACT Survey</td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                    </tr>
+                                    <tr class="table-warning">
+                                        <td>15/04/2023</td>
+                                        <td>CHW Home Visit</td>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm btn-primary action-btn"><i class="fas fa-plus"></i> Add Survey</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Genotype Testing -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-dna me-2"></i>Genotype Testing</span>
+                        <span class="badge bg-warning info-badge">Pending</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-warning">
+                                        <td>22/04/2023</td>
+                                        <td>High VL</td>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25/03/2021</td>
+                                        <td>Baseline</td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm btn-primary action-btn"><i class="fas fa-plus"></i> Request Test</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Menu -->
+        <div class="card mt-3">
+            <div class="card-body p-2">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-user-shield me-1"></i> Assign CHW</button>
+                        <button class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-school me-1"></i> School Info</button>
+                        <button class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-dna me-1"></i> Genotype</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-primary"><i class="fas fa-print me-1"></i> Print Summary</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock%}

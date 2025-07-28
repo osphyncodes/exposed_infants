@@ -35,6 +35,10 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Application definition
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can use Redis as a broker
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

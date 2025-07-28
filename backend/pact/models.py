@@ -46,7 +46,7 @@ class Patient(models.Model):
         ('Male', 'Male'),
     ]
     
-    arv_number = models.PositiveIntegerField(unique=True, validators=[MinValueValidator(1)])
+    arv_number = models.IntegerField(primary_key=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     birthdate = models.DateField()
     outcome = models.CharField(max_length=50, choices=OUTCOME_CHOICES)
@@ -55,6 +55,10 @@ class Patient(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = PatientManager()
+
+    def age(self):
+        today = date.today()
+        return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
 
     @classmethod
     def parse_date(cls, date_str):
@@ -141,7 +145,6 @@ class Patient(models.Model):
             })
             return results
     
-
 class LabResult(models.Model):
     MODE_CHOICES = [
         ('Email', 'Email'),
@@ -348,7 +351,6 @@ class LabResult(models.Model):
             })
             return results
         
-
 class Regimen(models.Model):
     
     arv_number = models.ForeignKey(
@@ -458,4 +460,215 @@ class Regimen(models.Model):
                 'error': f"File processing error: {str(e)}"
             })
             return results
-            
+
+class Genotype(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name= 'genotypes') 
+    application_date = models.DateField()
+    REASON_CHOICES = [
+        ('Treatment failure', 'Treatment failur'),
+        ('Targeted', 'Targeted')
+    ]   
+    reason = models.CharField(max_length=50, choices=REASON_CHOICES)
+    RESULT_CHOICES = [
+        ('Resistance Detected', 'Resistance Detected'),
+        ('Resistance Not Detected', 'Resistance Not Detected')
+    ] 
+    result = models.CharField(max_length=50, choices=RESULT_CHOICES, null=True, blank=True)
+    result_date = models.DateField(null=True, blank=True)
+
+class Staff(models.Model):
+    name = models.CharField(max_length=255)
+    CADRE_CHOICES = [
+        ('Coordinator', 'Coordinator'),
+        ('Supervisor', 'Supervisor'),
+        ('Statistcal Clerk', 'Statistical Clerk'),
+        ('HDA/Treatment Supporter', 'HDA/Treatment Supporter'),
+        ('Treatment Supporter', 'Treatment Supporter')
+    ]
+    cadre = models.CharField(max_length=255, choices=CADRE_CHOICES)
+
+    def __str__(self):
+        return f"{self.name}, Position: {self.cadre}"
+
+class Survey(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name= 'surveys')
+    survey_date = models.DateField()
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, related_name='surveys')
+    guardian_presence = models.BooleanField()
+    adherence_challenges = models.TextField()
+    psychosocial_issues = models.TextField(null=True, blank=True)
+    home_environment = models.TextField(null=True, blank=True)
+    school_issues = models.TextField(null=True, blank=True)
+    proposed_solutions = models.TextField(null=True, blank=True)
+    action_plan = models.TextField(null=True, blank=True)
+    follow_up_date = models.DateField(null=True, blank= True)
+
+    def __str__(self):
+        return f"{self.survey_date}"
+
+class Presentation(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name= 'presentations')
+    presentation_date = models.DateField()
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, related_name='presentations')
+    experts_present = models.TextField()
+    feedback = models.TextField()
+    follow_up_actions = models.TextField()
+    follow_up_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.presentation_date} Experts Present: {self.experts_present}"
+
+class Relationship(models.TextChoices):
+    # Family - by blood
+    MOTHER = 'mother', 'Mother'
+    FATHER = 'father', 'Father'
+    SON = 'son', 'Son'
+    DAUGHTER = 'daughter', 'Daughter'
+    BROTHER = 'brother', 'Brother'
+    SISTER = 'sister', 'Sister'
+    GRANDFATHER = 'grandfather', 'Grandfather'
+    GRANDMOTHER = 'grandmother', 'Grandmother'
+    GRANDSON = 'grandson', 'Grandson'
+    GRANDDAUGHTER = 'granddaughter', 'Granddaughter'
+    UNCLE = 'uncle', 'Uncle'
+    AUNT = 'aunt', 'Aunt'
+    NEPHEW = 'nephew', 'Nephew'
+    NIECE = 'niece', 'Niece'
+    COUSIN = 'cousin', 'Cousin'
+
+    # Family - by marriage
+    HUSBAND = 'husband', 'Husband'
+    WIFE = 'wife', 'Wife'
+    STEPFATHER = 'stepfather', 'Stepfather'
+    STEPMOTHER = 'stepmother', 'Stepmother'
+    STEPSON = 'stepson', 'Stepson'
+    STEPDAUGHTER = 'stepdaughter', 'Stepdaughter'
+    STEPBROTHER = 'stepbrother', 'Stepbrother'
+    STEPSISTER = 'stepsister', 'Stepsister'
+    FATHER_IN_LAW = 'father_in_law', 'Father-in-law'
+    MOTHER_IN_LAW = 'mother_in_law', 'Mother-in-law'
+    BROTHER_IN_LAW = 'brother_in_law', 'Brother-in-law'
+    SISTER_IN_LAW = 'sister_in_law', 'Sister-in-law'
+    SON_IN_LAW = 'son_in_law', 'Son-in-law'
+    DAUGHTER_IN_LAW = 'daughter_in_law', 'Daughter-in-law'
+    EX_HUSBAND = 'ex_husband', 'Ex-husband'
+    EX_WIFE = 'ex_wife', 'Ex-wife'
+
+    # Romantic
+    BOYFRIEND = 'boyfriend', 'Boyfriend'
+    GIRLFRIEND = 'girlfriend', 'Girlfriend'
+    FIANCE = 'fiance', 'Fiancé/Fiancée'
+    PARTNER = 'partner', 'Partner'
+    SIGNIFICANT_OTHER = 'significant_other', 'Significant Other'
+    EX_PARTNER = 'ex_partner', 'Ex-Partner'
+
+    # Social
+    FRIEND = 'friend', 'Friend'
+    BEST_FRIEND = 'best_friend', 'Best Friend'
+    NEIGHBOR = 'neighbor', 'Neighbor'
+    ROOMMATE = 'roommate', 'Roommate'
+    CLASSMATE = 'classmate', 'Classmate'
+    TEAMMATE = 'teammate', 'Teammate'
+    COMPANION = 'companion', 'Companion'
+    MENTOR = 'mentor', 'Mentor'
+    MENTEE = 'mentee', 'Mentee'
+
+    # Professional
+    BOSS = 'boss', 'Boss'
+    COLLEAGUE = 'colleague', 'Colleague'
+    EMPLOYEE = 'employee', 'Employee'
+    CLIENT = 'client', 'Client'
+    SUPERVISOR = 'supervisor', 'Supervisor'
+    INTERN = 'intern', 'Intern'
+    CONTRACTOR = 'contractor', 'Contractor'
+    BUSINESS_PARTNER = 'business_partner', 'Business Partner'
+
+    # Education
+    TEACHER = 'teacher', 'Teacher'
+    STUDENT = 'student', 'Student'
+    PRINCIPAL = 'principal', 'Principal'
+    TUTOR = 'tutor', 'Tutor'
+    ADVISOR = 'advisor', 'Advisor'
+
+    # Healthcare
+    PRIMARY_CAREGIVER = 'primary_caregiver', 'Primary Caregiver'
+    LEGAL_GUARDIAN = 'legal_guardian', 'Legal Guardian'
+    EMERGENCY_CONTACT = 'emergency_contact', 'Emergency Contact'
+    HEALTHCARE_PROXY = 'healthcare_proxy', 'Healthcare Proxy'
+    SOCIAL_WORKER = 'social_worker', 'Social Worker'
+    DOCTOR = 'doctor', 'Doctor'
+    NURSE = 'nurse', 'Nurse'
+
+    # Legal
+    POWER_OF_ATTORNEY = 'power_of_attorney', 'Power of Attorney'
+    TRUSTEE = 'trustee', 'Trustee'
+    EXECUTOR = 'executor', 'Executor'
+
+class Guardian(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='guardians')
+    GUARDIAN_TYPE_CHOICES = [
+        ('Primary', 'Primary'),
+        ('Secondary', 'Secondary')
+    ]
+    type = models.CharField(max_length=9, choices=GUARDIAN_TYPE_CHOICES)
+    name = models.CharField(max_length=255)
+    birthdate = models.DateField()
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female')
+    ]
+    relationship = models.CharField(max_length=255, choices=Relationship.choices)
+    on_art = models.BooleanField()
+    facility = models.CharField(max_length=255)
+    art_number = models.IntegerField()
+
+    VL_STATUS_CHOICES = [
+        ('Suppressed', 'Suppressed'),
+        ('High', 'High'),
+        ('Unknown', 'Unknown')
+    ]
+
+    def __str__(self):
+        return f"{self.name}, Type: {self.type}"
+    
+class BoardingType(models.TextChoices):
+    SELF_BOARDING = 'self_boarding', 'Self-Boarding'
+    FULL_BOARDING = 'full_boarding', 'Full Boarding'
+    DAY_SCHOLAR = 'day_scholar', 'Day Scholar'
+    WEEKLY_BOARDING = 'weekly_boarding', 'Weekly Boarding'
+    PARTIAL_BOARDING = 'partial_boarding', 'Partial Boarding'
+
+class schoolLevel(models.TextChoices):
+    STD_1 = 'STD 1', 'Standard 1'
+    STD_2 = 'STD 2', 'Standard 2'
+    STD_3 = 'STD 3', 'Standard 3'
+    STD_4 = 'STD 4', 'Standard 4'
+    STD_5 = 'STD 5', 'Standard 5'
+    STD_6 = 'STD 6', 'Standard 6'
+    STD_7 = 'STD 7', 'Standard 7'
+    STD_8 = 'STD 8', 'Standard 8'
+
+    # Secondary School
+    FORM_1 = 'FORM 1', 'Form 1'
+    FORM_2 = 'FORM 2', 'Form 2'
+    FORM_3 = 'FORM 3', 'Form 3'
+    FORM_4 = 'FORM 4', 'Form 4'
+
+    College = 'College'
+
+class School(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='school')
+    school = models.CharField(max_length=255, null=True, blank=True)
+    level = models.CharField(max_length=11, choices=schoolLevel.choices)
+    boarding_type = models.CharField(max_length=255, choices=BoardingType.choices)
+
+    def __str__(self):
+        return f"{self.school}, Level: {self.level}, Boarding Type: {self.boarding_type}"
+
+class village(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='village')
+    name = models.CharField(max_length=255),
+    chw = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name}: Assigned CHW: {self.chw}"

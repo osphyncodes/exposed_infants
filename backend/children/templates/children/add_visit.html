@@ -32,7 +32,9 @@
             {{ form.visit_date|as_crispy_field }}
             {{ form.height|as_crispy_field }}
             {{ form.weight|as_crispy_field }}
+            {%if form.muac%}
             {{ form.muac|as_crispy_field }}
+            {% endif%}
             {{ form.wasting|as_crispy_field }}
             {{ form.breastfeeding|as_crispy_field }}
             {{ form.mother_art_status|as_crispy_field }}
@@ -77,6 +79,7 @@
         const outcomeInput = document.querySelector('#id_follow_up_outcome')
         const form_div = document.getElementById('id_add_vist_form')
 
+        document.getElementById('id_visit_date').focus()
         form_div.style.display = 'grid'
         artContainer.style.display = "None" 
 

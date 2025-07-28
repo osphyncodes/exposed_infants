@@ -5,6 +5,7 @@ app_name = "pact"
 urlpatterns = [
     path('', views.pact_dashboard, name='pact_dashboard'),
     path('children/', views.children_view, name='children'),
+    path('children/chidren_dashboard/<str:art_number>/', views.children_dashboard_view, name='child_dashboard'),
     path('reports/', views.reports, name='reports'),
     path('reminders/', views.reminders, name='reminders'),
     path('import-export/', views.import_export, name='import_export'),
