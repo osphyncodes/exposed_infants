@@ -361,7 +361,7 @@
                 <!-- Viral Load History -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-chart-line me-2"></i>Viral Load History</span>
+                        <span><i class="fas fa-chart-line me-2"></i>Viral Load History ({{results.count}})</span>
                         <span class="badge bg-danger info-badge">High VL</span>
                     </div>
                     <div class="card-body">
@@ -395,29 +395,34 @@
                 </div>
 
                 <!-- Case Management -->
+
                 <div class="card">
                     <div class="card-header">
-                        <i class="fas fa-file-medical me-2"></i>Case Management
+                        <i class="fas fa-file-medical me-2"></i>Case Presentation ({{presentations.count}})
                     </div>
+                    
                     <div class="card-body">
+                        {% for p in presentations|slice:":1"%}
                         <div class="info-item">
                             <div class="info-label">Last Presented</div>
-                            <div class="info-value">02/05/2023</div>
+                            <div class="info-value">{{p.presentation_date}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Recommendations</div>
-                            <div class="info-value">Enhanced adherence counseling, consider regimen switch</div>
+                            <div class="info-value">{{p.feedback}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Action Plan</div>
                             <div class="info-value">
-                                <ul class="mb-0 ps-3">
+                                {% comment %} <ul class="mb-0 ps-3">
                                     <li>Conduct 3 PACT surveys</li>
                                     <li>Schedule genotype test</li>
                                     <li>CHW home visit</li>
-                                </ul>
+                                </ul> {% endcomment %}
+                                {{p.follow_up_actions}}
                             </div>
                         </div>
+                        {% endfor %}
                         <div class="text-end mt-2">
                             <button class="btn btn-sm btn-primary action-btn"><i class="fas fa-plus"></i> Add Note</button>
                             <button class="btn btn-sm btn-outline-primary action-btn"><i class="fas fa-share"></i> Present Case</button>
@@ -431,43 +436,30 @@
                 <!-- Adherence Interventions -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-clipboard-check me-2"></i>Adherence Interventions</span>
-                        <span class="badge bg-success info-badge">3 Completed</span>
+                        <span><i class="fas fa-clipboard-check me-2"></i>PACT Surveys ({{surveys.count}})</span>
+                        {% comment %} <span class="badge bg-success info-badge">3 Completed</span> {% endcomment %}
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info p-2 mb-3">
+                        {% comment %} <div class="alert alert-info p-2 mb-3">
                             <i class="fas fa-info-circle me-2"></i>Intensive adherence counseling required
-                        </div>
+                        </div> {% endcomment %}
                         <div class="table-responsive">
                             <table class="table table-sm table-hover">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
-                                        <th>Type</th>
-                                        <th>Status</th>
+                                        <th>Person Conducting</th>
+                                        <th>Guardian Present?</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for s in surveys%}
                                     <tr>
-                                        <td>10/05/2023</td>
-                                        <td>PACT Survey</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>{{s.survey_date}}</td>
+                                        <td>{{s.staff}}</td>
+                                        <td>{{s.guardian_presence}}</td>
                                     </tr>
-                                    <tr>
-                                        <td>03/05/2023</td>
-                                        <td>PACT Survey</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>25/04/2023</td>
-                                        <td>PACT Survey</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
-                                    </tr>
-                                    <tr class="table-warning">
-                                        <td>15/04/2023</td>
-                                        <td>CHW Home Visit</td>
-                                        <td><span class="badge bg-warning">Pending</span></td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -490,20 +482,19 @@
                                     <tr>
                                         <th>Date</th>
                                         <th>Reason</th>
-                                        <th>Status</th>
+                                        <th>Result</th>
+                                        <th>Result Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for g in genotypes %}
                                     <tr class="table-warning">
-                                        <td>22/04/2023</td>
-                                        <td>High VL</td>
-                                        <td><span class="badge bg-warning">Pending</span></td>
+                                        <td>{{g.application_date}}</td>
+                                        <td>{{g.reason}}</td>
+                                        <td>{{g.result}}</td>
+                                        <td>{{g.result_date}}</td>
                                     </tr>
-                                    <tr>
-                                        <td>25/03/2021</td>
-                                        <td>Baseline</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>

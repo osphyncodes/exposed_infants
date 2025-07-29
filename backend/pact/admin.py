@@ -3,7 +3,7 @@ from .models import *
 
 class PatientAdmin(admin.ModelAdmin):
     search_fields = ('arv_number', 'name')
-    
+
 admin.site.register(
     [
         village, 
@@ -11,7 +11,8 @@ admin.site.register(
         Survey,
         School,
         Staff,
-        Guardian
+        Guardian,
+        Genotype
     ]
 )
 

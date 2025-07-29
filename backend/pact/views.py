@@ -418,8 +418,11 @@ def children_dashboard_view(request, art_number):
         'months_on_art': child.months_on_art(),
         'high': status,
         'recent_result': result,
-        'surveys': child.surveys,
-        'conshigh': conshigh
+        'surveys': child.surveys.all(),
+        'conshigh': conshigh,
+        'presentations': child.presentations.order_by('-presentation_date'),
+        's_count': child.presentations.order_by('-presentation_date').count(),
+        'genotypes':child.genotypes.all()
 
     }
     return render(request, 'pact/child_dashboard.html', context)
