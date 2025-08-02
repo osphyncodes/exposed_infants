@@ -54,8 +54,19 @@ INSTALLED_APPS = [
     'tingathe_tools',  # Optional: if you have custom tools
     'crispy_forms',
     'crispy_bootstrap5',
-    'art'
+    'art',
+    'teen_club',
+    'django_select2'
 ]
+
+SELECT2_CACHE_BACKEND = 'default'
+
+# If you don't have cache configured, add this:
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # 0985772677
 

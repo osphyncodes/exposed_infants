@@ -11,8 +11,10 @@ colorama==0.4.6
 crispy-bootstrap5==2025.6
 cryptography==45.0.5
 Django==5.2.4
+django-appconf==1.1.0
 django-cors-headers==4.7.0
 django-crispy-forms==2.4
+django-select2==8.4.1
 django-widget-tweaks==1.5.0
 djangorestframework==3.16.0
 kombu==5.5.4

@@ -1,6 +1,168 @@
+{% load static %}
 
-<ul>
-    {% for patient in patients %}
-        <li>ARV Number: {{ patient.arv_number }} Gender: {{patient.gender}}</li>
-    {% endfor %}
-</ul>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css'%}">
+    <style>
+        .main-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .top-section {
+            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            padding: 20px;
+        }
+
+        .top-section form {
+            width: 100%;
+        }
+
+        table th, table td {
+            font-size: 16px;
+        }
+
+        .top-section form input {
+            width: 100%;
+            height: 80px;
+            font-size: xx-large;
+        }
+
+        .middle-section {
+            display: grid;
+            top: 120px;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            padding: 20px;
+            overflow: scroll;
+        }
+
+        .middle-section .buttons {
+            position: absolute;
+            top: 120px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            border: solid 1px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .middle-section .resultss {
+            position: absolute;
+            left: 300px;
+            top: 120px;
+            overflow: scroll;
+        }
+
+        .middle-section  button {
+            width: 60px;
+            height: 60px;
+            font-size: large;
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .middle-section  button:active {
+            background-color: rgb(9, 9, 65);
+        }
+
+        .middle-section  button:nth-child(10) {
+            background-color: red;
+        }
+
+        .middle-section  button:nth-child(10):active {
+            background-color: rgb(159, 0, 0);
+        }
+
+        .middle-section  button:nth-child(12) {
+            background-color: green;
+        }
+
+         .middle-section  button:nth-child(12):active {
+            background-color: rgb(1, 85, 1);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="top-section">
+            <form action="">
+                <input data-url="{% url 'art:index'%}" type="number" id="search" name="search" placeholder="search" disabled>
+            </form>
+        </div>
+        <div class="middle-section">
+            <div class="buttons">
+                <button class="button">1</button>
+                <button class="button">2</button>
+                <button class="button">3</button>
+                <button class="button">4</button>
+                <button class="button">5</button>
+                <button class="button">6</button>
+                <button class="button">7</button>
+                <button class="button">8</button>
+                <button class="button">9</button>
+                <button class="button">Del</button>
+                <button class="button">0</button>
+                <button class="button">Enter</button>
+            </div>
+
+            <div class="resultss">
+                <h3 id="patient_details">Search Client</h3>
+                <hr>
+                <div class="Viral_Load">
+                    <h3>Viral Load</h3>
+                    <table class="table table-striped" id="resultsTable">
+                        <thead >
+                            <tr>
+                                <th>Order Date</th>
+                                <th>Result</th>
+                                <th>Result Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="visit">
+                    <h3>Visit History</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vist Date</th>
+                                <th>VL Draw</th>
+                                <th>Regimen</th>
+                                <th>ART Given</th>
+                                <th>Next Appointment Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitsbody">
+                            <tr></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'art/index.js'%}"></script>
+</body>
+</html>

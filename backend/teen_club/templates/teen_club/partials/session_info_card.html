@@ -1,0 +1,26 @@
+<div class="card shadow-sm h-100">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Session Information</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Date:</dt>
+            <dd class="col-sm-8">{{ object.session_date|date:"F j, Y" }}</dd>
+            
+            <dt class="col-sm-4">Teen Range:</dt>
+            <dd class="col-sm-8">{{ object.teen_range }}</dd>
+            
+            <dt class="col-sm-4">Session Type:</dt>
+            <dd class="col-sm-8">{{ object.session_type }}</dd>
+            
+            <dt class="col-sm-4">Facilitator:</dt>
+            <dd class="col-sm-8">{{ object.facilitator|default:"Not specified" }}</dd>
+            
+            <dt class="col-sm-4">Duration:</dt>
+            <dd class="col-sm-8">{{ object.duration }} minutes</dd>
+            
+            <dt class="col-sm-4">Notes:</dt>
+            <dd class="col-sm-8">{{ object.notes|default:"No notes"|linebreaks }}</dd>
+        </dl>
+    </div>
+</div>

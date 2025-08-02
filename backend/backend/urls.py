@@ -31,5 +31,7 @@ urlpatterns = [
     path('accounts/login/', app_selector, name="app_selector"),
     path('select-app/', app_selector, name='app_selector'),
     path('tingathe_tools/', include('tingathe_tools.urls')),
-    path('art/', include('art.urls'))
+    path('art/', include('art.urls')),
+    path('teen_club/', include('teen_club.urls')),
+    path('select2/', include('django_select2.urls')),
 ]

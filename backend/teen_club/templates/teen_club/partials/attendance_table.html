@@ -1,0 +1,64 @@
+<div class="card-header bg-white">
+    <h5 class="card-title mb-0">Attendance List</h5>
+</div>
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover attendance-table">
+           <thead>
+                <tr>
+                    <th>Birth Year</th>
+                    <th>ARV Number</th>
+                    <th>Patient Name</th>
+                    <th>New in Teen</th>
+                    <th>Purpose</th>
+                    <th>Guardian</th>
+                    <th>School</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>VL Drawn</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                <tr>
+                    <td>{{ attendance.patient.birthdate|date:"Y" }}</td>
+                    <td>{{ attendance.patient.arv_number }}</td>
+                    <td>{{ attendance.patient.name }}</td>
+                    <td>
+                        {% if attendance.new_in_teen %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ attendance.purpose }}</td>
+                    <td>
+                        {% if attendance.guardian_present %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ attendance.school }}</td>
+                    <td>{{ attendance.patient.gender }}</td>
+                    <td>{{ attendance.patient.age }}</td>
+                    <td>
+                        {% if attendance.vl_drawn %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ attendance.arrived_at|time:"H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" class="text-center py-4">No attendance recorded yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>

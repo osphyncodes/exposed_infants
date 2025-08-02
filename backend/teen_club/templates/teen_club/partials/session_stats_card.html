@@ -1,0 +1,33 @@
+<div class="card shadow-sm h-100">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Session Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-6 mb-3">
+                <div class="stat-card bg-light-primary">
+                    <h6 class="text-muted">Total Attendance</h6>
+                    <h3>{{ object.total_attendance }}</h3>
+                </div>
+            </div>
+            <div class="col-6 mb-3">
+                <div class="stat-card bg-light-success">
+                    <h6 class="text-muted">New Patients</h6>
+                    <h3>{{ new_patients }}</h3>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card bg-light-info">
+                    <h6 class="text-muted">Guardians Present</h6>
+                    <h3>{{ guardians_present }}</h3>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card bg-light-warning">
+                    <h6 class="text-muted">VL Drawn</h6>
+                    <h3>{{ vl_drawn }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

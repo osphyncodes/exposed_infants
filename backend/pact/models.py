@@ -71,6 +71,9 @@ class Patient(models.Model):
         if today.day < self.art_start_date.day:
             months -= 1
         return max(0, months)
+    
+    def get_year(self):
+        return self.birthdate.year
 
 
     @classmethod
@@ -84,7 +87,6 @@ class Patient(models.Model):
         two_digit_year = today.strftime("%y")
 
         day, month, year = date_str.split('-')
-        print(two_digit_year)
 
         year = int(year) + (2000 if int(year) <= int(two_digit_year) else 1900)
         return datetime(year, month_map[month], int(day)).date()
@@ -118,16 +120,29 @@ class Patient(models.Model):
                     arv_number = int(row['ARV Number'])
                     patient_data = {
                         'gender': row['Gender'],
+                        'name': row['name'],
                         'birthdate': cls.parse_date(row['Birthdate']),
                         'outcome': row['Outcome'],
                         'art_start_date': cls.parse_date(row['Art start date'])
                     }
-                    
+
                     if arv_number in existing_patients:
                         existing = existing_patients[arv_number]
+                        updated = False
+
+                        # Update name only if missing in model and available in CSV
+                        if (not existing.name) and patient_data['name']:
+                            existing.name = patient_data['name']
+                            existing.save()
+                            updated = True
+
+                        # Update outcome if different
                         if existing.outcome != patient_data['outcome']:
-                            for field, value in patient_data.items():
-                                setattr(existing, field, value)
+                            existing.outcome = patient_data['outcome']
+                            existing.save()
+                            updated = True
+
+                        if updated:
                             to_update.append(existing)
                             results['updated'] += 1
                         else:
@@ -135,13 +150,14 @@ class Patient(models.Model):
                     else:
                         to_create.append(cls(arv_number=arv_number, **patient_data))
                         results['created'] += 1
-                        
+
                 except Exception as e:
                     results['errors'].append({
                         'row': row,
                         'error': str(e)
                     })
                     continue
+
             
             # Bulk operations
             with transaction.atomic():
@@ -186,6 +202,9 @@ class LabResult(models.Model):
 
     class Meta:
         db_table = 'lab_results'
+
+    def __str__(self):
+        return f"{self.patient.arv_number}, {self.order_date}"
 
     @classmethod
     def parse_arv_number(cls, arv_string):

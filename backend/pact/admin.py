@@ -4,6 +4,10 @@ from .models import *
 class PatientAdmin(admin.ModelAdmin):
     search_fields = ('arv_number', 'name')
 
+class LabAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['patient']
+    search_fields = ['order_date']
+
 admin.site.register(
     [
         village, 
@@ -12,11 +16,12 @@ admin.site.register(
         School,
         Staff,
         Guardian,
-        Genotype
+        Genotype,
     ]
 )
 
 admin.site.register(Patient, PatientAdmin)
+admin.site.register(LabResult, LabAdmin)
 
 
 # Register your models here.
