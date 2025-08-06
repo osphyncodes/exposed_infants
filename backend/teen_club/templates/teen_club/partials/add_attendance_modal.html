@@ -14,14 +14,29 @@
                         <label for="art_number" class="form-label">ART Number</label>
                         <input data-url="{% url 'sessions:search_name' %}" type="number" class="form-control" id="art_number" name="art_number" placeholder="Enter ART Number" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="name_name" class="form-label">Name Display as you type</label>
-                        <input type="text" class="form-control" id="name_name" name="name">
-                    </div>
+                    <hr>
+                    <class class="row">
+                        <p>Display as you Type</p>
+                        <div class="col-md-4 mb-3">
+                            <label for="name_name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name_name" name="name" disabled>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="text" class="form-control" id="age" name="age" disabled>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="gender" class="form-label">Gender</label>
+                            <input type="text" class="form-control" id="gender" name="gender" disabled>
+                        </div>
+                        
+                    </class>
+                    <hr>
                     <div class="mb-3">
                         <label for="village" class="form-label">Village</label>
                         <input type="text" class="form-control" id="village" name="village" required>
                     </div>
+                    
                     <!-- Purpose and School Fields -->
                     <div class="row">
                         <div class="col-md-6 mb-3">

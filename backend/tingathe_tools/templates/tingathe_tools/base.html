@@ -1,0 +1,21 @@
+{% comment %} {% extends "base.html" %} {% endcomment %}
+
+
+{% load static %}
+
+{% block content %}
+
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% block page_title %}{% endblock %}</h1>
+        <ol class="breadcrumb">
+            {% block breadcrumbs %}{% endblock %}
+        </ol>
+    </div>
+    
+    {% include 'tingathe_tools/messages.html' %}
+    
+    {% block tingathe_content %}{% endblock %}
+</div>
+{% endblock %}

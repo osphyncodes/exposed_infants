@@ -382,24 +382,9 @@ def children_views(request):
     # Get per_page from GET
     per_page = request.GET.get('per_page', '10')
 
-    if per_page == 'all':
-        page_obj = children_list  # Not paginated
-        is_paginated = False
-    else:
-        try:
-            per_page = per_page
-        except ValueError:
-            per_page = '10'
-            # per_page = 10
-        paginator = Paginator(children_list, per_page)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        is_paginated = True
 
     context = {
-        'page_obj': page_obj,
-        'per_page': per_page,
-        'is_paginated': is_paginated,
+        'page_obj': children_list,
     }
     return render(request, 'children/children.html', context)
 

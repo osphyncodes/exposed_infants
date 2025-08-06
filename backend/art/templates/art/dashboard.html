@@ -1,0 +1,194 @@
+{% comment %} {% extends 'base.html' %} {% endcomment %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user mr-2"></i>{{ patient.name }} ({{ patient.arv_number }})
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Gender:</strong> {{ patient.gender }}</p>
+                            <p><strong>Birthdate:</strong> {{ patient.birthdate }}</p>
+                            <p><strong>ART Start Date:</strong> {{ patient.art_start_date }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Current Outcome:</strong> {{ patient.outcome }}</p>
+                            <p><strong>Last Updated:</strong> {{ patient.updated_at }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="fas fa-calendar-check mr-2"></i>Visit History ({{visits.count}})</h4>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addVisitModal">
+                    <i class="fas fa-plus mr-2"></i>Add New Visit
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="visitsTable">
+                    <thead class="thead-dark">
+                        <tr> 
+                            <th>Visit Date</th>
+                            <th>Visit Type</th>
+                            <th>Weight</th>
+                            <th>Height</th>
+                            <th>BP</th>
+                            <th>Side Effect</th>
+                            <th>TB Status</th>
+                            <th>Actions</th> <!-- Make sure this matches the number of tds -->
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for visit in visits %}
+                        <tr>
+                            <td>{{ visit.visit_date }}</td>
+                            <td>{{ visit.visit_type }}</td>
+                            <td>{{ visit.weight|default_if_none:"-" }}</td>
+                            <td>{{ visit.height|default_if_none:"-" }}</td>
+                            <td>{{ visit.bp|default_if_none:"-" }}</td>
+                            <td>{{ visit.get_side_effect_display }}</td>
+                            <td>{{ visit.get_tab_status_display }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-visit" 
+                                        data-id="{{ visit.id }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editVisitModal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-visit" 
+                                        data-id="{{ visit.id }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteVisitModal">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No visits recorded yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Visit Modal -->
+<div class="modal fade" id="addVisitModal" tabindex="-1" aria-labelledby="addVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addVisitModalLabel">Add New Visit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'art/partials/add_visit.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Visit Modal -->
+<div class="modal fade" id="editVisitModal" tabindex="-1" role="dialog" aria-labelledby="editVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editVisitModalLabel">Edit Visit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="editVisitModalBody">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteVisitModal" tabindex="-1" role="dialog" aria-labelledby="deleteVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteVisitModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="deleteVisitModalBody">
+                Are you sure you want to delete this visit?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="#" class="btn btn-danger" id="confirmDelete">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/jquery.js'%}"></script>
+<script src="{% static 'js/dataTables.js'%}"></script>
+<script src="{% static 'js/dataTables2.js'%}"></script>
+<script src="{% static 'js/bootstrap.js'%}"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable with basic configuration
+    var visitsTable = $('#visitsTable').DataTable({
+        responsive: true,
+        paging: false,       // Disable pagination completely
+        info: false,         // Hide "Showing X of Y entries"
+        searching: true,     // Keep search functionality
+        ordering: true,      // Keep sorting functionality
+        order: [[0, 'desc']] // Sort by visit date descending by default
+    });
+
+    // Handle edit visit button click
+    // Using event delegation to work with dynamically added rows
+    $('#visitsTable').on('click', '.edit-visit', function() {
+        alert(2)
+        return
+        var visitId = $(this).data('id');
+        var url = "{% url 'art:edit_visit' 0 %}".replace('0', visitId);
+        
+        $.get(url, function(data) {
+            $('#editVisitModalBody').html(data);
+        }).fail(function() {
+            $('#editVisitModalBody').html('<div class="alert alert-danger">Error loading form</div>');
+        });
+    });
+
+    // Handle delete visit button click
+    // Using event delegation
+    $('#visitsTable').on('click', '.delete-visit', function() {
+        alert(1)
+        var visitId = $(this).data('id');
+        var deleteUrl = "{% url 'art:delete_visit' 0 %}".replace('0', visitId);
+        $('#confirmDelete').attr('href', deleteUrl);
+    });
+
+    const delButton = document.getElementById('confirmDelete')
+
+    delButton.addEventListener('click', ()=>{
+        alert(1)
+    })
+});
+{% endblock %}

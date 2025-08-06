@@ -1,0 +1,105 @@
+{% extends "tingathe_tools/base.html" %}
+{% load static %}
+
+{% block title %}Tingathe Tools{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Tingathe Tools</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tingathe_tools:tingathe_tools_index' %}">Home</a></li>
+        </ol>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Client Card Module -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Client Card Module</div>
+                            <div class="mb-0 font-weight-bold text-gray-800">
+                                <p>Track client cards with 3 categories:</p>
+                                <ul>
+                                    <li>HVL Client Card</li>
+                                    <li>Back to Care Client Card</li>
+                                    <li>New Initiation Client Card</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'tingathe_tools:client_card_list' %}" class="btn btn-primary btn-icon-split">
+                            <span class="icon text-white-50">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                            <span class="text">Go to Client Cards</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Child ICT Module -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Child ICT Module</div>
+                            <div class="mb-0 font-weight-bold text-gray-800">
+                                <p>Track women on ART (≥15 years) and their biological children (<20 years):</p>
+                                <ul>
+                                    <li>Record children's HIV status</li>
+                                    <li>Mark completion when all children have known status</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-child fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'tingathe_tools:child_ict_list' %}" class="btn btn-success btn-icon-split">
+                            <span class="icon text-white-50">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                            <span class="text">Go to Child ICT</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Card -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">Progress Dashboard</h6>
+                </div>
+                <div class="card-body">
+                    <p>View overall progress and statistics for both modules:</p>
+                    <a href="{% url 'tingathe_tools:dashboard' %}" class="btn btn-info btn-icon-split">
+                        <span class="icon text-white-50">
+                            <i class="fas fa-chart-line"></i>
+                        </span>
+                        <span class="text">View Dashboard</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

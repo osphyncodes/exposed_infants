@@ -1,0 +1,61 @@
+{% extends "tingathe_tools/base.html" %}
+{% load static %}
+
+{% block page_title %}Client Cards{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'tingathe_tools:tingathe_tools_index' %}">Tingathe Tools</a></li>
+<li class="breadcrumb-item active" aria-current="page">Client Cards</li>
+{% endblock %}
+
+{% block tingathe_content %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Client Cards</h6>
+        <div>
+            <a href="#" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#filterModal">
+                <i class="fas fa-filter fa-sm"></i> Filter
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Card Type</th>
+                        <th>Date Opened</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for card in cards %}
+                    <tr>
+                        <td>{{ card.patient.first_name }} {{ card.patient.last_name }}</td>
+                        <td>{{ card.get_card_type_display }}</td>
+                        <td>{{ card.date_opened|date:"Y-m-d" }}</td>
+                        <td>
+                            <span class="badge badge-{% if card.status == 'COMPLETED' %}success{% elif card.status == 'IN_PROGRESS' %}warning{% else %}danger{% endif %}">
+                                {{ card.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'tingathe_tools:client_card_update' card.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No client cards found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

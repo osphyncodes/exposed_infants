@@ -1,0 +1,85 @@
+<form method="post" action="{% url 'art:edit_visit' visit.id %}">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.visit_date.id_for_label }}">Visit Date</label>
+                {{ form.visit_date }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.visit_type.id_for_label }}">Visit Type</label>
+                {{ form.visit_type }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.weight.id_for_label }}">Weight (kg)</label>
+                {{ form.weight }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.height.id_for_label }}">Height (cm)</label>
+                {{ form.height }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.bp.id_for_label }}">Blood Pressure</label>
+                {{ form.bp }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.side_effect.id_for_label }}">Side Effect</label>
+                {{ form.side_effect }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.tab_status.id_for_label }}">TB Status</label>
+                {{ form.tab_status }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.viral_load.id_for_label }}">Viral Load</label>
+                {{ form.viral_load }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.pill_count.id_for_label }}">Pill Count</label>
+                {{ form.pill_count }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.regimen.id_for_label }}">Regimen</label>
+                {{ form.regimen }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.arv_given.id_for_label }}">ARV Given</label>
+                {{ form.arv_given }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.cpt_given.id_for_label }}">CPT Given</label>
+                {{ form.cpt_given }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.tpt_given.id_for_label }}">TPT Given</label>
+                {{ form.tpt_given }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="{{ form.tpt_amount.id_for_label }}">TPT Amount</label>
+                {{ form.tpt_amount }}
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="{{ form.next_outcome_date.id_for_label }}">Next Outcome Date</label>
+        {{ form.next_outcome_date }}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Update Visit</button>
+    </div>
+</form>

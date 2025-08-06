@@ -180,6 +180,7 @@ def search_patient(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         art_number = data.get('art_number')
+
         if art_number != '':
             patient = Patient.objects.filter(arv_number = art_number).first()
         else:
@@ -190,16 +191,22 @@ def search_patient(request):
 
         if patient:
             name = patient.name
+            gender = patient.gender
+            age = patient.age()
 
         if not patient:
             return JsonResponse({
                 'status': 'success',
-                'name': 'Not Found'
+                'name': 'Not Found',
+                'gender': 'Not Found',
+                'age': 'Not Found'
             })
 
         return JsonResponse({
                 'status': 'success',
-                'name': name
+                'name': name,
+                'gender': gender,
+                'age': age
             })
 
 

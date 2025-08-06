@@ -60,4 +60,4 @@ class ChildVisit(models.Model):
             models.UniqueConstraint(fields=['patient', 'visit_date'], name='unique_patient_visit')
         ]
     def __str__(self):
-        return f"{self.patient.arv_number}, Visit Date: {self.visit_date}"
+        return f"{self.patient.arv_number}: {self.patient.name}, Visit Date: {self.visit_date}"

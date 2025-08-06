@@ -58,7 +58,7 @@ class Patient(models.Model):
     objects = PatientManager()
 
     def __str__(self):
-        return f"{self.arv_number} DOB:{self.birthdate} Gender: {self.gender}"
+        return f"{self.arv_number}: {self.name}, DOB:{self.birthdate} Gender: {self.gender}"
 
     def age(self):
         today = date.today()
@@ -200,6 +200,8 @@ class LabResult(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def arv(self):
+        return self.patient.arv_number
     class Meta:
         db_table = 'lab_results'
 

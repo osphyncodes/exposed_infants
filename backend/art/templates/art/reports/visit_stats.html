@@ -1,0 +1,28 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<h3 id="table_title">Total Visits </h3>
+<table class="table table-bordered" id="id-children-table">
+    <thead>
+        <tr>
+            <th>ART #</th>
+            <th>Age</th>
+            <th>Visit Date</th>
+        </tr>
+    </thead>
+    <tbody data-url="{% url 'pact:children' %}" data-view = "{% url 'pact:child_dashboard' 1106 %}" >
+        {% for visit in visits %}
+        <tr>
+            <td>{{ visit.patient.arv_number }}</td>
+            <td>{{ visit.patient.age }}</td>
+            <!-- <td>{{ visit.visit_date }}</td> -->
+            <td>{{ visit.visit_date|date:"d/M/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No children found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script src="{% static 'js/functions.js' %}"></script>
+<script>
+    makeTableInteractive('id-children-table', 'table_title')
+</script>

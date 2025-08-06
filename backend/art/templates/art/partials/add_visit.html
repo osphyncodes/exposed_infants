@@ -1,0 +1,120 @@
+<form method="post" action="{% url 'art:add_visit' patient.arv_number %}" class="needs-validation" novalidate>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.visit_date.id_for_label }}" class="form-label">Visit Date</label>
+                {{ form.visit_date }}
+                <div class="invalid-feedback">
+                    Please provide a valid visit date.
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.visit_type.id_for_label }}" class="form-label">Visit Type</label>
+                {{ form.visit_type }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.weight.id_for_label }}" class="form-label">Weight (kg)</label>
+                {{ form.weight }}
+                <div class="invalid-feedback">
+                    Please provide a valid weight.
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.height.id_for_label }}" class="form-label">Height (cm)</label>
+                {{ form.height }}
+                <div class="invalid-feedback">
+                    Please provide a valid height.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.bp.id_for_label }}" class="form-label">Blood Pressure</label>
+                {{ form.bp }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.side_effect.id_for_label }}" class="form-label">Side Effect</label>
+                {{ form.side_effect }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.tab_status.id_for_label }}" class="form-label">TB Status</label>
+                {{ form.tab_status }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.viral_load.id_for_label }}" class="form-label">Viral Load</label>
+                {{ form.viral_load }}
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.pill_count.id_for_label }}" class="form-label">Pill Count</label>
+                {{ form.pill_count }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.regimen.id_for_label }}" class="form-label">Regimen</label>
+                {{ form.regimen }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.arv_given.id_for_label }}" class="form-label">ARV Given</label>
+                {{ form.arv_given }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.cpt_given.id_for_label }}" class="form-label">CPT Given</label>
+                {{ form.cpt_given }}
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.tpt_given.id_for_label }}" class="form-label">TPT Given</label>
+                {{ form.tpt_given }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="{{ form.tpt_amount.id_for_label }}" class="form-label">TPT Amount</label>
+                {{ form.tpt_amount }}
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="{{ form.next_outcome_date.id_for_label }}" class="form-label">Next Outcome Date</label>
+        {{ form.next_outcome_date }}
+        <div class="invalid-feedback">
+            Please provide a valid next outcome date.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save Visit</button>
+    </div>
+</form>
+
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function () {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  var forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>

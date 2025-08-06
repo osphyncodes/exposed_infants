@@ -1,0 +1,53 @@
+{% extends 'pact/base.html' %}
+
+{% block content %}
+{% load static %}
+<div class="container mt-4">
+    <h2>VL Register</h2>
+    <hr/>
+    <div class="card-header bg-white">
+        <h5 id='table_title' class="card-title mb-0">Total</h5>
+    </div>
+    <hr/>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="id-vl-register-table">
+                <thead>
+                    <tr>
+                        <th>ARV#</th>
+                        <th>Accession #</th>
+                        <th>Status</th>
+                        <th>Order Date</th>
+                        <th>Result</th>
+                        <th>Date received</th>
+                        <th>Mode of Delivery</th>
+                        <th>Test reason</th>
+                        <th>Comments</th>
+                        <th>TAT(Days)</th>
+                    </tr>
+                </thead>
+                <tbody id = 'vl_reg_tbody' data-url="{% url 'pact:vl_register' %}" >
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.arv }}</td>
+                        <td>{{ result.accession_number}}</td>
+                        <td>{{ result.status }}</td>
+                        <td>{{ result.order_date }}</td>
+                        <td>{{ result.result }}</td>
+                        <td>{{ result.date_received }}</td>
+                        <td>{{ result.mode_of_delivery }}</td>
+                        <td>{{ result.test_reason }}</td>
+                        <td>{{ result.tat_days }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8">No children found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/functions.js' %}"></script>
+<script src="{% static 'pact/js/vl_register.js' %}"></script>
+{% endblock %}

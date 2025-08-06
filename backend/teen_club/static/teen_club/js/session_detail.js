@@ -160,10 +160,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if(data.name){
-                console.log(data.name)
-                console.log(name_name)
                 name_name.value = data.name
-            }  
+                document.getElementById('gender').value = data.gender
+                document.getElementById('age').value = data.age
+            }else {
+                name_name.value = ''
+                document.getElementById('gender').value = ''
+                document.getElementById('age').value = ''
+            }
         })
     })
 
@@ -235,4 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+     makeTableInteractive('attendance_table');
+
 });

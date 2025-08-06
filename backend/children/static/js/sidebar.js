@@ -1,25 +1,6 @@
 document.addEventListener('DOMContentLoaded', ()=> {
     document.querySelector('#id_search_value').focus()
 
-    function getCSRFToken() {
-        return document.querySelector('meta[name="csrf-token"]').content;
-    }
-
-    function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
     async function loadChildren() {
         const tbody = document.querySelector("#id-children-table tbody");
         const url = tbody.dataset.url;
@@ -67,7 +48,8 @@ document.addEventListener('DOMContentLoaded', ()=> {
     }
 
 
+    makeTableInteractive('id-children-table','table_title')
     // loadChildren();
 })
-
+console.log(3232);
 

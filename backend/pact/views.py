@@ -389,7 +389,36 @@ def consHigh(resultArray):
             return True
         else:
             return False
+
+@login_required
+def vl_register(request):
+    if request.method == 'POST':
+        results_object = LabResult.objects.all().order_by('-order_date')
+
+        results = []
+
+        for result in results_object:
+            res = {
+                'arv_number': result.arv(),
+                'accession_number': result.accession_number,
+                'status': result.status,
+                'order_date': result.order_date,
+                'result': result.result,
+                'date_received': result.date_received,
+                'mode_of_delivery': result.mode_of_delivery,
+                'test_reason': result.test_reason,
+                'tat_days': result.tat_days,
+            }
+
+            results.append(res)
+            
+        context = {
+            'results': results
+        }
+
+        return JsonResponse(context, safe=False)
     
+    return render(request, 'pact/vl_register_report.html')    
 
 @login_required
 def children_dashboard_view(request, art_number):
