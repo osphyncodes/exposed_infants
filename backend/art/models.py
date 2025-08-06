@@ -12,6 +12,13 @@ class ChildVisit(models.Model):
     ]
 
     visit_type = models.CharField(max_length=50, choices=VISIT_TYPE_CHOICES, default='Patient Only')
+
+    ENTRY_TYPE_CHOICES = [
+        ('Normal', 'Normal'),
+        ('Backlog', 'Backlog')
+    ]
+
+    entry_type = models.CharField(max_length=7, choices=ENTRY_TYPE_CHOICES, default='Backlog')
     weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     bp = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -60,4 +67,4 @@ class ChildVisit(models.Model):
             models.UniqueConstraint(fields=['patient', 'visit_date'], name='unique_patient_visit')
         ]
     def __str__(self):
-        return f"{self.patient.arv_number}: {self.patient.name}, Visit Date: {self.visit_date}"
+        return f"{self.patient.arv_number}: {self.patient.name}, Visit Date: {self.visit_date.strftime('%d/%b/%Y')}, Regimen: {self.regimen}, Next Appointment Date: {self.next_outcome_date.strftime('%d/%b/%Y')}"

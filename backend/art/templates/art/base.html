@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}ART Client Management{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dash.css' %}">
+    
+    <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+
+    <script src="{% static "js/encryption.js" %}"></script>
+    <script src="{% static "js/encrypt.js" %}"></script>
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script src="{% static "js/apexcharts.js" %}"></script>
+    <script src="{% static "js/moment.js" %}"></script>
+    {% comment %} <script src="{% static "js/moment.js" %}"></script> {% endcomment %}
+    <!-- Sidebar toggle and tooltip styles are now in styles.css -->
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="sidebar-header text-center mb-3" style="padding-top:18px; padding-bottom:10px; position:relative;">
+            <span class="fs-5 fw-bold d-block system-name" style="letter-spacing:1px; white-space:nowrap;">ART Clients</span>
+            <span class="system-tooltip">ART Clients</span>
+        </div>
+        {% comment %} <nav class="nav flex-column">
+            <a class="nav-link" data-nav-name="dashboard" href="{% url 'children:dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
+            <a class="nav-link" data-nav-name="children" href="{% url 'children:children' %}" data-tooltip="Children"><i class="fas fa-baby"></i> <span class="sidebar-label">Clients</span></a>
+            <a class="nav-link" data-nav-name="reports" href="{% url 'children:reports' %}" data-tooltip="Reports"><i class="fas fa-chart-bar"></i> <span class="sidebar-label">Reports</span></a>
+            {% if request.user.is_superuser %}
+            <a class="nav-link" data-nav-name="user_management" href="{% url 'children:user_management' %}" data-tooltip="User Management"><i class="fas fa-user-cog"></i> <span class="sidebar-label">User Management</span></a>
+            {% endif %}
+            <a class="nav-link" data-nav-name="reminders" href="{% url 'children:reminders' %}" data-tooltip="Reminders"><i class="fas fa-bell"></i> <span class="sidebar-label">Reminders</span></a>
+            <a class="nav-link" data-nav-name="import_export" href="{% url 'children:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
+            <a class="nav-link" data-nav-name="logs" href="{% url 'children:logs' %}" data-tooltip="Logs"><i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span></a>
+            {% if not request.user.is_superuser %}
+            <a class="nav-link" data-nav-name="change_password" href="{% url 'children:change_password' %}" data-tooltip="Change Password"><i class="fas fa-key"></i> <span class="sidebar-label">Change Password</span></a>
+            {% endif %}
+        </nav> {% endcomment %}
+        <div class="mt-auto text-center">
+            <a href="{% url 'children:app_selector' %}" class="btn btn-secondary w-100 mt-3">
+                <i class="fas fa-exchange-alt"></i> <span class="sidebar-label">Switch App</span>
+            </a>
+            <form method="post" action="{% url 'logout' %}" class="logout-form mt-2">
+                {% csrf_token %}
+                <button type="submit" id="buttonLog" class="btn btn-danger w-100">
+                    <i class="fas fa-sign-out-alt"></i> <span class="sidebar-label">Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="content" id="mainContent">
+        {% block content %}{% endblock %}
+        
+        
+    </div>   
+
+    {% include "children/spinner.html" %}
+    {% include "children/popup/showTable.html" %}
+    <script src="{% static 'js/base.js' %}"></script>
+</body>
+</html>

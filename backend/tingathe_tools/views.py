@@ -97,11 +97,11 @@ def dashboard(request):
     total_cards = ClientCard.objects.count()
     in_progress_cards = ClientCard.objects.filter(status='IN_PROGRESS').count()
     completed_cards = ClientCard.objects.filter(status='COMPLETED').count()
-    
-    mothers_with_children = Patient.objects.prefetch_related('children').count()
+
+    mothers_with_children = ChildICT.objects.values('mother').distinct().count()
     
     children_with_unknown_status = ChildICT.objects.filter(hiv_status='UNKNOWN').count()
-    
+
     return render(request, 'tingathe_tools/dashboard.html', {
         'total_cards': total_cards,
         'in_progress_cards': in_progress_cards,

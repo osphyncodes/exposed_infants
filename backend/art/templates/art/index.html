@@ -8,13 +8,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.css'%}">
     <style>
-        .main-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
+        
 
         .top-section {
             display: flex;
@@ -51,8 +45,6 @@
         }
 
         .middle-section .buttons {
-            position: absolute;
-            top: 120px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
@@ -102,11 +94,6 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="top-section">
-            <form action="">
-                <input data-url="{% url 'art:index'%}" type="number" id="search" name="search" placeholder="search" disabled>
-            </form>
-        </div>
         <div class="middle-section">
             <div class="buttons">
                 <button class="button">1</button>

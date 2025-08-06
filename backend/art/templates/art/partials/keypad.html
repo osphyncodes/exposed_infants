@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numeric Keypad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .keypad-container {
+            margin-top: 20px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .keypad-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .keypad-btn {
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+            font-size: 24px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        
+        .keypad-btn:active {
+            transform: scale(0.95);
+            background-color: #e0e0e0;
+        }
+        
+        .keypad-btn-wide {
+            width: 170px;
+        }
+        
+        .keypad-btn-delete {
+            background-color: #ffcccc;
+        }
+        
+        .keypad-btn-enter {
+            background-color: #ccffcc;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            pointer-events: none;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Numeric Keypad Example</h1>
+    
+    <form id="demoForm" action="#" method="post" onsubmit="alert('Form submitted!'); return false;">
+        <div class="form-group">
+            <label for="numericInput">Enter Numbers:</label>
+            <input type="text" id="numericInput" class="form-input" readonly>
+        </div>
+        
+        <div id="keypad" class="keypad-container">
+            <!-- Keypad will be inserted here -->
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            createNumericKeypad('keypad', 'numericInput', 'demoForm');
+        });
+
+        function createNumericKeypad(containerID, inputID, formID) {
+            const container = document.getElementById(containerID);
+            const inputField = document.getElementById(inputID);
+            const form = document.getElementById(formID);
+            
+            // Disable the input field (already done with readonly in HTML, but just in case)
+            inputField.readOnly = true;
+            
+            // Create number buttons 1-9
+            for (let i = 1; i <= 9; i++) {
+                if ((i - 1) % 3 === 0) {
+                    // Create new row for every 3 buttons
+                    const row = document.createElement('div');
+                    row.className = 'keypad-row';
+                    container.appendChild(row);
+                }
+                
+                const btn = document.createElement('button');
+                btn.className = 'keypad-btn';
+                btn.textContent = i;
+                btn.addEventListener('click', function() {
+                    inputField.value += i;
+                    triggerInputEvent(inputField);
+                });
+                
+                // Add to the last row
+                container.lastElementChild.appendChild(btn);
+            }
+            
+            // Bottom row (0, Delete, Enter)
+            const bottomRow = document.createElement('div');
+            bottomRow.className = 'keypad-row';
+            container.appendChild(bottomRow);
+            
+            // 0 button
+            const zeroBtn = document.createElement('button');
+            zeroBtn.className = 'keypad-btn';
+            zeroBtn.textContent = '0';
+            zeroBtn.addEventListener('click', function() {
+                inputField.value += '0';
+                triggerInputEvent(inputField);
+            });
+            bottomRow.appendChild(zeroBtn);
+            
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'keypad-btn keypad-btn-delete';
+            deleteBtn.textContent = '⌫';
+            deleteBtn.addEventListener('click', function() {
+                inputField.value = inputField.value.slice(0, -1);
+                triggerInputEvent(inputField);
+            });
+            bottomRow.appendChild(deleteBtn);
+            
+            // Enter button
+            const enterBtn = document.createElement('button');
+            enterBtn.className = 'keypad-btn keypad-btn-enter keypad-btn-wide';
+            enterBtn.textContent = 'Enter';
+            enterBtn.addEventListener('click', function() {
+                if (form) {
+                    form.submit();
+                }
+            });
+            bottomRow.appendChild(enterBtn);
+        }
+        
+        function triggerInputEvent(input) {
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+        }
+    </script>
+</body>
+</html>

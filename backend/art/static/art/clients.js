@@ -1,0 +1,1 @@
+createNumericKeypad('touchpad', 'id_search_value')

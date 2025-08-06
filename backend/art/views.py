@@ -4,65 +4,83 @@ from django.contrib.auth.decorators import login_required
 from .models import Patient, ChildVisit
 from .forms import ChildVisitForm
 import json
+from django.db.models import Max
 from django.http import JsonResponse
 
-login_required
+@login_required
 def index(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        arv_number = data.get('arv_number')
-        patient = Patient.objects.filter(arv_number = arv_number).first()
 
-        if patient:
-            results = patient.results.all().order_by('-order_date')[:2]
-            visits = patient.artvisits.all().order_by('-visit_date')
+        search_by = request.POST.get('search_by')
+        query = request.POST.get('query')
 
-            data = {
-                "order_date": list(results.values_list('order_date', flat=True)),
-                "result": list(results.values_list('result', flat=True)),
-                "date_received": list(results.values_list('date_received', flat=True)),
-            }
+        max_arts = Patient.objects.aggregate(max_arv = Max('arv_number'))
+        max_art = max_arts['max_arv']
 
-            age = patient.age()
-            months = patient.months_on_art()
 
-            visits_array = []
+        if not query:
+            return render(request, 'art/clients.html', {'message': 'Please enter ART Number'})
+        
+        if int(query) < 1 or int(query) > max_art:
+            return render(request, 'art/clients.html', {'message': f"Please enter number between 1 and {max_art}"})
 
-            for v in visits:
-                vis = {
-                    'visit_date': v.visit_date,
-                    'vl_draw': v.viral_load,
-                    'regimen': v.regimen,
-                    'arv_given': v.arv_given,
-                    'next_appointment': v.next_outcome_date
+        if query:
+            patient = Patient.objects.all()
+            if search_by and query:
+                if search_by == 'art_number':
+                    patient = patient.filter(arv_number = query).first()
+                elif search_by == 'name':
+                    return render(request, 'art/clients.html')
+
+
+            if patient:
+                results = patient.results.all().order_by('-order_date')[:2]
+                visits = patient.artvisits.all().order_by('-visit_date')
+
+                data = {
+                    "order_date": list(results.values_list('order_date', flat=True)),
+                    "result": list(results.values_list('result', flat=True)),
+                    "date_received": list(results.values_list('date_received', flat=True)),
                 }
-                visits_array.append(vis)
 
-            data = {
-                'patients': data,
-                'visits': visits_array,
-                'p': f"{arv_number}:{patient.name}, Gender: {patient.gender}, DOB: {patient.birthdate}({age}), DSA: {patient.art_start_date}({months})",
-                'message':'Recieved'
-            }
+                age = patient.age()
+                arv_number = patient.arv_number
+                months = patient.months_on_art()
 
-            return JsonResponse(data)
-        data = {
-            'p': 'Record Not Found'
-        }
-        return JsonResponse(data, safe=False)
+                visits_array = []
 
-    return render(request, 'art/index.html')
+                for v in visits:
+                    vis = {
+                        'visit_date': v.visit_date,
+                        'vl_draw': v.viral_load,
+                        'regimen': v.regimen,
+                        'arv_given': v.arv_given,
+                        'next_appointment': v.next_outcome_date
+                    }
+                    visits_array.append(vis)
+
+                data = {
+                    'results': results,
+                    'visits': visits,
+                    'p': f"{arv_number}:{patient.name}, Gender: {patient.gender}, DOB: {patient.birthdate}({age}), DSA: {patient.art_start_date}({months})",
+                    'message':'Recieved'
+                }
+
+            return render(request, 'art/clients.html', data)
+        
+
+    return render(request, 'art/clients.html')
 
 @login_required
 def visit_stats(request):
-    visits = ChildVisit.objects.all()
+    visits = ChildVisit.objects.all().filter(entry_type = 'Backlog')
 
     context = {
         'visits': visits
     }
     return render(request, 'art/reports/visit_stats.html', context)
 
-login_required
+@login_required
 def patient_dashboard(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     form = ChildVisitForm()
@@ -73,7 +91,7 @@ def patient_dashboard(request, patient_id):
         'form': form
     })
 
-login_required
+@login_required
 def add_visit(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     if request.method == 'POST':
@@ -90,7 +108,7 @@ def add_visit(request, patient_id):
         'patient': patient
     })
 
-login_required
+@login_required
 def edit_visit(request, visit_id):
     visit = get_object_or_404(ChildVisit, pk=visit_id)
     if request.method == 'POST':
@@ -105,7 +123,7 @@ def edit_visit(request, visit_id):
         'visit': visit
     })
 
-login_required
+@login_required
 def delete_visit(request, visit_id):
     visit = get_object_or_404(ChildVisit, pk=visit_id)
     patient_id = visit.patient_id

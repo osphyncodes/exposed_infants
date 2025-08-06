@@ -279,4 +279,344 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function createTouchKeypad(divID, inputID) {
+    // Check if the keypad already exists to avoid duplicates
+    if (document.getElementById('touchKeypadContainer')) {
+        return;
+    }
+
+    // Create the main container
+    const container = document.createElement('div');
+    container.id = 'touchKeypadContainer';
+    container.style.position = 'fixed';
+    container.style.bottom = '0';
+    container.style.left = '270px';
+    container.style.right = '0';
+    container.style.backgroundColor = '#f0f0f0';
+    container.style.padding = '15px 5px';
+    container.style.boxShadow = '0 -5px 15px rgba(0,0,0,0.3)';
+    container.style.zIndex = '1000';
+    container.style.display = 'none';
+    container.style.boxSizing = 'border-box';
+
+    // Create toggle button (bigger and more visible)
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = 'ABC';
+    toggleBtn.style.position = 'absolute';
+    toggleBtn.style.top = '-45px';
+    toggleBtn.style.right = '10px';
+    toggleBtn.style.padding = '12px 20px';
+    toggleBtn.style.fontSize = '18px';
+    toggleBtn.style.backgroundColor = '#4CAF50';
+    toggleBtn.style.color = 'white';
+    toggleBtn.style.border = 'none';
+    toggleBtn.style.borderRadius = '10px 10px 0 0';
+    toggleBtn.addEventListener('click', toggleKeypad);
+    toggleBtn.style.minWidth = '30px';
+
+    // Create close button (bigger)
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '× Close';
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '-45px';
+    closeBtn.style.left = '10px';
+    closeBtn.style.padding = '12px 20px';
+    closeBtn.style.fontSize = '18px';
+    closeBtn.style.backgroundColor = '#f44336';
+    closeBtn.style.color = 'white';
+    closeBtn.style.border = 'none';
+    closeBtn.style.borderRadius = '10px 10px 0 0';
+    closeBtn.addEventListener('click', () => {
+        container.style.display = 'none';
+    });
+
+    // Create the keypad container
+    const keypad = document.createElement('div');
+    keypad.id = 'mainKeypad';
+    keypad.style.display = 'none'
+    createMainKeypad(keypad);
+
+    // Create the numeric keypad container (initially hidden)
+    const numKeypad = document.createElement('div');
+    numKeypad.id = 'numericKeypad';
+    createNumericKeypad(numKeypad);
+
+    // Append all elements
+    container.appendChild(toggleBtn);
+    container.appendChild(closeBtn);
+    container.appendChild(keypad);
+    container.appendChild(numKeypad);
+
+    // Add to the specified div
+    document.getElementById(divID).appendChild(container);
+
+    // Show the keypad when the input is focused
+    const inputField = document.getElementById(inputID);
+    if (inputField) {
+        inputField.addEventListener('focus', () => {
+            container.style.display = 'block';
+        });
+
+        // Also show on touchstart for better mobile experience
+        inputField.addEventListener('touchstart', () => {
+            container.style.display = 'block';
+        });
+    }
+
+    function toggleKeypad() {
+        const mainKeypad = document.getElementById('mainKeypad');
+        const numKeypad = document.getElementById('numericKeypad');
+        
+        if (mainKeypad.style.display === 'none') {
+            mainKeypad.style.display = 'block';
+            numKeypad.style.display = 'none';
+            toggleBtn.textContent = '123';
+        } else {
+            mainKeypad.style.display = 'none';
+            numKeypad.style.display = 'block';
+            toggleBtn.textContent = 'ABC';
+        }
+    }
+
+    function createMainKeypad(container) {
+        const rows = [
+            ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+            ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+            ['↑', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '←'],
+            [' ', '.', ',', '?', '!']
+        ];
+
+        rows.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.style.display = 'flex';
+            rowDiv.style.justifyContent = 'center';
+            rowDiv.style.marginBottom = '10px';
+            rowDiv.style.flexWrap = 'wrap';
+
+            row.forEach(char => {
+                const btn = document.createElement('button');
+                btn.textContent = char === ' ' ? 'Space' : 
+                                char === '←' ? '⌫' : 
+                                char === '↑' ? '⇧' : char;
+                btn.style.padding = '5px 0';
+                btn.style.margin = '5px';
+                btn.style.minWidth = char === ' ' ? '200px' : 
+                                   ['↑', '←'].includes(char) ? '60px' : '50px';
+                btn.style.fontSize = '22px';
+                btn.style.backgroundColor = '#fff';
+                btn.style.border = '2px solid #ddd';
+                btn.style.borderRadius = '10px';
+                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                btn.style.transition = 'all 0.1s';
+
+                // Add touch feedback
+                btn.addEventListener('touchstart', () => {
+                    btn.style.transform = 'scale(0.95)';
+                    btn.style.backgroundColor = '#e0e0e0';
+                });
+                
+                btn.addEventListener('touchend', () => {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.backgroundColor = '#fff';
+                });
+
+                btn.addEventListener('click', () => {
+                    const input = document.getElementById(inputID);
+                    if (!input) return;
+
+                    if (char === '←') {
+                        input.value = input.value.slice(0, -1);
+                    } else if (char === '↑') {
+                        // Toggle uppercase for next character (would need more logic for full implementation)
+                        // Simplified for this example
+                        input.value += '';
+                    } else if (char === ' ') {
+                        input.value += ' ';
+                    } else {
+                        input.value += char;
+                    }
+                    
+                    // Trigger input event for any listeners
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                });
+
+                rowDiv.appendChild(btn);
+            });
+
+            container.appendChild(rowDiv);
+        });
+    }
+
+    function createNumericKeypad(container) {
+        const rows = [
+            ['1', '2', '3'],
+            ['4', '5', '6'],
+            ['7', '8', '9'],
+            ['.', '0', '←']
+        ];
+
+        rows.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.style.display = 'flex';
+            rowDiv.style.justifyContent = 'center';
+            rowDiv.style.marginBottom = '15px';
+
+            row.forEach(char => {
+                const btn = document.createElement('button');
+                btn.textContent = char === '←' ? '⌫' : char;
+                btn.style.padding = '5px 5px';
+                btn.style.margin = '2px';
+                btn.style.minWidth = '80px';
+                btn.style.fontSize = '16px';
+                btn.style.backgroundColor = '#fff';
+                btn.style.border = '2px solid #ddd';
+                btn.style.borderRadius = '15px';
+                btn.style.boxShadow = '0 3px 6px rgba(0,0,0,0.1)';
+                btn.style.transition = 'all 0.1s';
+
+                // Add touch feedback
+                btn.addEventListener('touchstart', () => {
+                    btn.style.transform = 'scale(0.95)';
+                    btn.style.backgroundColor = '#e0e0e0';
+                });
+                
+                btn.addEventListener('touchend', () => {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.backgroundColor = '#fff';
+                });
+
+                btn.addEventListener('click', () => {
+                    const input = document.getElementById(inputID);
+                    if (!input) return;
+
+                    if (char === '←') {
+                        input.value = input.value.slice(0, -1);
+                    } else {
+                        input.value += char;
+                    }
+                    
+                    // Trigger input event for any listeners
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                });
+
+                rowDiv.appendChild(btn);
+            });
+
+            container.appendChild(rowDiv);
+        });
+
+    }
+} 
+
+function createNumericKeypad(containerID, inputID) {
+    // Get elements
+    const container = document.getElementById(containerID);
+    const inputField = document.getElementById(inputID);
     
+    // Clear container and disable input
+    container.innerHTML = '';
+    inputField.readOnly = true;
+    inputField.style.cursor = 'default';
+    inputField.style.backgroundColor = '#f9f9f9';
+    
+    // Add CSS styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .keypad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 250px;
+            margin: 5px auto;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .keypad-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .keypad-btn:active {
+            transform: scale(0.95);
+            background-color: #e0e0e0;
+        }
+        .keypad-btn-del {
+            grid-column: 1;
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        .keypad-btn-0 {
+            grid-column: 2;
+        }
+        .keypad-btn-enter {
+            grid-column: 3;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .keypad-btn i {
+            font-size: 1.2em;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Create container
+    const keypadContainer = document.createElement('div');
+    keypadContainer.className = 'keypad-container';
+    container.appendChild(keypadContainer);
+    
+    // Create number buttons 1-9
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'keypad-btn';
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+            inputField.value += i;
+            triggerInputEvent(inputField);
+        });
+        keypadContainer.appendChild(btn);
+    }
+    
+    // Delete button (←)
+    const delBtn = document.createElement('button');
+    delBtn.className = 'keypad-btn keypad-btn-del';
+    delBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+    delBtn.addEventListener('click', () => {
+        inputField.value = inputField.value.slice(0, -1);
+        triggerInputEvent(inputField);
+    });
+    keypadContainer.appendChild(delBtn);
+    
+    // 0 button (centered)
+    const zeroBtn = document.createElement('button');
+    zeroBtn.className = 'keypad-btn keypad-btn-0';
+    zeroBtn.textContent = '0';
+    zeroBtn.addEventListener('click', () => {
+        inputField.value += '0';
+        triggerInputEvent(inputField);
+    });
+    keypadContainer.appendChild(zeroBtn);
+    
+    // Enter button (✓)
+    const enterBtn = document.createElement('button');
+    enterBtn.className = 'keypad-btn keypad-btn-enter';
+    enterBtn.innerHTML = '<i class="fas fa-check"></i>';
+    enterBtn.addEventListener('click', () => {
+        const form = inputField.closest('form');
+        if (form) form.submit();
+    });
+    keypadContainer.appendChild(enterBtn);
+    
+    function triggerInputEvent(input) {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}
