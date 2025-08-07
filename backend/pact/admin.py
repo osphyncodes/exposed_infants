@@ -6,7 +6,7 @@ class PatientAdmin(admin.ModelAdmin):
 
 class LabAdmin(admin.ModelAdmin):
     autocomplete_fields = ['patient']
-    search_fields = ['order_date']
+    search_fields = ['order_date','patient__arv_number']
 
 admin.site.register(
     [

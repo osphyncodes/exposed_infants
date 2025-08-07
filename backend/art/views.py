@@ -7,7 +7,7 @@ import json
 from django.db.models import Max
 from django.http import JsonResponse
 
-@login_required
+
 def index(request):
     if request.method == 'POST':
 
