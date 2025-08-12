@@ -1,4 +1,6 @@
-from django.db import models
+from django.db import models, transaction
+from io import StringIO
+import csv
 from pact.models import Patient # Assuming this is where your ART Patients model is
 
 class ClientCard(models.Model):
@@ -10,13 +12,14 @@ class ClientCard(models.Model):
     
     STATUS_CHOICES = [
         ('IN_PROGRESS', 'In Progress'),
-        ('COMPLETED', 'Completed Service'),
+        ('ALIVE', 'Alive'),
         ('DIED', 'Died'),
         ('TRANSFERRED', 'Transferred Out'),
         ('STOPPED', 'Treatment Stopped'),
     ]
     
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    unique_id = models.CharField(max_length=100, unique=True)
     card_type = models.CharField(max_length=5, choices=CARD_TYPES)
     date_opened = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='IN_PROGRESS')
@@ -24,6 +27,62 @@ class ClientCard(models.Model):
     
     def __str__(self):
         return f"{self.get_card_type_display()} - {self.patient.first_name} {self.patient.last_name}"
+    
+    @classmethod
+    def import_client_card(cls, csv_file, chunk_size=5000):
+        results = {
+            'deleted': 0,
+            'created': 0,
+            'errors': []
+        }
+
+
+        # First delete ALL existing records
+        with transaction.atomic():
+            deleted_count, _ = cls.objects.all().delete()
+            results['deleted'] = deleted_count
+
+        # Then import all new records from CSV
+        file_content = csv_file.read().decode('utf-8')
+        reader = csv.DictReader(StringIO(file_content))
+        
+        to_create = []
+        
+        for row in reader:
+            arv_num = cls.parse_arv_number(row.get('art_number', ''))
+
+            if arv_num:
+                patient = Patient.objects.filter(arv_number = arv_num)
+
+                # Check patient exists (if needed)
+                if not patient.exists():
+                    results['errors'].append({
+                        'row': row,
+                        'error': f"Patient ARV#{arv_num} not found"
+                    })
+                    continue
+
+                client_card = cls(
+                    patient=patient.first(),
+                    card_type=cls.clean_accession_number(row.get('card_type', '')),
+                    unique_id=cls.clean_result_value(row.get('unique_id', '')),
+                    date_opened=cls.parse_date(row.get('date_enrollment', '')),
+                    status=cls.clean_result_value(row.get('outcome', '')),
+                )
+
+                to_create.append(client_card)
+
+            else:
+                results['errors'].append({
+                    'row': row,
+                    'error': "Invalid ARV number"
+                })
+                continue
+
+        with transaction.atomic():
+            cls.objects.bulk_create(to_create)
+            results['created'] = len(to_create)
+        return results
 
 class ChildICT(models.Model):
     HIV_STATUS_CHOICES = [

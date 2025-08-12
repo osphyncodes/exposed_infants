@@ -32,6 +32,8 @@ if (localStorage.getItem('sidebar-collapsed') === '1') {
     setSidebarState(false);
 }
 
+
+
 // Auto-logout after inactivity (client-side fallback)
 let sessionTimeout = 15 * 60 * 1000; // 15 minutes
 let logoutUrl = "{% url 'logout' %}";
