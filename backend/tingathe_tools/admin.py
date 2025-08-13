@@ -1,7 +1,10 @@
 from django.contrib import admin
-from .models import ChildICT
+from .models import *
 
-# Register your models here.
-class ChildICTAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['mother']
-admin.site.register(ChildICT)
+
+class ClientCardAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'unique_id', 'card_type', 'date_opened', 'status')
+    search_fields = ['patient__arv_number',]
+
+admin.site.register(ClientCard, ClientCardAdmin)
+

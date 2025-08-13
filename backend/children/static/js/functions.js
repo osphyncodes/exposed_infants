@@ -1,28 +1,46 @@
-
-function makeTableInteractive(tableId, titleId) {
-    console.log('zikutheka');
+function makeTableInteractive(tableId, titleId, filter_list = []) {
     const table = document.getElementById(tableId);
+    if (!table) return;
     const tbody = table.querySelector("tbody");
+    if (!tbody) return;
     const headers = table.querySelectorAll("thead th");
-    const count = getTableRowCount(tableId);
     const title = document.getElementById(titleId);
-    
-    // Dynamically adjust rowsPerPageOptions based on record count
+
+    // Count all rows initially
+    const allRows = Array.from(tbody.querySelectorAll("tr"));
+    const count = allRows.length;
+
+    // Set up rows per page options
     const possibleOptions = [1, 5, 10, 25, 50];
     const rowsPerPageOptions = possibleOptions.filter(opt => opt <= count);
-    rowsPerPageOptions.push("Show All"); // Add "Show All" option
-    
+    rowsPerPageOptions.push("Show All");
+
     let currentPage = 1;
     let rowsPerPage = 5;
     let sortColumn = null;
     let sortDirection = 'asc';
+    let activeFilters = {};
 
-    const getRows = () => Array.from(tbody.querySelectorAll("tr"));
-
+    // Update title with count
     if (title) {
-        title.innerText = `${title.innerText} (${count})`;
+        title.innerText = title.innerText.replace(/\(\d+\)$/, '').trim() + ` (${count})`;
     }
 
+    // Utility: get all rows (not filtered)
+    const getAllRows = () => Array.from(tbody.querySelectorAll("tr"));
+
+    // Utility: get filtered rows (visible after filter)
+    const getFilteredRows = () => getAllRows().filter(row => row.dataset.filtered !== "false");
+
+    // Utility: get paginated rows (visible after filter and pagination)
+    const getPaginatedRows = () => {
+        const filtered = getFilteredRows();
+        if (rowsPerPage === count) return filtered;
+        const start = (currentPage - 1) * rowsPerPage;
+        return filtered.slice(start, start + rowsPerPage);
+    };
+
+    // Clear sort icons
     function clearSortIcons() {
         headers.forEach(th => {
             const icon = th.querySelector("i.fa");
@@ -30,14 +48,16 @@ function makeTableInteractive(tableId, titleId) {
         });
     }
 
+    // Add sort icon
     function addSortIcon(th, direction) {
         const icon = document.createElement("i");
         icon.className = direction === 'asc' ? 'fa fa-arrow-up ms-2' : 'fa fa-arrow-down ms-2';
         th.appendChild(icon);
     }
 
+    // Sort table by column
     function sortTableByColumn(index) {
-        const rows = getRows();
+        const rows = getFilteredRows();
         const direction = (sortColumn === index && sortDirection === 'asc') ? 'desc' : 'asc';
         sortDirection = direction;
         sortColumn = index;
@@ -52,13 +72,318 @@ function makeTableInteractive(tableId, titleId) {
             return 0;
         });
 
-        tbody.innerHTML = "";
+        // Re-append sorted rows
         rows.forEach(row => tbody.appendChild(row));
-        renderPage(currentPage);
         clearSortIcons();
         addSortIcon(headers[index], direction);
+        currentPage = 1;
+        render();
     }
 
+    // Create filter controls
+    function createFilterControls() {
+        if (filter_list.length === 0) return;
+        // Remove existing filter container if any
+        const old = document.getElementById(`${tableId}-filters`);
+        if (old) old.remove();
+
+        const filterContainer = document.createElement("div");
+        filterContainer.className = "table-filters mb-3";
+        filterContainer.id = `${tableId}-filters`;
+        filterContainer.style.background = "#f8fafc";
+        filterContainer.style.border = "1px solid #e2e8f0";
+        filterContainer.style.borderRadius = "12px";
+        filterContainer.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
+        filterContainer.style.padding = "24px 20px 16px 20px";
+        filterContainer.style.marginBottom = "24px";
+
+        const filterTitle = document.createElement("h5");
+        filterTitle.className = "mb-4";
+        filterTitle.textContent = "Filters";
+        filterTitle.style.fontWeight = "bold";
+        filterTitle.style.letterSpacing = "1px";
+        filterTitle.style.color = "#334155";
+        filterContainer.appendChild(filterTitle);
+
+        const filterGrid = document.createElement("div");
+        filterGrid.className = "row g-4";
+        filterContainer.appendChild(filterGrid);
+
+        headers.forEach((th, index) => {
+            const headerText = th.textContent.trim();
+            if (!filter_list.includes(headerText)) return;
+
+            const colDiv = document.createElement("div");
+            colDiv.className = "col-12 col-md-6 col-lg-4";
+            colDiv.style.display = "flex";
+            colDiv.style.flexDirection = "column";
+            colDiv.style.marginBottom = "12px";
+
+            const label = document.createElement("label");
+            label.className = "form-label";
+            label.textContent = headerText;
+            label.htmlFor = `${tableId}-filter-${index}`;
+            label.style.fontWeight = "600";
+            label.style.color = "#1e293b";
+            label.style.marginBottom = "6px";
+            colDiv.appendChild(label);
+
+            const select = document.createElement("select");
+            select.className = "form-select";
+            select.id = `${tableId}-filter-${index}`;
+            select.style.marginBottom = "8px";
+            select.style.maxWidth = "100%";
+            select.style.fontSize = "1rem";
+            select.style.borderRadius = "8px";
+            select.style.border = "1px solid #cbd5e1";
+
+            // Determine column type
+            const sampleValue = tbody.querySelector(`tr td:nth-child(${index + 1})`)?.textContent.trim();
+            let columnType = 'text';
+            if (sampleValue) {
+                if (!isNaN(sampleValue)) {
+                    columnType = 'number';
+                } else if (Date.parse(sampleValue) || sampleValue.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                    columnType = 'date';
+                }
+            }
+
+            const options = {
+                'text': [
+                    {value: '', text: 'No filter'},
+                    {value: 'contains', text: 'Contains'},
+                    {value: 'equals', text: 'Equals'},
+                    {value: 'startsWith', text: 'Starts with'},
+                    {value: 'endsWith', text: 'Ends with'}
+                ],
+                'number': [
+                    {value: '', text: 'No filter'},
+                    {value: 'equals', text: 'Equals'},
+                    {value: 'greater', text: 'Greater than'},
+                    {value: 'less', text: 'Less than'},
+                    {value: 'between', text: 'Between'}
+                ],
+                'date': [
+                    {value: '', text: 'No filter'},
+                    {value: 'equals', text: 'On'},
+                    {value: 'after', text: 'After'},
+                    {value: 'before', text: 'Before'},
+                    {value: 'between', text: 'Between'}
+                ]
+            };
+
+            options[columnType].forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt.value;
+                option.textContent = opt.text;
+                select.appendChild(option);
+            });
+
+            colDiv.appendChild(select);
+
+            const inputContainer = document.createElement("div");
+            inputContainer.className = "input-group";
+            inputContainer.id = `${tableId}-filter-input-${index}`;
+            inputContainer.style.display = 'none';
+            inputContainer.style.alignItems = "center";
+            inputContainer.style.gap = "8px";
+
+            if (columnType === 'date') {
+                const input = document.createElement("input");
+                input.type = "date";
+                input.className = "form-control";
+                input.id = `${tableId}-filter-value-${index}`;
+                input.style.minWidth = "180px";
+                input.style.width = "100%";
+                input.style.fontSize = "1rem";
+                input.style.borderRadius = "8px";
+                input.style.border = "1px solid #cbd5e1";
+                input.style.background = "#fff";
+                input.style.marginRight = "6px";
+                inputContainer.appendChild(input);
+
+                const input2 = document.createElement("input");
+                input2.type = "date";
+                input2.className = "form-control d-none";
+                input2.id = `${tableId}-filter-value2-${index}`;
+                input2.placeholder = "End date";
+                input2.style.minWidth = "180px";
+                input2.style.width = "100%";
+                input2.style.fontSize = "1rem";
+                input2.style.borderRadius = "8px";
+                input2.style.border = "1px solid #cbd5e1";
+                input2.style.background = "#fff";
+                input2.style.marginRight = "6px";
+                inputContainer.appendChild(input2);
+            } else {
+                const input = document.createElement("input");
+                input.type = columnType === 'number' ? "number" : "text";
+                input.className = "form-control";
+                input.id = `${tableId}-filter-value-${index}`;
+                input.placeholder = "Value";
+                input.style.minWidth = "180px";
+                input.style.width = "100%";
+                input.style.fontSize = "1rem";
+                input.style.borderRadius = "8px";
+                input.style.border = "1px solid #cbd5e1";
+                input.style.background = "#fff";
+                input.style.marginRight = "6px";
+                inputContainer.appendChild(input);
+
+                const input2 = document.createElement("input");
+                input2.type = columnType === 'number' ? "number" : "text";
+                input2.className = "form-control d-none";
+                input2.id = `${tableId}-filter-value2-${index}`;
+                input2.placeholder = "End value";
+                input2.style.minWidth = "180px";
+                input2.style.width = "100%";
+                input2.style.fontSize = "1rem";
+                input2.style.borderRadius = "8px";
+                input2.style.border = "1px solid #cbd5e1";
+                input2.style.background = "#fff";
+                input2.style.marginRight = "6px";
+                inputContainer.appendChild(input2);
+            }
+
+            const button = document.createElement("button");
+            button.className = "btn btn-outline-secondary";
+            button.type = "button";
+            button.innerHTML = '<i class="fas fa-filter"></i>';
+            button.style.borderRadius = "8px";
+            button.style.fontWeight = "bold";
+            button.style.fontSize = "1.1rem";
+            button.style.padding = "6px 16px";
+            button.onclick = () => applyFilter(index, headerText, columnType);
+            inputContainer.appendChild(button);
+
+            colDiv.appendChild(inputContainer);
+            filterGrid.appendChild(colDiv);
+
+            select.addEventListener('change', function() {
+                const filterType = this.value;
+                const inputDiv = document.getElementById(`${tableId}-filter-input-${index}`);
+                const input1 = document.getElementById(`${tableId}-filter-value-${index}`);
+                const input2 = document.getElementById(`${tableId}-filter-value2-${index}`);
+                if (!filterType) {
+                    inputDiv.style.display = 'none';
+                    delete activeFilters[headerText];
+                    applyFilters();
+                    return;
+                }
+                inputDiv.style.display = 'flex';
+                // Always show the first input
+                if (input1) input1.classList.remove('d-none');
+                // Show second input only for 'between'
+                if (input2) input2.classList.toggle('d-none', filterType !== 'between');
+            });
+        });
+
+        const clearAllButton = document.createElement("button");
+        clearAllButton.className = "btn btn-outline-danger mt-3";
+        clearAllButton.textContent = "Clear All Filters";
+        clearAllButton.style.fontWeight = "bold";
+        clearAllButton.style.borderRadius = "8px";
+        clearAllButton.style.padding = "8px 20px";
+        clearAllButton.onclick = clearAllFilters;
+        filterContainer.appendChild(clearAllButton);
+
+        table.parentElement.insertBefore(filterContainer, table);
+    }
+
+    // Apply a single filter
+    function applyFilter(index, headerText, columnType) {
+        const filterType = document.getElementById(`${tableId}-filter-${index}`).value;
+        const value = document.getElementById(`${tableId}-filter-value-${index}`).value;
+        const value2 = document.getElementById(`${tableId}-filter-value2-${index}`).value;
+
+        if (!filterType || !value) {
+            delete activeFilters[headerText];
+            applyFilters();
+            return;
+        }
+
+        activeFilters[headerText] = {
+            index,
+            type: filterType,
+            value,
+            value2,
+            columnType
+        };
+
+        applyFilters();
+    }
+
+    // Apply all filters to all rows
+    function applyFilters() {
+        const rows = getAllRows();
+        if (Object.keys(activeFilters).length === 0) {
+            rows.forEach(row => { row.dataset.filtered = "true"; row.style.display = ""; });
+            currentPage = 1;
+            render();
+            return;
+        }
+
+        rows.forEach(row => {
+            let shouldShow = true;
+            for (const [header, filter] of Object.entries(activeFilters)) {
+                const cell = row.children[filter.index];
+                const cellValue = cell.textContent.trim();
+                if (filter.columnType === 'date') {
+                    const cellDate = new Date(cellValue);
+                    const filterDate = new Date(filter.value);
+                    const filterDate2 = filter.value2 ? new Date(filter.value2) : null;
+                    if (isNaN(cellDate.getTime())) { shouldShow = false; break; }
+                    switch (filter.type) {
+                        case 'equals': shouldShow = cellDate.toDateString() === filterDate.toDateString(); break;
+                        case 'after': shouldShow = cellDate > filterDate; break;
+                        case 'before': shouldShow = cellDate < filterDate; break;
+                        case 'between': shouldShow = cellDate >= filterDate && (!filterDate2 || cellDate <= filterDate2); break;
+                    }
+                } else if (filter.columnType === 'number') {
+                    const cellNum = parseFloat(cellValue);
+                    const filterNum = parseFloat(filter.value);
+                    const filterNum2 = filter.value2 ? parseFloat(filter.value2) : null;
+                    if (isNaN(cellNum)) { shouldShow = false; break; }
+                    switch (filter.type) {
+                        case 'equals': shouldShow = cellNum === filterNum; break;
+                        case 'greater': shouldShow = cellNum > filterNum; break;
+                        case 'less': shouldShow = cellNum < filterNum; break;
+                        case 'between': shouldShow = cellNum >= filterNum && (!filterNum2 || cellNum <= filterNum2); break;
+                    }
+                } else {
+                    const cellText = cellValue.toLowerCase();
+                    const filterText = filter.value.toLowerCase();
+                    switch (filter.type) {
+                        case 'contains': shouldShow = cellText.includes(filterText); break;
+                        case 'equals': shouldShow = cellText === filterText; break;
+                        case 'startsWith': shouldShow = cellText.startsWith(filterText); break;
+                        case 'endsWith': shouldShow = cellText.endsWith(filterText); break;
+                    }
+                }
+                if (!shouldShow) break;
+            }
+            row.dataset.filtered = shouldShow ? "true" : "false";
+        });
+        currentPage = 1;
+        render();
+    }
+
+    // Clear all filters
+    function clearAllFilters() {
+        activeFilters = {};
+        headers.forEach((th, index) => {
+            const headerText = th.textContent.trim();
+            if (filter_list.includes(headerText)) {
+                const select = document.getElementById(`${tableId}-filter-${index}`);
+                if (select) select.value = '';
+                const inputDiv = document.getElementById(`${tableId}-filter-input-${index}`);
+                if (inputDiv) inputDiv.style.display = 'none';
+            }
+        });
+        applyFilters();
+    }
+
+    // Render pagination controls and export buttons
     function renderPaginationControls(totalPages) {
         let topControls = document.getElementById(`${tableId}-top-pagination`);
         if (!topControls) {
@@ -68,7 +393,7 @@ function makeTableInteractive(tableId, titleId) {
             table.parentElement.insertBefore(topControls, table);
         }
 
-        // Add export buttons (CSV, JSON, PDF)
+        // Export buttons
         const exportButtons = `
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-secondary" id="${tableId}-export-csv">
@@ -83,12 +408,12 @@ function makeTableInteractive(tableId, titleId) {
             </div>
         `;
 
-        // Dropdown for rows per page
+        // Rows per page dropdown
         const dropdown = `
             <div class="d-flex align-items-center gap-2">
                 <label class="form-label m-0">Rows per page:</label>
                 <select class="form-select form-select-sm w-auto" id="${tableId}-rows-select">
-                    ${rowsPerPageOptions.map(opt => 
+                    ${rowsPerPageOptions.map(opt =>
                         `<option value="${opt === "Show All" ? count : opt}" ${opt === (rowsPerPage === count ? "Show All" : rowsPerPage) ? 'selected' : ''}>
                             ${opt === "Show All" ? "Show All" : opt}
                         </option>`
@@ -115,50 +440,50 @@ function makeTableInteractive(tableId, titleId) {
 
         topControls.innerHTML = exportButtons + dropdown + pageControl;
 
-        // Event handlers for pagination
+        // Event handlers
         document.getElementById(`${tableId}-rows-select`).onchange = (e) => {
             const val = e.target.value;
             rowsPerPage = val === count.toString() ? count : parseInt(val);
             currentPage = 1;
-            renderPage(currentPage);
+            render();
         };
 
         document.getElementById(`${tableId}-page-select`).onchange = (e) => {
             currentPage = parseInt(e.target.value);
-            renderPage(currentPage);
+            render();
         };
 
         document.getElementById(`${tableId}-prev`).onclick = () => {
             if (currentPage > 1) {
                 currentPage--;
-                renderPage(currentPage);
+                render();
             }
         };
 
         document.getElementById(`${tableId}-next`).onclick = () => {
+            const totalPages = Math.ceil(getFilteredRows().length / (rowsPerPage === count ? count : rowsPerPage)) || 1;
             if (currentPage < totalPages) {
                 currentPage++;
-                renderPage(currentPage);
+                render();
             }
         };
 
-        // Event handlers for export buttons
         document.getElementById(`${tableId}-export-csv`).onclick = () => exportToCSV(tableId);
         document.getElementById(`${tableId}-export-json`).onclick = () => exportToJSON(tableId);
         document.getElementById(`${tableId}-export-pdf`).onclick = () => exportToPDF(tableId);
     }
 
-    function renderPage(page) {
-        const rows = getRows();
-        const totalPages = Math.ceil(rows.length / (rowsPerPage === count ? count : rowsPerPage)) || 1;
+    // Render table (pagination + filter)
+    function render() {
+        const rows = getAllRows();
+        const filtered = getFilteredRows();
+        const totalPages = Math.ceil(filtered.length / (rowsPerPage === count ? count : rowsPerPage)) || 1;
+        currentPage = Math.min(currentPage, totalPages);
 
-        const start = (page - 1) * rowsPerPage;
-        const end = rowsPerPage === count ? rows.length : start + rowsPerPage;
-
-        rows.forEach((row, i) => {
-            row.style.display = (i >= start && i < end) ? "" : "none";
-        });
-
+        // Hide all rows first
+        rows.forEach(row => row.style.display = "none");
+        // Show only paginated filtered rows
+        getPaginatedRows().forEach(row => row.style.display = "");
         renderPaginationControls(totalPages);
     }
 
@@ -172,14 +497,16 @@ function makeTableInteractive(tableId, titleId) {
         const headers = Array.from(rows[0].querySelectorAll("th")).map(th => th.textContent.trim());
         csv.push(headers.join(","));
 
-        // Extract data rows
+        // Extract data rows (only visible ones)
         for (let i = 1; i < rows.length; i++) {
-            const row = [];
-            const cols = rows[i].querySelectorAll("td");
-            for (let j = 0; j < cols.length; j++) {
-                row.push(cols[j].textContent.trim());
+            if (rows[i].style.display !== "none") {
+                const row = [];
+                const cols = rows[i].querySelectorAll("td");
+                for (let j = 0; j < cols.length; j++) {
+                    row.push(cols[j].textContent.trim());
+                }
+                csv.push(row.join(","));
             }
-            csv.push(row.join(","));
         }
 
         const csvContent = csv.join("\n");
@@ -198,12 +525,14 @@ function makeTableInteractive(tableId, titleId) {
         const json = [];
 
         for (let i = 1; i < rows.length; i++) {
-            const row = {};
-            const cols = rows[i].querySelectorAll("td");
-            for (let j = 0; j < cols.length; j++) {
-                row[headers[j]] = cols[j].textContent.trim();
+            if (rows[i].style.display !== "none") {
+                const row = {};
+                const cols = rows[i].querySelectorAll("td");
+                for (let j = 0; j < cols.length; j++) {
+                    row[headers[j]] = cols[j].textContent.trim();
+                }
+                json.push(row);
             }
-            json.push(row);
         }
 
         const jsonContent = JSON.stringify(json, null, 2);
@@ -223,23 +552,37 @@ function makeTableInteractive(tableId, titleId) {
         }
 
         const table = document.getElementById(tableId);
-        html2canvas(table).then(canvas => {
+        // Clone the table to modify for export
+        const tableClone = table.cloneNode(true);
+        // Hide filtered out rows in the clone
+        Array.from(tableClone.querySelectorAll("tr")).forEach((row, i) => {
+            if (i > 0 && table.querySelectorAll("tr")[i].style.display === "none") {
+                row.style.display = "none";
+            }
+        });
+        // Temporarily add to document
+        tableClone.style.position = "absolute";
+        tableClone.style.left = "-9999px";
+        document.body.appendChild(tableClone);
+        
+        html2canvas(tableClone).then(canvas => {
             const imgData = canvas.toDataURL("image/png");
             const pdf = new jsPDF("p", "mm", "a4");
             const imgWidth = pdf.internal.pageSize.getWidth() - 20;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
             pdf.save(`${tableId}_export.pdf`);
+            document.body.removeChild(tableClone);
         });
     }
 
-    // Initialize sorting and pagination
+    // Initialize
     headers.forEach((th, index) => {
         th.style.cursor = "pointer";
         th.addEventListener("click", () => sortTableByColumn(index));
     });
-
-    renderPage(currentPage);
+    createFilterControls();
+    applyFilters(); // triggers render
 }
 
 function getTableRowCount(tableId) {

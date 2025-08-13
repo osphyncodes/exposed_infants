@@ -12,7 +12,7 @@ class ClientCard(models.Model):
     
     STATUS_CHOICES = [
         ('IN_PROGRESS', 'In Progress'),
-        ('Complete', 'Alive'),
+        ('Complete', 'Complete'),
         ('DIED', 'Died'),
         ('TRANSFERRED', 'Transferred Out'),
         ('STOPPED', 'Treatment Stopped'),
@@ -26,7 +26,7 @@ class ClientCard(models.Model):
     notes = models.TextField(blank=True, null=True)
     
     def __str__(self):
-        return f"{self.get_card_type_display()} - {self.patient.first_name} {self.patient.last_name}"
+        return f"{self.get_card_type_display()} - {self.patient.name}: {self.patient.arv_number}"
     
     @classmethod
     def import_client_card(cls, csv_file, chunk_size=5000):
