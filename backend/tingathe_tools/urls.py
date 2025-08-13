@@ -17,4 +17,6 @@ urlpatterns = [
     path('child-ict/create/<int:mother_id>/', views.child_ict_create, name='child_ict_create'),
     path('child-ict/update/<int:pk>/', views.child_ict_update, name='child_ict_update'),
     path('child-ict/delete/<int:pk>/', views.child_ict_delete, name='child_ict_delete'),
+    path('import-export/', views.import_export, name='import_export'),
+    path('api/import/', views.import_client_cards, name='api_client_cards'),
 ]

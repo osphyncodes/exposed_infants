@@ -5,14 +5,14 @@ from pact.models import Patient # Assuming this is where your ART Patients model
 
 class ClientCard(models.Model):
     CARD_TYPES = [
-        ('HVL', 'HVL Client Card'),
-        ('BACK', 'Back to Care Client Card'),
-        ('NEW', 'New Initiation Client Card'),
+        ('hvl', 'HVL Client Card'),
+        ('b2c', 'Back to Care Client Card'),
+        ('new_initiation', 'New Initiation Client Card'),
     ]
     
     STATUS_CHOICES = [
         ('IN_PROGRESS', 'In Progress'),
-        ('ALIVE', 'Alive'),
+        ('Complete', 'Alive'),
         ('DIED', 'Died'),
         ('TRANSFERRED', 'Transferred Out'),
         ('STOPPED', 'Treatment Stopped'),
@@ -20,7 +20,7 @@ class ClientCard(models.Model):
     
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     unique_id = models.CharField(max_length=100, unique=True)
-    card_type = models.CharField(max_length=5, choices=CARD_TYPES)
+    card_type = models.CharField(max_length=14, choices=CARD_TYPES)
     date_opened = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='IN_PROGRESS')
     notes = models.TextField(blank=True, null=True)
@@ -49,7 +49,7 @@ class ClientCard(models.Model):
         to_create = []
         
         for row in reader:
-            arv_num = cls.parse_arv_number(row.get('art_number', ''))
+            arv_num = row.get('art_number', '')
 
             if arv_num:
                 patient = Patient.objects.filter(arv_number = arv_num)
@@ -64,10 +64,10 @@ class ClientCard(models.Model):
 
                 client_card = cls(
                     patient=patient.first(),
-                    card_type=cls.clean_accession_number(row.get('card_type', '')),
-                    unique_id=cls.clean_result_value(row.get('unique_id', '')),
-                    date_opened=cls.parse_date(row.get('date_enrollment', '')),
-                    status=cls.clean_result_value(row.get('outcome', '')),
+                    card_type=row.get('card_type', ''),
+                    unique_id=row.get('unique_id', ''),
+                    date_opened=row.get('date_enrollment', ''),
+                    status=row.get('status', ''),
                 )
 
                 to_create.append(client_card)
