@@ -45,6 +45,11 @@ class Patient(models.Model):
         ('Female', 'Female'),
         ('Male', 'Male'),
     ]
+
+    ACTION_CHOICES = [
+        ('Transfer', 'Transfer'),
+        ('Stopped', 'Stopped')
+    ]
     
     arv_number = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255, null=True)
@@ -54,16 +59,17 @@ class Patient(models.Model):
     art_start_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    actions = models.CharField(max_length=255, null=True, blank=True, choices=ACTION_CHOICES)
+    notes = models.TextField(null=True, blank=True)
 
     objects = PatientManager()
-
-    def __str__(self):
-        return f"{self.arv_number}: {self.name}, DOB:{self.birthdate} Gender: {self.gender}"
 
     def age(self):
         today = date.today()
         return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
 
+    def __str__(self):
+        return f"{self.arv_number}: {self.name}, DOB:{self.birthdate}({self.age()}) Gender: {self.gender}"
 
     def months_on_art(self):
         today = date.today()

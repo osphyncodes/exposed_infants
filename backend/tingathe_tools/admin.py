@@ -4,7 +4,7 @@ from .models import *
 
 class ClientCardAdmin(admin.ModelAdmin):
     list_display = ('patient', 'unique_id', 'card_type', 'date_opened', 'status')
-    search_fields = ['patient__arv_number',]
+    search_fields = ['patient__arv_number','unique_id']
 
 admin.site.register(ClientCard, ClientCardAdmin)
 
