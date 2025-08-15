@@ -508,7 +508,7 @@ class Staff(models.Model):
     cadre = models.CharField(max_length=255, choices=CADRE_CHOICES)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.id}: {self.name}"
 
 class Survey(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name= 'surveys')

@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'art',
     'teen_club',
-    'django_select2'
+    'django_select2',
+    'tracing'
 ]
 
 SELECT2_CACHE_BACKEND = 'default'
