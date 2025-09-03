@@ -12,10 +12,17 @@ class Tracing(models.Model):
     type = models.CharField(max_length=100)
     reason = models.CharField(max_length=100)
     with_phone = models.BooleanField(default=False)
+    tracing_attempted = models.BooleanField(default=False)
+    by_motorbike = models.BooleanField(default=False)
     home_traced = models.BooleanField(default=False)
+    phone_called = models.BooleanField(default=False)
     tracing_outcome = models.BooleanField(default=False)
     final_outcome = models.CharField(max_length=100)
+    outcome_date = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.art_number}->{self.chw.name}->{self.reason}"
+    
     @classmethod
     def import_tracing_csv(cls, csv_file):
         from io import TextIOWrapper
@@ -50,7 +57,7 @@ class Tracing(models.Model):
                 try:
                     unique_id = int(row['unique_id'])
 
-                    staff = Staff.objects.get(id=row['chw_id'])
+                    staff = Staff.objects.get(chw_code=row['chw_id'])
                     if not staff:
                         results['errors'].append({
                             'row': row,
@@ -118,3 +125,72 @@ class Tracing(models.Model):
                 'error': f"File processing error: {str(e)}"
             })
             return results
+        
+class HomeTracing(models.Model):
+    HOME_TRACING_CHOICES = [
+        ('found_house_talked', 'Found House and Talked to Client'),
+        ('found_house_not_home', 'Found House but Client Not Home'),
+        ('house_not_found', 'House Not Found')
+
+    ]
+    tracing = models.ForeignKey(Tracing, on_delete=models.CASCADE, related_name="home_tracings")
+    date_visited = models.DateTimeField()
+    outcome = models.CharField(max_length=100, choices=HOME_TRACING_CHOICES)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'hometracing'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        Tracing.objects.filter(unique_id=self.tracing.unique_id).update(home_traced=True)
+        Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_attempted=True)
+        if self.outcome == 'found_house_talked':
+            Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_outcome=True)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        if not HomeTracing.objects.filter(tracing=self.tracing).exists():
+            Tracing.objects.filter(unique_id=self.tracing.unique_id).update(home_traced=False)
+            if not PhoneTracing.objects.filter(tracing__unique_id=self.tracing.unique_id).exists():
+                Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_attempted=False)
+
+        if not HomeTracing.objects.filter(tracing__unique_id=self.tracing.unique_id, outcome='found_house_talked').exists():
+            if not PhoneTracing.objects.filter(tracing__unique_id=self.tracing.unique_id, outcome='talked_to_client').exists():
+                Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_outcome=False)
+
+
+class PhoneTracing(models.Model):
+    PHONE_CALL_RESULT_CHOICES = [
+        ('talked_to_client', 'Talked to Client'),
+        ('wrong_number', "wrong Number/Didn't Know Client"),
+        ('no_answer', 'No Answer'),
+        ('out_of_network', 'Out of Network'),
+        ('line_busy', 'Line Busy')
+    ]
+    tracing = models.ForeignKey(Tracing, on_delete=models.CASCADE, related_name="phone_tracings")
+    date_called = models.DateTimeField()
+    outcome = models.CharField(max_length=100, choices=PHONE_CALL_RESULT_CHOICES)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'phonetracing'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        Tracing.objects.filter(unique_id=self.tracing.unique_id).update(phone_called=True)
+        Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_attempted=True)
+        if self.outcome == 'talked_to_client':
+            Tracing.objects.filter(unique_id=self.tracing.unique_id).update(tracing_outcome=True)
+
+    def delete(self, *args, **kwargs):
+        tracing_id = self.tracing.unique_id
+        super().delete(*args, **kwargs)
+        if not PhoneTracing.objects.filter(tracing__unique_id=tracing_id).exists():
+            Tracing.objects.filter(unique_id=tracing_id).update(phone_called=False)
+            if not HomeTracing.objects.filter(tracing__unique_id=tracing_id).exists():
+                Tracing.objects.filter(unique_id=tracing_id).update(tracing_attempted=False)
+
+        if not PhoneTracing.objects.filter(tracing__unique_id=tracing_id, outcome='talked_to_client').exists():
+            if not HomeTracing.objects.filter(tracing__unique_id=tracing_id, outcome='found_house_talked').exists():
+                Tracing.objects.filter(unique_id=tracing_id).update(tracing_outcome=False)

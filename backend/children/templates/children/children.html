@@ -11,7 +11,7 @@
     <form method="post" class="row g-3 mb-4">
         {% csrf_token %}
         <div class="col-md-4">
-            <select name="search_by" class="form-select" required>
+            <select id="id_search_by" name="search_by" class="form-select" required>
                 <option value="hcc" {% if request.GET.search_by == "hcc" %}selected{% endif %}>HCC Number</option>
                 <option value="mother_art" {% if request.GET.search_by == "mother_art" %}selected{% endif %}>Mother ART Number</option>
             </select>

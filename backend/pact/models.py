@@ -498,6 +498,7 @@ class Genotype(models.Model):
 
 class Staff(models.Model):
     name = models.CharField(max_length=255)
+    chw_code = models.CharField(max_length=50, unique=True, blank=True, null=True)
     CADRE_CHOICES = [
         ('Coordinator', 'Coordinator'),
         ('Supervisor', 'Supervisor'),

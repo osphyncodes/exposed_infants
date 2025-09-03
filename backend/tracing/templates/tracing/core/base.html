@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'js/apexcharts.js' %}"></script>
+    
     <!-- Sidebar toggle and tooltip styles are now in styles.css -->
 </head>
 <body>
@@ -20,7 +22,15 @@
         </div>
         <nav class="nav flex-column">
             <a class="nav-link" data-nav-name="dashboard" href="{% url 'tracing:dashboard' %}" data-tooltip="Dashboard"><i class="fas fa-tachometer-alt"></i> <span class="sidebar-label">Dashboard</span></a>
+            {% comment %} tracing updates {% endcomment %}
+            <a class="nav-link" data-nav-name="tracing_updates" href="{% url 'tracing:tracing_updates' %}" data-tooltip="Tracing Updates"><i class="fas fa-sync-alt"></i> <span class="sidebar-label">Tracing Updates</span></a>
             <a class="nav-link" data-nav-name="import_export" href="{% url 'tracing:import_export' %}" data-tooltip="Import/Export"><i class="fas fa-file-import"></i> <span class="sidebar-label">Import/Export</span></a>
+            <a class="nav-link" data-nav-name="notifications" href="{% url 'tracing:notifications' %}" data-tooltip="Notifications"><i class="fas fa-bell"></i> 
+                <span class="sidebar-label position-relative">Notifications
+                    <span class="badge bg-secondary">4</span>
+                </span>
+                </span>
+            </a>
         </nav>
         <div class="mt-auto text-center">
             <a href="{% url 'app_selector' %}" class="btn btn-secondary w-100 mt-3">
@@ -39,6 +49,8 @@
     </div>
     <div class="popview">
         {% block popview %}{% endblock %}
+        {# Include the tracing modals #}
+        {% include 'tracing/includes/tracing_modals.html' %}
     </div>
 
     <script>

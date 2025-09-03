@@ -1,0 +1,432 @@
+{% extends 'tracing/core/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .editable-cell {
+        cursor: pointer;
+        position: relative;
+    }
+    .editable-cell:hover {
+        background-color: #f8f9fa;
+    }
+    .editable-cell.editing {
+        background-color: #e9ecef;
+    }
+    .toggle-btn {
+        width: 60px;
+        height: 30px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .modal {
+    z-index: 1055 !important;
+    }
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+    .toggle-btn input {
+        display: none;
+    }
+    .toggle-btn .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .toggle-btn .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    .toggle-btn input:checked + .slider {
+        background-color: #0d6efd;
+    }
+    .toggle-btn input:checked + .slider:before {
+        transform: translateX(30px);
+    }
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    #loadingSpinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+</style>
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard</h1>
+            <p class="text-muted">Monitor and filter tracing activities</p>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card filter-section">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3" id="filterForm">
+                        <div class="col-md-3">
+                            <label for="chw" class="form-label">Community Health Worker</label>
+                            <select class="form-select" id="chw" name="chw">
+                                <option value="">All CHWs</option>
+                                {% for chw in all_chws %}
+                                    <option value="{{ chw.id }}" {% if chw_filter == chw.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ chw.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_from" class="form-label">Date From</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_to" class="form-label">Date To</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="type" class="form-label">Tracing Type</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="">All Types</option>
+                                {% for type in tracing_types %}
+                                    <option value="{{ type }}" {% if tracing_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="outcome" class="form-label">Final Outcome</label>
+                            <select class="form-select" id="outcome" name="outcome">
+                                <option value="">All Outcomes</option>
+                                {% for outcome in outcomes %}
+                                    <option value="{{ outcome }}" {% if outcome_filter == outcome %}selected{% endif %}>{{ outcome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">With Phone</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_all" value="" {% if not with_phone_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_yes" value="yes" {% if with_phone_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_no" value="no" {% if with_phone_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Home Traced</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_all" value="" {% if not home_traced_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_yes" value="yes" {% if home_traced_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_no" value="no" {% if home_traced_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Apply Filters</button>
+                            <a href="{% url 'tracing:tracing_updates' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracing Table -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Tracing Data</h6>
+                    <span id="lastUpdated" class="text-muted small">Last updated: {% now "M d, Y H:i" %}</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Serial #</th>
+                                    <th>CHW Name</th>
+                                    <th>Date Assigned</th>
+                                    <th>ART #</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>With Phone</th>
+                                    <th>Tracing Attempted</th>
+                                    <th>Phone Called</th>
+                                    <th>Home Traced</th>
+                                    <th>By Motorbike</th>
+                                    <th>Talked to Client</th>
+                                    <th>Final Outcome</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tracing in tracings %}
+                                    <tr data-tracing-id="{{ tracing.unique_id }}">
+                                        <td>{{ tracing.unique_id }}</td>
+                                        <td>{{ tracing.chw.name }}</td>
+                                        <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
+                                        <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
+                                        <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
+                                        <td>{{ tracing.reason }}</td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>                                        
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" type="checkbox" data-field="by_motorbike" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.by_motorbike %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td class="editable-cell" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="action-buttons">
+                                            {% comment %} view link  {% endcomment %}
+                                            <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if tracing.with_phone %}
+                                            <button class="btn btn-sm btn-info phone-tracing-btn" data-bs-toggle="modal" data-bs-target="#phoneTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-warning home-tracing-btn" data-bs-toggle="modal" data-bs-target="#homeTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-home"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="{% static 'js/bootstrap.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrftoken = getCookie('csrftoken');
+
+    function showLoading() { document.getElementById('loadingSpinner').style.display = 'block'; }
+    function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
+    function updateTimestamp() { document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString(); }
+
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    // Toggle button AJAX
+    document.querySelectorAll('.toggle-btn input').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const field = this.dataset.field;
+            const tracingId = this.dataset.tracingId;
+            const value = this.checked;
+            showLoading();
+            fetch('{% url "tracing:update_tracing_field" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ tracing_id: tracingId, field: field, value: value })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) { alert(data.error); this.checked = !value; }
+                updateTimestamp();
+            })
+            .catch(() => { alert('Error updating field'); this.checked = !value; })
+            .finally(hideLoading);
+        });
+    });
+
+    // Editable cells AJAX
+    document.querySelectorAll('.editable-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            if (cell.classList.contains('editing')) return;
+            const field = cell.dataset.field;
+            const tracingId = cell.closest('tr').dataset.tracingId;
+            const oldValue = cell.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = oldValue;
+            input.className = 'form-control form-control-sm';
+            cell.textContent = '';
+            cell.appendChild(input);
+            cell.classList.add('editing');
+            input.focus();
+            function save() {
+                const newValue = input.value;
+                fetch('{% url "tracing:update_tracing_field" %}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                    body: JSON.stringify({ tracing_id: tracingId, field: field, value: newValue })
+                })
+                .then(res => res.json())
+                .then(data => { if (!data.success) alert(data.error); })
+                .catch(() => alert('Error updating field'))
+                .finally(() => { cell.textContent = newValue; cell.classList.remove('editing'); updateTimestamp(); hideLoading(); });
+            }
+            input.addEventListener('keypress', e => { if (e.key === 'Enter') save(); });
+            input.addEventListener('blur', save);
+        });
+    });
+
+    // Phone modal
+    const phoneModalEl = document.getElementById('phoneTracingModal');
+    phoneModalEl.addEventListener('show.bs.modal', e => {
+        const button = e.relatedTarget;
+        document.getElementById('pt_tracing_id').value = button.dataset.tracingId;
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('pt_date_called').value = now.toISOString().slice(0,16);
+    });
+
+    document.getElementById('savePhoneTracing').addEventListener('click', () => {
+        const form = document.getElementById('phoneTracingForm');
+        const formData = new FormData(form);
+        const uniqueId = formData.get('tracing_id');
+        showLoading();
+        fetch('{% url "tracing:add_phone_tracing" %}', { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { 
+                updateTimestamp(); 
+                bootstrap.Modal.getInstance(phoneModalEl).hide(); 
+                document.getElementById('phone_called_' + uniqueId).checked = true; 
+                document.getElementById('tracing_attempted_' + uniqueId).checked = true;
+
+                if (data.talking_to_client) {
+                    document.getElementById('tracing_successful_' + uniqueId).checked = true;
+                }
+            }
+            else alert(data.error);
+        })
+        .catch(() => alert('Error recording phone tracing'))
+        .finally(() => {
+            hideLoading();
+        });
+    });
+
+    // Home modal
+    const homeModalEl = document.getElementById('homeTracingModal');
+    homeModalEl.addEventListener('show.bs.modal', e => {
+        const button = e.relatedTarget;
+        document.getElementById('ht_tracing_id').value = button.dataset.tracingId;
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('ht_date_visited').value = now.toISOString().slice(0,16);
+    });
+
+    document.getElementById('saveHomeTracing').addEventListener('click', () => {
+        const form = document.getElementById('homeTracingForm');
+        const formData = new FormData(form);
+        const uniqueId = formData.get('tracing_id');
+        showLoading();
+        fetch('{% url "tracing:add_home_tracing" %}', { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { 
+                updateTimestamp(); 
+                bootstrap.Modal.getInstance(homeModalEl).hide(); 
+                document.getElementById('home_traced_' + uniqueId).checked = true; 
+                document.getElementById('tracing_attempted_' + uniqueId).checked = true;
+                if (data.talking_to_client) {
+                    document.getElementById('tracing_successful_' + uniqueId).checked = true;
+                }
+            }
+            else alert(data.error);
+        })
+        .catch(() => alert('Error recording home tracing'))
+        .finally(
+            hideLoading,
+            document.getElementById('home_traced_{{ tracing.unique_id }}').checked = true
+        );
+    });
+
+    // CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            });
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

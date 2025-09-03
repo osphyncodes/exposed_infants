@@ -1,6 +1,15 @@
 document.addEventListener('DOMContentLoaded', ()=> {
     document.querySelector('#id_search_value').focus()
 
+    if (localStorage.getItem('selectedSearchBy')) {
+        document.querySelector('#id_search_by').value = localStorage.getItem('selectedSearchBy');
+    }
+    
+    document.querySelector('#id_search_by').addEventListener('change', (event) => {
+        const selectedValue = event.target.value;
+        localStorage.setItem('selectedSearchBy', selectedValue);
+    });
+
     async function loadChildren() {
         const tbody = document.querySelector("#id-children-table tbody");
         const url = tbody.dataset.url;

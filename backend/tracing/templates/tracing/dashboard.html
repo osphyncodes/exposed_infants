@@ -1,1 +1,433 @@
 {% extends 'tracing/core/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard</h1>
+            <p class="text-muted">Monitor and filter tracing activities</p>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card filter-section">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="chw" class="form-label">Community Health Worker</label>
+                            <select class="form-select" id="chw" name="chw">
+                                <option value="">All CHWs</option>
+                                {% for chw in all_chws %}
+                                    <option value="{{ chw.id }}" {% if chw_filter == chw.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ chw.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_from" class="form-label">Date From</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_to" class="form-label">Date To</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="type" class="form-label">Tracing Type</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="">All Types</option>
+                                {% for type in tracing_types %}
+                                    <option value="{{ type }}" {% if tracing_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="outcome" class="form-label">Final Outcome</label>
+                            <select class="form-select" id="outcome" name="outcome">
+                                <option value="">All Outcomes</option>
+                                {% for outcome in outcomes %}
+                                    <option value="{{ outcome }}" {% if outcome_filter == outcome %}selected{% endif %}>{{ outcome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">With Phone</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_all" value="" {% if not with_phone_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_yes" value="yes" {% if with_phone_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="with_phone" id="with_phone_no" value="no" {% if with_phone_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="with_phone_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Home Traced</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_all" value="" {% if not home_traced_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_yes" value="yes" {% if home_traced_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="home_traced" id="home_traced_no" value="no" {% if home_traced_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="home_traced_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Apply Filters</button>
+                            <a href="{% url 'tracing:dashboard' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Total Assigned</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_tracings }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-list-ol fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card bg-success text-white">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">With Phone</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ with_phone_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-phone fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card bg-info text-white">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Home Traced</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ home_traced_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-house-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Successful Tracings</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ successful_tracings }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Data -->
+    <div class="row">
+        <!-- Outcome Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Outcome Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="outcomeChart" height="250"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        {% for item in outcome_distribution %}
+                            <span class="mr-2">
+                                <i class="fas fa-circle" style="color: {{ forloop.counter0|get_chart_color }}"></i> {{ item.final_outcome|default:"Unknown" }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Type Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Tracing Type Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        {% comment %} <canvas id="typeChart" height="250"></canvas> {% endcomment %}
+                        <div id="typeChart"></div>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        {% for item in type_distribution %}
+                            <span class="mr-2">
+                                <i class="fas fa-circle" style="color: {{ forloop.counter0|get_chart_color }}"></i> {{ item.type }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHW Performance -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">CHW Performance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="chwPerformanceTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>CHW Name</th>
+                                    <th>Total Assigned</th>
+                                    <th>With Phone</th>
+                                    <th>Number Called</th>
+                                    <th>Home Traced</th>
+                                    <th>Attempts(P/H)</th>
+                                    <th>Attempts Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chw in chw_performance %}
+                                    <tr>
+                                        <td>{{ chw.chw__name }}</td>
+                                        <td>{{ chw.tracing_count }}</td>
+                                        <td>{{ chw.with_phone_count }}</td>
+                                        <td>{{ chw.number_called }}</td>
+                                        <td>{{ chw.home_traced_count }}</td>
+                                        <td>{{ chw.success_count }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100 }}{% else %}0{% endif %}%" 
+                                                     aria-valuenow="{% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100 }}{% else %}0{% endif %}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    {% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100|floatformat:1 }}%{% else %}0%{% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tracings -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Tracing Activities</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="recentTracingsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>CHW</th>
+                                    <th>ART Number</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>With Phone</th>
+                                    <th>Home Traced</th>
+                                    <th>Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tracing in recent_tracings %}
+                                    <tr>
+                                        <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
+                                        <td>{{ tracing.chw.name }}</td>
+                                        <td>{{ tracing.art_number|default:"N/A" }}</td>
+                                        <td>{{ tracing.type }}</td>
+                                        <td>{{ tracing.reason }}</td>
+                                        <td>
+                                            {% if tracing.with_phone %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if tracing.home_traced %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-outcome 
+                                                {% if tracing.final_outcome == 'Successful' %}bg-success
+                                                {% elif tracing.final_outcome == 'Failed' %}bg-danger
+                                                {% else %}bg-info{% endif %}">
+                                                {{ tracing.final_outcome }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Outcome Distribution Chart
+    var outcomeCtx = document.getElementById("outcomeChart");
+    var outcomeChart = new Chart(outcomeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for item in outcome_distribution %}
+                    "{{ item.final_outcome|default:'Unknown' }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for item in outcome_distribution %}
+                        {{ item.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#f8f9fc', '#5a5c69'
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#656768', '#dde2e6', '#42444a'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 70,
+        },
+    });
+
+    // Type Distribution Chart
+        var options = {
+        chart: {
+            type: 'bar',
+            height: '250'
+        },
+        series: [{
+            name: 'Count',
+            data: [
+                {% for item in type_distribution %}
+                    {{ item.count }},
+                {% endfor %}
+            ]
+        }],
+        xaxis: {
+            categories: [
+                {% for item in type_distribution %}
+                    "{{ item.reason }}",
+                {% endfor %}
+            ]
+        },
+        colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#f8f9fc', '#5a5c69'],
+        plotOptions: {
+            bar: {
+                distributed: true,
+                borderRadius: 4,
+                dataLabels: {
+                    position: 'top' // place labels on top of bars
+                }
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return val;
+            },
+            offsetY: -20, // move labels above the bar
+            style: {
+                fontSize: '12px',
+                colors: ["#304758"]
+            }
+        },
+        tooltip: {
+            theme: 'light',
+            y: {
+                formatter: function (val) {
+                    return val;
+                }
+            }
+        },
+        legend: {
+            show: true
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#typeChart"), options);
+    chart.render();
+</script>
+{% endblock %}

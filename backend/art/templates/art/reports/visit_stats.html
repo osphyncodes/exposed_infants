@@ -6,7 +6,17 @@
         <tr>
             <th>ART #</th>
             <th>Age</th>
+            <th>Name</th>
             <th>Visit Date</th>
+            <th>weight</th>
+            <th>height</th>
+            <th>bp</th>
+            <th>pill Count</th>
+            <th>regimen</th>
+            <th>ARV Given</th>
+            <th>CPT Given</th>
+            <th>TPT Given</th>
+            <th>Next Appointment Date</th>
         </tr>
     </thead>
     <tbody data-url="{% url 'pact:children' %}" data-view = "{% url 'pact:child_dashboard' 1106 %}" >
@@ -14,8 +24,18 @@
         <tr>
             <td>{{ visit.patient.arv_number }}</td>
             <td>{{ visit.patient.age }}</td>
+            <td>{{ visit.patient.name }}</td>
             <!-- <td>{{ visit.visit_date }}</td> -->
             <td>{{ visit.visit_date|date:"d/M/Y" }}</td>
+            <td>{{ visit.weight }}</td>
+            <td>{{ visit.height }}</td>
+            <td>{{ visit.bp }}</td>
+            <td>{{ visit.pill_count }}</td>
+            <td>{{ visit.regimen }}</td>
+            <td>{{ visit.arv_given }}</td>
+            <td>{{ visit.cpt_given }}</td>
+            <td>{{ visit.tpt_given }}</td>
+            <td>{{ visit.next_outcome_date|date:"d/M/Y" }}</td>
         </tr>
         {% empty %}
         <tr><td colspan="8">No children found.</td></tr>

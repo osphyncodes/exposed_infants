@@ -1,0 +1,78 @@
+<div class="modal fade" id="phoneTracingModal" tabindex="-1" aria-labelledby="phoneTracingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="phoneTracingModalLabel">Record Phone Tracing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="phoneTracingForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="pt_tracing_id" name="tracing_id">
+                    <div class="mb-3">
+                        <label for="pt_date_called" class="form-label">Date Called</label>
+                        <input type="datetime-local" class="form-control" id="pt_date_called" name="date_called" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pt_outcome" class="form-label">Outcome</label>
+                        <select class="form-select" id="pt_outcome" name="outcome" required>
+                            <option value="">Select Outcome</option>
+                            <option value="talked_to_client">Talked to Client</option>
+                            <option value="wrong_number">Wrong Number/Didn't Know Client</option>
+                            <option value="no_answer">No Answer</option>
+                            <option value="out_of_network">Out of Network</option>
+                            <option value="line_busy">Line Busy</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pt_notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="pt_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="savePhoneTracing">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Home Tracing Modal -->
+<div class="modal fade" id="homeTracingModal" tabindex="-1" aria-labelledby="homeTracingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="homeTracingModalLabel">Record Home Tracing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="homeTracingForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="ht_tracing_id" name="tracing_id">
+                    <div class="mb-3">
+                        <label for="ht_date_visited" class="form-label">Date Visited</label>
+                        <input type="datetime-local" class="form-control" id="ht_date_visited" name="date_visited" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ht_outcome" class="form-label">Outcome</label>
+                        <select class="form-select" id="ht_outcome" name="outcome" required>
+                            <option value="">Select Outcome</option>
+                            <option value="found_house_talked">Found House and Talked to Client</option>
+                            <option value="found_house_not_home">Found House but Client Not Home</option>
+                            <option value="house_not_found">House Not Found</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ht_notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="ht_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveHomeTracing">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
