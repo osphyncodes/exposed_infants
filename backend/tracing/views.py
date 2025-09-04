@@ -6,7 +6,7 @@ from tracing.models import Tracing
 
 from django.db.models import Count, Q, Case, When, IntegerField, F
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 from .models import Tracing, Staff, HomeTracing, PhoneTracing
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -291,9 +291,23 @@ def update_tracing_field(request):
         tracing_id = data.get('tracing_id')
         field = data.get('field')
         value = data.get('value')
+ 
         
         tracing = Tracing.objects.get(unique_id=tracing_id)
         
+        if field == 'outcome_date':
+            if value.strip() == '':
+               value = None
+            
+            if tracing.final_outcome.strip() == '' and value is not None: 
+                return JsonResponse({'success': False, 'error': 'Set final outcome before setting outcome date'})
+        
+        if field == 'final_outcome':
+            if value.strip() == '':
+                Tracing.objects.filter(unique_id=tracing_id).update(outcome_date=None)
+                tracing.refresh_from_db()
+
+        print(f"this is final outcome {tracing.final_outcome} now" )
         # Update the field
         if hasattr(tracing, field):
             setattr(tracing, field, value)
@@ -316,7 +330,14 @@ def add_phone_tracing(request):
         notes = request.POST.get('notes', '')
         
         tracing = Tracing.objects.get(unique_id=tracing_id)
-        
+
+        if tracing.phone_tracings.filter(date_called=date_called).exists():
+            return JsonResponse({'success': False, 'error': 'A phone tracing for this date already exists.'})
+        # Create phone tracing record
+
+        if tracing.phone_tracings.count() >= 3:
+            return JsonResponse({'success': False, 'error': 'Maximum of 3 phone tracing attempts reached.'})
+
         # Create phone tracing record
         PhoneTracing.objects.create(
             tracing=tracing,
@@ -346,9 +367,25 @@ def add_home_tracing(request):
         outcome = request.POST.get('outcome')
         notes = request.POST.get('notes', '')
         
+        # try:
+        #     # Convert string (YYYY-MM-DD) to a date object
+        #     date_visited = datetime.strptime(date_visited, "%Y-%m-%d").date()
+        # except (TypeError, ValueError):
+        #     return JsonResponse({'success': False, 'error': 'Invalid date format. Use YYYY-MM-DD.'})
+
+        # # Now you can safely compare
+        # if date_visited > timezone.now().date():
+        #     return JsonResponse({'success': False, 'error': 'Date visited cannot be in the future.'})
+                
         tracing = Tracing.objects.get(unique_id=tracing_id)
         
+        if tracing.home_tracings.filter(date_visited=date_visited).exists():
+            return JsonResponse({'success': False, 'error': 'A home tracing for this date already exists.'})
         # Create home tracing record
+
+        if tracing.home_tracings.count() >= 2:
+            return JsonResponse({'success': False, 'error': 'Maximum of 2 home tracing attempts reached.'})
+        
         HomeTracing.objects.create(
             tracing=tracing,
             date_visited=date_visited,
@@ -369,7 +406,6 @@ def add_home_tracing(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
     
-
 @login_required
 def tracing_detail(request, unique_id):
     tracing = get_object_or_404(Tracing, unique_id=unique_id)

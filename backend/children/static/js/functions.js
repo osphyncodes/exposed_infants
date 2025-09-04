@@ -963,3 +963,28 @@ function createNumericKeypad(containerID, inputID) {
         input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
+
+function showAlert(type = "info", message = "This is an alert!") {
+    const container = document.getElementById("alert-container");
+    container.innerHTML = ""; // clear previous alerts
+
+    // Create alert div
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show text-center shadow`;
+    alertDiv.setAttribute("role", "alert");
+    alertDiv.style.display = "inline-block"; // shrink to content
+
+    // Message
+    alertDiv.innerHTML = `
+        <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    container.appendChild(alertDiv);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+        bsAlert.close();
+    }, 3000);
+}

@@ -82,12 +82,12 @@
     <div class="row mb-4">
         <div class="col">
             <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard</h1>
-            <p class="text-muted">Monitor and filter tracing activities</p>
+            <p class="text-muted">Monitor and filter tracing activities <span class="btn btn-primary" id="toggleFilters">Hide Filters</span></p>
         </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="row mb-4">
+    <div class="row mb-4" id='filter_id'>
         <div class="col">
             <div class="card filter-section">
                 <div class="card-header bg-white">
@@ -202,6 +202,7 @@
                                     <th>By Motorbike</th>
                                     <th>Talked to Client</th>
                                     <th>Final Outcome</th>
+                                    <th>Outcome Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -252,7 +253,8 @@
                                             </label>
                                         </td>
 
-                                        <td class="editable-cell" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-select" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-date" data-field="outcome_date">{{ tracing.outcome_date|date:"d/M/Y" }}</td>
                                         <td class="action-buttons">
                                             {% comment %} view link  {% endcomment %}
                                             <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
@@ -279,12 +281,9 @@
 </div>
 
 
-
-<script src="{% static 'js/bootstrap.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const csrftoken = getCookie('csrftoken');
-
     function showLoading() { document.getElementById('loadingSpinner').style.display = 'block'; }
     function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
     function updateTimestamp() { document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString(); }
@@ -304,15 +303,79 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(res => res.json())
             .then(data => {
-                if (!data.success) { alert(data.error); this.checked = !value; }
+                if (!data.success) { showAlert(type='error', message=data.error); this.checked = !value; }
+                showAlert(type='success', message='Field updated successfully');
                 updateTimestamp();
             })
-            .catch(() => { alert('Error updating field'); this.checked = !value; })
+            .catch(() => { showAlert(type='error', message='Error updating field'); this.checked = !value; })
             .finally(hideLoading);
         });
     });
 
-    // Editable cells AJAX
+    document.querySelectorAll('.editable-select').forEach(cell => {
+        cell.addEventListener('click', function () {
+            if (cell.classList.contains('editing')) return;
+            const field = cell.dataset.field;
+            const tracingId = cell.closest('tr').dataset.tracingId;
+            const oldValue = cell.textContent.trim();
+
+            // Create select element
+            const select = document.createElement('select');
+            select.className = 'form-select form-select-sm';
+
+            // Options: empty, Yes, No
+            const options = ["", "Came Back", "Attended Appointment", "Transferred Out", "Moved", "Declined/Refused", "Died", "Not Found", "Outside Tracing Area", "Did Not Return"];
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt === "" ? "—" : opt; // show dash for empty
+                if (opt.toLowerCase() === oldValue.toLowerCase()) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            cell.textContent = '';
+            cell.appendChild(select);
+            cell.classList.add('editing');
+            select.focus();
+
+            function save() {
+                const newValue = select.value;
+                fetch('{% url "tracing:update_tracing_field" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        tracing_id: tracingId,
+                        field: field,
+                        value: newValue
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) {
+                            showAlert('error', data.error);
+                        } else {
+                            showAlert('success', 'Field updated successfully');
+                            updateTimestamp();
+                        }
+                    })
+                    .catch(() => showAlert('error', 'Error updating field'))
+                    .finally(() => {
+                        cell.textContent = newValue || ""; // fallback empty if no value
+                        cell.classList.remove('editing');
+                        hideLoading();
+                    });
+            }
+
+            select.addEventListener('change', save);
+            select.addEventListener('blur', save);
+        });
+    });
+
     document.querySelectorAll('.editable-cell').forEach(cell => {
         cell.addEventListener('click', function() {
             if (cell.classList.contains('editing')) return;
@@ -335,14 +398,69 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ tracing_id: tracingId, field: field, value: newValue })
                 })
                 .then(res => res.json())
-                .then(data => { if (!data.success) alert(data.error); })
-                .catch(() => alert('Error updating field'))
+                .then(data => { 
+                    if (!data.success) showAlert(type='error', message=data.error); 
+                    showAlert(type='success', message='Field updated successfully'); 
+                    updateTimestamp(); 
+                })
+                .catch(() => showAlert(type='error', message='Error updating field'))
                 .finally(() => { cell.textContent = newValue; cell.classList.remove('editing'); updateTimestamp(); hideLoading(); });
             }
             input.addEventListener('keypress', e => { if (e.key === 'Enter') save(); });
             input.addEventListener('blur', save);
         });
     });
+
+    document.querySelectorAll('.editable-date').forEach(cell => {
+        cell.addEventListener('click', function() {
+            if (cell.classList.contains('editing')) return;
+            const field = cell.dataset.field;
+            const tracingId = cell.closest('tr').dataset.tracingId;
+            const oldValue = cell.textContent;
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.value = oldValue;
+            input.className = 'form-control form-control-sm';
+            cell.textContent = '';
+            cell.appendChild(input);
+            cell.classList.add('editing');
+            input.focus();
+            function save() {
+                const newValue = input.value;
+                fetch('{% url "tracing:update_tracing_field" %}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                    body: JSON.stringify({ tracing_id: tracingId, field: field, value: newValue })
+                })
+                .then(res => res.json())
+                .then(data => { 
+                    if (!data.success) {
+                        showAlert(type='error', message=data.error)   
+                    } else {
+                    showAlert(type='success', message='Field updated successfully'); 
+                    updateTimestamp(); 
+                    }
+                })
+                .catch(() => showAlert(type='error', message='Error updating field'))
+                .finally(() => { cell.textContent = newValue; cell.classList.remove('editing'); updateTimestamp(); hideLoading(); });
+            }
+            input.addEventListener('keypress', e => { if (e.key === 'Enter') save(); });
+            input.addEventListener('blur', save);
+        });
+    });
+
+    showHideBtn = document.getElementById('toggleFilters');
+
+    document.getElementById('toggleFilters').addEventListener('click', ()=> {
+
+        if (showHideBtn.innerText === 'Hide Filters') {
+            document.getElementById('filter_id').style.display = 'none'
+            showHideBtn.innerText = 'Show Filters'
+        }else {
+            document.getElementById('filter_id').style.display = 'block'
+            showHideBtn.innerText = 'Hide Filters'
+        }
+    })
 
     // Phone modal
     const phoneModalEl = document.getElementById('phoneTracingModal');
@@ -367,14 +485,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 bootstrap.Modal.getInstance(phoneModalEl).hide(); 
                 document.getElementById('phone_called_' + uniqueId).checked = true; 
                 document.getElementById('tracing_attempted_' + uniqueId).checked = true;
+                showAlert(type='success', message='Phone tracing recorded successfully');
 
                 if (data.talking_to_client) {
                     document.getElementById('tracing_successful_' + uniqueId).checked = true;
                 }
             }
-            else alert(data.error);
+            else showAlert(type='error', message=data.error);
         })
-        .catch(() => alert('Error recording phone tracing'))
+        .catch(() => showAlert(type='error', message='Error recording phone tracing'))
         .finally(() => {
             hideLoading();
         });
@@ -403,13 +522,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 bootstrap.Modal.getInstance(homeModalEl).hide(); 
                 document.getElementById('home_traced_' + uniqueId).checked = true; 
                 document.getElementById('tracing_attempted_' + uniqueId).checked = true;
+                showAlert(type='success', message='Home tracing recorded successfully');
                 if (data.talking_to_client) {
                     document.getElementById('tracing_successful_' + uniqueId).checked = true;
                 }
             }
-            else alert(data.error);
+            else showAlert(type='error', message=data.error);
         })
-        .catch(() => alert('Error recording home tracing'))
+        .catch(() => showAlert(type='warning', message='Error recording home tracing'))
         .finally(
             hideLoading,
             document.getElementById('home_traced_{{ tracing.unique_id }}').checked = true

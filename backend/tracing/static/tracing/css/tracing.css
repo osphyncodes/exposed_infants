@@ -1,0 +1,66 @@
+.editable-cell {
+    cursor: pointer;
+    position: relative;
+}
+.editable-cell:hover {
+    background-color: #f8f9fa;
+}
+.editable-cell.editing {
+    background-color: #e9ecef;
+}
+.toggle-btn {
+    width: 60px;
+    height: 30px;
+    position: relative;
+    display: inline-block;
+}
+
+.modal {
+z-index: 1055 !important;
+}
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+.toggle-btn input {
+    display: none;
+}
+.toggle-btn .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-btn .slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-btn input:checked + .slider {
+    background-color: #0d6efd;
+}
+.toggle-btn input:checked + .slider:before {
+    transform: translateX(30px);
+}
+.action-buttons .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+#loadingSpinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}

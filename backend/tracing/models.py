@@ -5,6 +5,17 @@ import csv
 
 
 class Tracing(models.Model):
+    FINAL_OUTCOME_CHOICES = [
+        ('came_back', 'Came Back'),
+        ('attended_appointment', 'Attended Appointment'),
+        ('transferred_out', 'Transferred Out'),
+        ('moved', 'Moved'),
+        ('refused', 'Declined/Refused'),
+        ('died', 'Died'),
+        ('not_found', 'Not Found'),
+        ('out', 'Outside Tracing Area'),
+        ('did_not_return', 'Did Not Return'),
+    ]
     unique_id = models.IntegerField(primary_key=True)
     chw = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="tracings")
     date_entered = models.DateTimeField()
@@ -17,7 +28,7 @@ class Tracing(models.Model):
     home_traced = models.BooleanField(default=False)
     phone_called = models.BooleanField(default=False)
     tracing_outcome = models.BooleanField(default=False)
-    final_outcome = models.CharField(max_length=100)
+    final_outcome = models.CharField(max_length=100, choices=FINAL_OUTCOME_CHOICES, blank=True, null=True)
     outcome_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
