@@ -1,0 +1,393 @@
+{% extends 'tracing/core/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .editable-cell {
+        cursor: pointer;
+        position: relative;
+    }
+    .editable-cell:hover {
+        background-color: #f8f9fa;
+    }
+    .editable-cell.editing {
+        background-color: #e9ecef;
+    }
+    .toggle-btn {
+        width: 60px;
+        height: 30px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .modal {
+    z-index: 1055 !important;
+    }
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+    .toggle-btn input {
+        display: none;
+    }
+    .toggle-btn .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .toggle-btn .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    .toggle-btn input:checked + .slider {
+        background-color: #0d6efd;
+    }
+    .toggle-btn input:checked + .slider:before {
+        transform: translateX(30px);
+    }
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    #loadingSpinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+</style>
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-cogs me-2"></i>Queries ({{notification_count}})</h1>
+        </div>
+    </div>
+
+    <!-- Tracing Table -->
+    {% if no_phone_clients.count > 0 %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-primary">With phone but no call ({{no_phone_clients.count}} {% if no_phone_clients.count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Serial #</th>
+                                    <th>CHW Name</th>
+                                    <th>Date Assigned</th>
+                                    <th>ART #</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>With Phone</th>
+                                    <th>Tracing Attempted</th>
+                                    <th>Phone Called</th>
+                                    <th>Home Traced</th>
+                                    <th>By Motorbike</th>
+                                    <th>Talked to Client</th>
+                                    <th>Final Outcome</th>
+                                    <th>Outcome Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tracing in no_phone_clients %}
+                                    <tr data-tracing-id="{{ tracing.unique_id }}">
+                                        <td>{{ tracing.unique_id }}</td>
+                                        <td>{{ tracing.chw.name }}</td>
+                                        <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
+                                        <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
+                                        <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
+                                        <td>{{ tracing.reason }}</td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>                                        
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" type="checkbox" data-field="by_motorbike" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.by_motorbike %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td class="editable-select" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-date" data-field="outcome_date">{{ tracing.outcome_date|date:"d/M/Y" }}</td>
+                                        <td class="action-buttons">
+                                            {% comment %} view link  {% endcomment %}
+                                            <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if tracing.with_phone %}
+                                            <button class="btn btn-sm btn-info phone-tracing-btn" data-bs-toggle="modal" data-bs-target="#phoneTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-warning home-tracing-btn" data-bs-toggle="modal" data-bs-target="#homeTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-home"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tracing_overdue_count > 0 %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-primary">More than 4 Days without Tracing Attempt ({{tracing_overdue_count}} {% if tracing_overdue_count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Serial #</th>
+                                    <th>CHW Name</th>
+                                    <th>Date Assigned</th>
+                                    <th>ART #</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>With Phone</th>
+                                    <th>Tracing Attempted</th>
+                                    <th>Phone Called</th>
+                                    <th>Home Traced</th>
+                                    <th>By Motorbike</th>
+                                    <th>Talked to Client</th>
+                                    <th>Final Outcome</th>
+                                    <th>Outcome Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tracing in tracing_overdue %}
+                                    <tr data-tracing-id="{{ tracing.unique_id }}">
+                                        <td>{{ tracing.unique_id }}</td>
+                                        <td>{{ tracing.chw.name }}</td>
+                                        <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
+                                        <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
+                                        <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
+                                        <td>{{ tracing.reason }}</td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>                                        
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" type="checkbox" data-field="by_motorbike" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.by_motorbike %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td class="editable-select" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-date" data-field="outcome_date">{{ tracing.outcome_date|date:"d/M/Y" }}</td>
+                                        <td class="action-buttons">
+                                            {% comment %} view link  {% endcomment %}
+                                            <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if tracing.with_phone %}
+                                            <button class="btn btn-sm btn-info phone-tracing-btn" data-bs-toggle="modal" data-bs-target="#phoneTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-warning home-tracing-btn" data-bs-toggle="modal" data-bs-target="#homeTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-home"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if need_closure_count > 0 %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-primary">Over 28 Days without outcome (Need Closure) ({{need_closure_count}} {% if need_closure_count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Serial #</th>
+                                    <th>CHW Name</th>
+                                    <th>Date Assigned</th>
+                                    <th>ART #</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>With Phone</th>
+                                    <th>Tracing Attempted</th>
+                                    <th>Phone Called</th>
+                                    <th>Home Traced</th>
+                                    <th>By Motorbike</th>
+                                    <th>Talked to Client</th>
+                                    <th>Final Outcome</th>
+                                    <th>Outcome Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tracing in need_closure %}
+                                    <tr data-tracing-id="{{ tracing.unique_id }}">
+                                        <td>{{ tracing.unique_id }}</td>
+                                        <td>{{ tracing.chw.name }}</td>
+                                        <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
+                                        <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
+                                        <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
+                                        <td>{{ tracing.reason }}</td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-btn form-check form-switch">
+                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>                                        
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" type="checkbox" data-field="by_motorbike" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.by_motorbike %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %} disabled>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+
+                                        <td class="editable-select" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-date" data-field="outcome_date">{{ tracing.outcome_date|date:"d/M/Y" }}</td>
+                                        <td class="action-buttons">
+                                            {% comment %} view link  {% endcomment %}
+                                            <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if tracing.with_phone %}
+                                            <button class="btn btn-sm btn-info phone-tracing-btn" data-bs-toggle="modal" data-bs-target="#phoneTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-warning home-tracing-btn" data-bs-toggle="modal" data-bs-target="#homeTracingModal" data-tracing-id="{{ tracing.unique_id }}">
+                                                <i class="fas fa-home"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

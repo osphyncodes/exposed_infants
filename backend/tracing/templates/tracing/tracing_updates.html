@@ -81,7 +81,7 @@
 
     <div class="row mb-4">
         <div class="col">
-            <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard</h1>
+            <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard {{art_number}}</h1>
             <p class="text-muted">Monitor and filter tracing activities <span class="btn btn-primary" id="toggleFilters">Hide Filters</span></p>
         </div>
     </div>
@@ -96,7 +96,11 @@
                 <div class="card-body">
                     <form method="get" class="row g-3" id="filterForm">
                         <div class="col-md-3">
-                            <label for="chw" class="form-label">Community Health Worker</label>
+                            {% if chw_filter %}
+                            <label class="form-label" style="color: blue;">Community Health Worker <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Community Health Worker</label>
+                            {% endif %}
                             <select class="form-select" id="chw" name="chw">
                                 <option value="">All CHWs</option>
                                 {% for chw in all_chws %}
@@ -107,15 +111,27 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="date_from" class="form-label">Date From</label>
+                            {% if date_from %}
+                            <label class="form-label" style="color: blue;">Date From <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Date From</label>
+                            {% endif %}
                             <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
                         </div>
                         <div class="col-md-2">
-                            <label for="date_to" class="form-label">Date To</label>
+                            {% if date_to %}
+                            <label class="form-label" style="color: blue;">Date to <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Date to</label>
+                            {% endif %}
                             <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
                         </div>
                         <div class="col-md-2">
-                            <label for="type" class="form-label">Tracing Type</label>
+                            {% if tracing_type %}
+                            <label class="form-label" style="color: blue;">Tracing Type <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Tracing Type</label>
+                            {% endif %}
                             <select class="form-select" id="type" name="type">
                                 <option value="">All Types</option>
                                 {% for type in tracing_types %}
@@ -124,7 +140,11 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="outcome" class="form-label">Final Outcome</label>
+                            {% if outcome_filter %}
+                            <label class="form-label" style="color: blue;">Final Outcome <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Final Outcome</label>
+                            {% endif %}
                             <select class="form-select" id="outcome" name="outcome">
                                 <option value="">All Outcomes</option>
                                 {% for outcome in outcomes %}
@@ -133,7 +153,32 @@
                             </select>
                         </div>
                         <div class="col-md-3">
+                            {% if tracing_attempted_filter %}
+                            <label class="form-label" style="color: blue;">Tracing Attempted <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
+                            <label class="form-label">Tracing Attempted</label>
+                            {% endif %}
+                            <div class="d-flex gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tracing_attempted" id="tracing_attempted_all" value="" {% if not tracing_attempted_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="tracing_attempted_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tracing_attempted" id="tracing_attempted_yes" value="yes" {% if tracing_attempted_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="tracing_attempted_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tracing_attempted" id="tracing_attempted_no" value="no" {% if tracing_attempted_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="tracing_attempted_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            {% if with_phone_filter %}
+                            <label class="form-label" style="color: blue;">With Phone <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                            {% else %}
                             <label class="form-label">With Phone</label>
+                            {% endif %}
                             <div class="d-flex gap-2">
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="with_phone" id="with_phone_all" value="" {% if not with_phone_filter %}checked{% endif %}>
@@ -150,7 +195,11 @@
                             </div>
                         </div>
                         <div class="col-md-3">
+                            {% if home_traced_filter %}
+                            <label class="form-label" style="color: blue;">Home Traced {% if home_traced_filter %}<i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i>{% endif %}</label>
+                            {% else %}
                             <label class="form-label">Home Traced</label>
+                            {% endif %}
                             <div class="d-flex gap-2">
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="home_traced" id="home_traced_all" value="" {% if not home_traced_filter %}checked{% endif %}>
@@ -166,6 +215,27 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            {% if talked_to_filter %}
+                            <label class="form-label" style="color: blue;">Talked To{% if talked_to_filter %}<i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i>{% endif %}</label>
+                            {% else %}
+                            <label class="form-label">Talked To</label>
+                            {% endif %}
+                            <div class="d-flex gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="talked_to" id="talked_to_all" value="" {% if not talked_to_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="talked_to_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="talked_to" id="talked_to_yes" value="yes" {% if talked_to_filter == 'yes' %}checked{% endif %}>
+                                    <label class="form-check-label" for="talked_to_yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="talked_to" id="talked_to_no" value="no" {% if talked_to_filter == 'no' %}checked{% endif %}>
+                                    <label class="form-check-label" for="talked_to_no">No</label>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Apply Filters</button>
                             <a href="{% url 'tracing:tracing_updates' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
@@ -176,12 +246,16 @@
         </div>
     </div>
 
+    {% for client in overdue_clients %}
+    {% comment %} <p>{{client.art_number}}</p> {% endcomment %}
+    {% endfor %}
+
     <!-- Tracing Table -->
     <div class="row">
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Tracing Data</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Tracing Data ({{tracings.count}} {% if tracings.count > 1 %} Clients {% else %} Client {% endif %})</h6>
                     <span id="lastUpdated" class="text-muted small">Last updated: {% now "M d, Y H:i" %}</span>
                 </div>
                 <div class="card-body">
@@ -279,7 +353,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

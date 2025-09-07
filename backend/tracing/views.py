@@ -24,6 +24,8 @@ def tracing_updates(request):
     outcome_filter = request.GET.get('outcome', '')
     with_phone_filter = request.GET.get('with_phone', '')
     home_traced_filter = request.GET.get('home_traced', '')
+    tracing_attempted_filter = request.GET.get('tracing_attempted', '')
+    talked_to_filter = request.GET.get('talked_to', '')
     
     # Start with all tracings
     tracings = Tracing.objects.all().select_related('chw')
@@ -42,7 +44,10 @@ def tracing_updates(request):
         tracings = tracings.filter(reason=tracing_type)
     
     if outcome_filter:
-        tracings = tracings.filter(final_outcome=outcome_filter)
+        if outcome_filter != 'Unknown':
+            tracings = tracings.filter(final_outcome=outcome_filter)
+        else:
+            tracings = tracings.filter(final_outcome='')
     
     if with_phone_filter:
         if with_phone_filter == 'yes':
@@ -55,17 +60,39 @@ def tracing_updates(request):
             tracings = tracings.filter(home_traced=True)
         elif home_traced_filter == 'no':
             tracings = tracings.filter(home_traced=False)
-
     
+    if tracing_attempted_filter:
+        if tracing_attempted_filter == 'yes':
+            tracings = tracings.filter(tracing_attempted = True)
+        elif tracing_attempted_filter == 'no':
+            tracings = tracings.filter(tracing_attempted = False)
+
+    if talked_to_filter:
+        if talked_to_filter == 'yes':
+            tracings = tracings.filter(tracing_outcome = True)
+        elif talked_to_filter == 'no':
+            tracings = tracings.filter(tracing_outcome = False)
+
+    print(f"this is chw filter{chw_filter}")
     # Get recent tracings
     recent_tracings = tracings.order_by('-date_entered')[:5]
     
     # Get all CHWs for filter dropdown
-    all_chws = Staff.objects.all().filter(id__gt=3)
+    all_chws = []
+    for tracing in tracings:
+        if tracing.chw not in all_chws:
+            all_chws.append(tracing.chw)
+
     
     # Get unique values for filter dropdowns
     tracing_types = Tracing.objects.values_list('reason', flat=True).distinct()
-    outcomes = Tracing.objects.values_list('final_outcome', flat=True).distinct()
+
+    outcomes = ['Unknown']
+    outcomes_list = Tracing.objects.values_list('final_outcome', flat=True).distinct()
+
+    for outcome in outcomes_list:
+        if outcome != '':
+            outcomes.append(outcome)
     
     context = {
         'tracings': tracings,
@@ -80,6 +107,8 @@ def tracing_updates(request):
         'outcome_filter': outcome_filter,
         'with_phone_filter': with_phone_filter,
         'home_traced_filter': home_traced_filter,
+        'tracing_attempted_filter': tracing_attempted_filter,
+        'talked_to_filter': talked_to_filter
     }
     
     return render(request, 'tracing/tracing_updates.html', context)
