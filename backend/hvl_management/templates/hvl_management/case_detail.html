@@ -1,0 +1,576 @@
+{% extends "hvl_management/core/base.html" %}
+
+{% block title %}HVL Case Details - SN: {{ hvl_record.sn }}{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Navigation -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">HVL Case Details</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'hvl_management:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">SN: {{ hvl_record.sn }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex">
+            <a href="{% url 'hvl_management:dashboard' %}" class="btn btn-secondary mr-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+                <i class="fas fa-plus"></i> Add IAC Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Patient Information Card -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Patient Information</h6>
+                    <span class="badge rounded-pill {% if hvl_record.result_value > 1000 %}bg-danger{% else %}bg-success{% endif %} text-white">
+                        Viral Load: {{ hvl_record.result_value }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th class="text-muted" width="40%">Serial Number:</th>
+                                    <td><strong>{{ hvl_record.sn }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">ART Number:</th>
+                                    <td>{{ hvl_record.art_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Sex:</th>
+                                    <td>{{ hvl_record.sex }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Age:</th>
+                                    <td>{{ hvl_record.age }} years</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th class="text-muted" width="40%">Date Entered:</th>
+                                    <td>{{ hvl_record.date_entered }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Sample Log Number:</th>
+                                    <td>{{ hvl_record.sample_log_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Reason for Test:</th>
+                                    <td>{{ hvl_record.reason_for_test }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Status:</th>
+                                    <td>
+                                        {% if hvl_record.status %}
+                                            <span class="badge rounded-pill bg-info text-dark">{{ hvl_record.status }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-warning btn-block" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+                            <i class="fas fa-comments"></i> New IAC Session
+                        </button>
+                        {% if iac_session_count > 0 %}
+                        <button class="btn btn-info btn-block" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+                            <i class="fas fa-redo"></i> Add Follow-up
+                        </button>
+                        {% endif %}
+
+                        {% if iac_follow_ups.count > 0 %}
+                        <button class="btn btn-danger btn-block" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+                            <i class="fas fa-vial"></i> Drug Resistance Test
+                        </button>
+                        {% endif %}
+
+                        <a href="#" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-print"></i> Print Summary
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IAC Sessions Section -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        IAC Sessions ({{ iac_sessions.count }})
+                    </h6>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+                        <i class="fas fa-plus"></i> Add Session
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if iac_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Session Date</th>
+                                    <th>Staff Member</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in iac_sessions %}
+                                <tr>
+                                    <td>{{ session.session_date }}</td>
+                                    <td>{{ session.staff }}</td>
+                                    <td>
+                                        {% if session.end_time %}
+                                            {{ session.end_time|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">Ongoing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.end_time %}
+                                            {{ session.session_date|timesince:session.end_time.date }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#sessionDetailModal{{ session.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="#" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Session detail modals (rendered after table to keep HTML valid) -->
+                    {% for session in iac_sessions %}
+                    <div class="modal fade" id="sessionDetailModal{{ session.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">IAC Session Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th class="text-muted">Session Date:</th>
+                                            <td>{{ session.session_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Staff Member:</th>
+                                            <td>{{ session.staff }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">End Time:</th>
+                                            <td>
+                                                {% if session.end_time %}
+                                                    {{ session.end_time|date:"M d, Y H:i" }}
+                                                {% else %}
+                                                    <span class="text-muted">Ongoing</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">HVL Record:</th>
+                                            <td>SN: {{ session.hvl_record.sn }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No IAC sessions recorded yet.</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+                            <i class="fas fa-plus"></i> Add First Session
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IAC Follow-ups Section -->
+    {% if iac_session_count > 0 %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        IAC Follow-ups ({{ iac_follow_ups.count }})
+                    </h6>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+                        <i class="fas fa-plus"></i> Add Follow-up
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if iac_follow_ups %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Collection Date</th>
+                                    <th>Sample Log Number</th>
+                                    <th>Result Value</th>
+                                    <th>Date Given to Client</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for follow_up in iac_follow_ups %}
+                                <tr>
+                                    <td>{{ follow_up.collection_date }}</td>
+                                    <td>{{ follow_up.sample_log_number }}</td>
+                                    <td>
+                                        {% if follow_up.result_value %}
+                                            <span class="badge rounded-pill {% if follow_up.result_value > 1000 %}bg-danger{% else %}bg-success{% endif %} text-white">
+                                                {{ follow_up.result_value }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if follow_up.date_given_to_client %}
+                                            {{ follow_up.date_given_to_client }}
+                                        {% else %}
+                                            <span class="text-muted">Not given</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if follow_up.result_value %}
+                                            {% if follow_up.result_value > 1000 %}
+                                                <span class="badge rounded-pill bg-warning text-dark">High VL</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-success text-white">Suppressed</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge rounded-pill bg-secondary text-white">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#followUpDetailModal{{ follow_up.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="#" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#notifyClientModal">
+                                            <i class="fa-solid fa-paper-plane"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Follow-up modals (rendered after table) -->
+                    {% for follow_up in iac_follow_ups %}
+                    <div class="modal fade" id="followUpDetailModal{{ follow_up.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Follow-up Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th class="text-muted">Collection Date:</th>
+                                            <td>{{ follow_up.collection_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Sample Log Number:</th>
+                                            <td>{{ follow_up.sample_log_number }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Result Value:</th>
+                                            <td>
+                                                {% if follow_up.result_value %}
+                                                    {{ follow_up.result_value }}
+                                                {% else %}
+                                                    <span class="text-muted">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Date Given to Client:</th>
+                                            <td>
+                                                {% if follow_up.date_given_to_client %}
+                                                    {{ follow_up.date_given_to_client }}
+                                                {% else %}
+                                                    <span class="text-muted">Not given</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-redo fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No follow-ups recorded yet.</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+                            <i class="fas fa-plus"></i> Add First Follow-up
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Drug Resistance Tests Section -->
+     {% if iac_follow_ups.count > 0 %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        Drug Resistance Tests ({{ resistance_tests.count }})
+                    </h6>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+                        <i class="fas fa-plus"></i> Add Test
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if resistance_tests %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Application Date</th>
+                                    <th>Submit Sample</th>
+                                    <th>Collection Date</th>
+                                    <th>Resistance Detected</th>
+                                    <th>Action Taken</th>
+                                    <th>VL After Action</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in resistance_tests %}
+                                <tr>
+                                    <td>{{ test.application_date }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill
+                                            {% if test.submit_sample == 'Yes' %}bg-success text-white
+                                            {% elif test.submit_sample == 'No' %}bg-danger text-white
+                                            {% else %}bg-warning text-dark{% endif %}">
+                                            {{ test.submit_sample }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if test.collection_date %}
+                                            {{ test.collection_date }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill
+                                            {% if test.resistance_detected == 'Yes' %}bg-danger text-white
+                                            {% elif test.resistance_detected == 'No' %}bg-success text-white
+                                            {% else %}bg-warning text-dark{% endif %}">
+                                            {{ test.resistance_detected }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if test.action_taken %}
+                                            <span class="badge rounded-pill {% if test.action_taken == 'switch' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                                                {{ test.get_action_taken_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if test.vl_after_action %}
+                                            {{ test.vl_after_action }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#resistanceTestDetailModal{{ test.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="#" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Resistance test modals (rendered after table) -->
+                    {% for test in resistance_tests %}
+                    <div class="modal fade" id="resistanceTestDetailModal{{ test.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Drug Resistance Test Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <th class="text-muted">Application Date:</th>
+                                                    <td>{{ test.application_date }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-muted">Submit Sample:</th>
+                                                    <td>
+                                                        <span class="badge rounded-pill
+                                                            {% if test.submit_sample == 'Yes' %}bg-success text-white
+                                                            {% elif test.submit_sample == 'No' %}bg-danger text-white
+                                                            {% else %}bg-warning text-dark{% endif %}">
+                                                            {{ test.submit_sample }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-muted">Collection Date:</th>
+                                                    <td>
+                                                        {% if test.collection_date %}
+                                                            {{ test.collection_date }}
+                                                        {% else %}
+                                                            <span class="text-muted">Not collected</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <th class="text-muted">Resistance Detected:</th>
+                                                    <td>
+                                                        <span class="badge rounded-pill
+                                                            {% if test.resistance_detected == 'Yes' %}bg-danger text-white
+                                                            {% elif test.resistance_detected == 'No' %}bg-success text-white
+                                                            {% else %}bg-warning text-dark{% endif %}">
+                                                            {{ test.resistance_detected }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-muted">Action Taken:</th>
+                                                    <td>
+                                                        {% if test.action_taken %}
+                                                            {{ test.get_action_taken_display }}
+                                                        {% else %}
+                                                            <span class="text-muted">No action taken</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-muted">VL After Action:</th>
+                                                    <td>
+                                                        {% if test.vl_after_action %}
+                                                            {{ test.vl_after_action }}
+                                                        {% else %}
+                                                            <span class="text-muted">Not available</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% if test.comments %}
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <h6>Comments:</h6>
+                                            <div class="border rounded p-3 bg-light">
+                                                {{ test.comments }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-vial fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">No drug resistance tests recorded yet.</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+                            <i class="fas fa-plus"></i> Add First Test
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+
+{% endblock %}

@@ -1,1 +1,345 @@
 {% extends "hvl_management/core/base.html" %}
+
+{% block title %}HVL Management Dashboard{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">HVL Management Dashboard</h1>
+        <div class="d-flex">
+            <a href="{% url 'hvl_management:dashboard' %}" class="btn btn-outline-primary mr-2" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Summary Cards -->
+    <div class="row">
+        <!-- High Viral Load Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total High Viral Load Cases
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ high_vl_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IAC Sessions Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                IAC Sessions
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ iac_sessions_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drug Resistance Tests Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Drug Resistance Tests
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ resistance_tests_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-vial fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Viral Load Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Viral Load Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div id="viralLoadChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reason for Testing -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Reason for Testing</h6>
+                </div>
+                <div class="card-body">
+                    <div id="reasonForTestChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drug Resistance Status -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Drug Resistance Testing Status</h6>
+                </div>
+                <div class="card-body">
+                    <div id="drugResistanceChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Records Table -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 id="recentRecordsHeader" class="m-0 font-weight-bold text-primary">Clients Without IAC Sessions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="recentRecordsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>SN</th>
+                                    <th>ART Number</th>
+                                    <th>Sex</th>
+                                    <th>Age</th>
+                                    <th>Date Entered</th>
+                                    <th>Reason for Test</th>
+                                    <th>Result Value</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in recent_records %}
+                                <tr>
+                                    <td>{{ record.sn }}</td>
+                                    <td>{{ record.art_number }}</td>
+                                    <td>{{ record.sex|title }}</td>
+                                    <td>{{ record.age }}</td>
+                                    <td>{{ record.date_entered }}</td>
+                                    <td>{{ record.reason_for_test|title }}</td>
+                                    <td>
+                                        <span class="badge {% if record.result_value > 1000 %}badge-danger{% else %}badge-success{% endif %}">
+                                            {{ record.result_value }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.status|default:"-" }}</td>
+                                    <td>
+                                            <a href="{% url 'hvl_management:hvl_case_detail' record.sn %}" class="btn btn-sm btn-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        <a href="#" class="btn btn-sm btn-warning" title="IAC Session">
+                                            <i class="fas fa-comments"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+
+
+<script>
+    // Initialize charts when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+
+        makeTableInteractive('recentRecordsTable', 'recentRecordsHeader');
+        // Viral Load Distribution Chart
+        var viralLoadOptions = {
+            series: [{
+                name: 'Records',
+                data: {{ viral_load_data|safe }}
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
+            },
+            colors: ['#4e73df'],
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: false,
+                }
+            },
+            dataLabels: {
+                enabled: true
+            },
+            xaxis: {
+                categories: {{ viral_load_categories|safe }},
+                title: {
+                    text: 'Viral Load Ranges'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Number of Records'
+                }
+            },
+            title: {
+                text: 'Distribution of Viral Load Results',
+                align: 'left'
+            }
+        };
+
+        var viralLoadChart = new ApexCharts(document.querySelector("#viralLoadChart"), viralLoadOptions);
+        viralLoadChart.render();
+
+        // Reason for Testing Chart
+        var reasonForTestOptions = {
+            series: {{ reason_for_test_data|safe }},
+            chart: {
+                type: 'pie',
+                height: 350
+            },
+            colors: ['#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+            labels: {{ reason_for_test_labels|safe }},
+            dataLabels: {
+                enabled: true,
+                formatter: function(val, opts) {
+                    return opts.w.config.series[opts.seriesIndex] + " (" + val.toFixed(1) + "%)"
+                }
+            },
+            legend: {
+                position: 'bottom'
+            },
+            title: {
+                text: 'Reasons for Testing',
+                align: 'center'
+            }
+        };
+
+        var reasonForTestChart = new ApexCharts(document.querySelector("#reasonForTestChart"), reasonForTestOptions);
+        reasonForTestChart.render();
+
+        // Drug Resistance Testing Status Chart
+        var drugResistanceOptions = {
+            series: [{
+                name: 'Pending',
+                data: {{ resistance_pending_data|safe }}
+            }, {
+                name: 'Resistance Detected',
+                data: {{ resistance_detected_data|safe }}
+            }, {
+                name: 'No Resistance',
+                data: {{ resistance_no_data|safe }}
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                stacked: true,
+                toolbar: {
+                    show: false
+                }
+            },
+            colors: ['#f6c23e', '#e74a3b', '#1cc88a'],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                },
+            },
+            dataLabels: {
+                enabled: true
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: {{ resistance_months|safe }},
+                title: {
+                    text: 'Months'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Number of Tests'
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            title: {
+                text: 'Drug Resistance Testing Status Over Time',
+                align: 'left'
+            },
+            legend: {
+                position: 'top'
+            }
+        };
+
+        var drugResistanceChart = new ApexCharts(document.querySelector("#drugResistanceChart"), drugResistanceOptions);
+        drugResistanceChart.render();
+
+        // Filter functionality
+        document.getElementById('dateRange').addEventListener('change', function() {
+            if (this.value === 'custom') {
+                document.getElementById('customDateRange').style.display = 'block';
+            } else {
+                document.getElementById('customDateRange').style.display = 'none';
+            }
+        });
+
+        document.getElementById('applyFilters').addEventListener('click', function() {
+            // In a real implementation, this would send filter parameters to the server
+            // and reload the dashboard with filtered data
+            alert('Filters applied! In a real implementation, this would update the dashboard with filtered data.');
+            $('#filterModal').modal('hide');
+        });
+
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('filterForm').reset();
+            document.getElementById('customDateRange').style.display = 'none';
+        });
+
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            location.reload();
+        });
+    });
+</script>
+{% endblock %}
