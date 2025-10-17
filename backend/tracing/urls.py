@@ -14,4 +14,6 @@ urlpatterns = [
     path('tracing/<int:unique_id>/', views.tracing_detail, name='tracing_detail'),
     path('phone-tracing/delete/<int:pk>/', views.delete_phone_tracing, name='delete_phone_tracing'),
     path('home-tracing/delete/<int:pk>/', views.delete_home_tracing, name='delete_home_tracing'),
+    path('import/attendance/', views.import_attendance_page, name='import_attendance_page'),
+    path('api-refresh-attempts/', views.refresh_tracing_attempts, name='refresh_tracing_attempts')
 ]

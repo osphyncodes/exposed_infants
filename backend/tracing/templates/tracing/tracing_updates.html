@@ -70,6 +70,8 @@
         transform: translate(-50%, -50%);
         z-index: 9999;
     }
+
+    
 </style>
 
 {% block content %}
@@ -83,6 +85,7 @@
         <div class="col">
             <h1><i class="fas fa-search-location me-2"></i>Tracing Dashboard {{art_number}}</h1>
             <p class="text-muted">Monitor and filter tracing activities <span class="btn btn-primary" id="toggleFilters">Hide Filters</span></p>
+            <a href="{% url 'tracing:refresh_tracing_attempts' %}">Refresh attempts</a>
         </div>
     </div>
 
@@ -101,7 +104,7 @@
                             {% else %}
                             <label class="form-label">Community Health Worker</label>
                             {% endif %}
-                            <select class="form-select" id="chw" name="chw">
+                            <select class="form-select selectpicker" data-live-search='true' id="chw" name="chw">
                                 <option value="">All CHWs</option>
                                 {% for chw in all_chws %}
                                     <option value="{{ chw.id }}" {% if chw_filter == chw.id|stringformat:"s" %}selected{% endif %}>
@@ -132,7 +135,7 @@
                             {% else %}
                             <label class="form-label">Tracing Type</label>
                             {% endif %}
-                            <select class="form-select" id="type" name="type">
+                            <select class="form-select selectpicker" data-live-search="true" id="type" name="type">
                                 <option value="">All Types</option>
                                 {% for type in tracing_types %}
                                     <option value="{{ type }}" {% if tracing_type == type %}selected{% endif %}>{{ type }}</option>
@@ -141,17 +144,23 @@
                         </div>
                         <div class="col-md-2">
                             {% if outcome_filter %}
-                            <label class="form-label" style="color: blue;">Final Outcome <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
+                                <label class="form-label" style="color: blue;">
+                                    Final Outcome 
+                                    <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i>
+                                </label>
                             {% else %}
-                            <label class="form-label">Final Outcome</label>
+                                <label class="form-label">Final Outcome</label>
                             {% endif %}
-                            <select class="form-select" id="outcome" name="outcome">
-                                <option value="">All Outcomes</option>
+                            
+                            <select class="form-select selectpicker" id="outcome" name="outcome" multiple data-live-search="true" title="Select Outcomes">
                                 {% for outcome in outcomes %}
-                                    <option value="{{ outcome }}" {% if outcome_filter == outcome %}selected{% endif %}>{{ outcome }}</option>
+                                    <option value="{{ outcome }}" {% if outcome in outcome_filter %}selected{% endif %}>
+                                        {{ outcome }}
+                                    </option>
                                 {% endfor %}
                             </select>
                         </div>
+
                         <div class="col-md-3">
                             {% if tracing_attempted_filter %}
                             <label class="form-label" style="color: blue;">Tracing Attempted <i class="fas fa-filter" style="color:#007bff;" title="Filtered"></i></label>
@@ -236,6 +245,14 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-2">
+                            <label for="date_outcome_from" class="form-label">Date Outcome From</label>
+                            <input type="date" class="form-control" id="date_outcome_from" name="date_outcome_from" value="{{ date_outcome_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_outcome_to" class="form-label">Date Outcome To</label>
+                            <input type="date" class="form-control" id="date_outcome_to" name="date_outcome_to" value="{{ date_outcome_to }}">
+                        </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Apply Filters</button>
                             <a href="{% url 'tracing:tracing_updates' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
@@ -255,7 +272,7 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Tracing Data ({{tracings.count}} {% if tracings.count > 1 %} Clients {% else %} Client {% endif %})</h6>
+                    <h6 id="dataTitle" class="m-0 font-weight-bold text-primary">Tracing Data ({{tracings.count}} {% if tracings.count > 1 %} Clients {% else %} Client {% endif %})</h6>
                     <span id="lastUpdated" class="text-muted small">Last updated: {% now "M d, Y H:i" %}</span>
                 </div>
                 <div class="card-body">
@@ -277,6 +294,7 @@
                                     <th>Talked to Client</th>
                                     <th>Final Outcome</th>
                                     <th>Outcome Date</th>
+                                    <th>Tracing Updated</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -284,14 +302,14 @@
                                 {% for tracing in tracings %}
                                     <tr data-tracing-id="{{ tracing.unique_id }}">
                                         <td>{{ tracing.unique_id }}</td>
-                                        <td>{{ tracing.chw.name }}</td>
+                                        <td class="editable-cell" data-field="{{tracing.chw.id}}">{{ tracing.chw.name }}</td>
                                         <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
                                         <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
                                         <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
                                         <td>{{ tracing.reason }}</td>
                                         <td>
                                             <label class="toggle-btn form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %} disabled>
+                                                <input class="form-check-input" type="checkbox" data-field="with_phone" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.with_phone %}checked{% endif %}>
                                                 <span class="slider"></span>
                                             </label>
                                         </td>
@@ -327,8 +345,15 @@
                                             </label>
                                         </td>
 
-                                        <td class="editable-select" data-field="final_outcome">{{ tracing.final_outcome }}</td>
+                                        <td class="editable-select" data-field="final_outcome">{% if tracing.final_outcome == None %}{% else %}{{ tracing.final_outcome }}{% endif %}</td>
                                         <td class="editable-date" data-field="outcome_date">{{ tracing.outcome_date|date:"d/M/Y" }}</td>
+                                        <td>
+                                            <label class="form-check form-switch toggle-btn">
+                                                <input class="form-check-input" id='tracing_updated_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_updated" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_updated %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                        
                                         <td class="action-buttons">
                                             {% comment %} view link  {% endcomment %}
                                             <a href="{% url 'tracing:tracing_detail' tracing.unique_id %}" class="btn btn-sm btn-info">
@@ -355,11 +380,23 @@
 </div>
 
 <script>
+window.addEventListener("scroll", () => {
+    localStorage.setItem('tracing_updates', window.scrollY);
+});
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
+
+    makeTableInteractive('tracingTable', 'dataTitle')
     const csrftoken = getCookie('csrftoken');
     function showLoading() { document.getElementById('loadingSpinner').style.display = 'block'; }
     function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
     function updateTimestamp() { document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString(); }
+
+    $(document).ready(function() {
+        $('.selectpicker').selectpicker();
+    });
 
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     // Toggle button AJAX

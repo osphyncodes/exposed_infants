@@ -91,6 +91,14 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-2">
+                            <label for="date_outcome_from" class="form-label">Date Outcome From</label>
+                            <input type="date" class="form-control" id="date_outcome_from" name="date_outcome_from" value="{{ date_outcome_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_outcome_to" class="form-label">Date Outcome To</label>
+                            <input type="date" class="form-control" id="date_outcome_to" name="date_outcome_to" value="{{ date_outcome_to }}">
+                        </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Apply Filters</button>
                             <a href="{% url 'tracing:dashboard' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
@@ -241,6 +249,57 @@
                                         <td>{{ chw.number_called }}</td>
                                         <td>{{ chw.home_traced_count }}</td>
                                         <td>{{ chw.success_count }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100 }}{% else %}0{% endif %}%" 
+                                                     aria-valuenow="{% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100 }}{% else %}0{% endif %}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    {% if chw.tracing_count > 0 %}{{ chw.success_count|divisible:chw.tracing_count|multiply:100|floatformat:1 }}%{% else %}0%{% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Performance by Reason</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="chwPerformanceTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>CHW Name</th>
+                                    <th>Total Assigned</th>
+                                    <th>With Phone</th>
+                                    <th>Number Called</th>
+                                    <th>Home Traced</th>
+                                    <th>Attempts(P/H)</th>
+                                    <th>Talked to</th>
+                                    <th>Attempts Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chw in reason_performance %}
+                                    <tr>
+                                        <td>{{ chw.reason }}</td>
+                                        <td>{{ chw.tracing_count }}</td>
+                                        <td>{{ chw.with_phone_count }}</td>
+                                        <td>{{ chw.number_called }}</td>
+                                        <td>{{ chw.home_traced_count }}</td>
+                                        <td>{{ chw.success_count }}</td>
+                                        <td>{{ chw.talked_to }}
                                         <td>
                                             <div class="progress">
                                                 <div class="progress-bar bg-success" role="progressbar" 

@@ -17,5 +17,6 @@ urlpatterns = [
     path('art/', include('art.urls')),
     path('teen_club/', include('teen_club.urls')),
     path('select2/', include('django_select2.urls')),
-    path('tracing/', include('tracing.urls'))
+    path('tracing/', include('tracing.urls')),
+    path('hvl-management/', include('hvl_management.urls')),
 ]

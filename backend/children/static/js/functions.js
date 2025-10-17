@@ -487,6 +487,7 @@ function makeTableInteractive(tableId, titleId, filter_list = []) {
         renderPaginationControls(totalPages);
     }
 
+
     // Export functions
     function exportToCSV(tableId) {
         const table = document.getElementById(tableId);
@@ -494,7 +495,7 @@ function makeTableInteractive(tableId, titleId, filter_list = []) {
         let csv = [];
 
         // Extract headers
-        const headers = Array.from(rows[0].querySelectorAll("th")).map(th => th.textContent.trim());
+        const headers = Array.from(rows[0].querySelectorAll("th")).map(th => `"${th.textContent.trim()}"`);
         csv.push(headers.join(","));
 
         // Extract data rows (only visible ones)
@@ -503,7 +504,13 @@ function makeTableInteractive(tableId, titleId, filter_list = []) {
                 const row = [];
                 const cols = rows[i].querySelectorAll("td");
                 for (let j = 0; j < cols.length; j++) {
-                    row.push(cols[j].textContent.trim());
+                    let cell = cols[j].textContent.trim();
+
+                    // Escape quotes inside text
+                    cell = cell.replace(/"/g, '""');
+
+                    // Wrap the cell in quotes to preserve commas
+                    row.push(`"${cell}"`);
                 }
                 csv.push(row.join(","));
             }
@@ -987,4 +994,354 @@ function showAlert(type = "info", message = "This is an alert!") {
         const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
         bsAlert.close();
     }, 3000);
+}
+
+function preserveScrollPosition(key = "scrollPosition") {
+    console.log('hello')
+    // Restore scroll position on page load
+    window.addEventListener("load", () => {
+        const saved = localStorage.getItem(key);
+        if (saved) window.scrollTo(0, parseInt(saved));
+    });
+
+    // Save scroll position on scroll
+    window.addEventListener("scroll", () => {
+        localStorage.setItem(key, window.scrollY);
+    });
+}
+
+class ExcelLikeTable {
+    constructor(containerId, options = {}) {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            throw new Error(`Container with id "${containerId}" not found`);
+        }
+
+        this.options = {
+            defaultRowCount: 0,
+            allowEmptyRows: true,
+            ...options
+        };
+
+        this.fields = [];
+        this.data = [];
+        this.currentCell = null;
+
+        this.init();
+    }
+
+    init() {
+        this.createTable();
+        this.attachEventListeners();
+    }
+
+    // Add field definitions
+    addField(name, type = 'text', options = {}) {
+        this.fields.push({
+            name,
+            type,
+            options: options.options || [],
+            placeholder: options.placeholder || '',
+            required: options.required || false
+        });
+        
+        if (this.table) {
+            this.createTable();
+        }
+    }
+
+    // Create the table structure
+    createTable() {
+        this.container.innerHTML = '';
+
+        this.table = document.createElement('table');
+        this.table.className = 'excel-like-table';
+        this.table.setAttribute('border', '1');
+        this.table.setAttribute('cellspacing', '0');
+        this.table.setAttribute('cellpadding', '5');
+
+        // Create header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        this.fields.forEach(field => {
+            const th = document.createElement('th');
+            th.textContent = field.name;
+            th.className = 'field-header';
+            headerRow.appendChild(th);
+        });
+
+        const deleteHeader = document.createElement('th');
+        deleteHeader.textContent = 'Actions';
+        headerRow.appendChild(deleteHeader);
+
+        thead.appendChild(headerRow);
+        this.table.appendChild(thead);
+
+        // Create tbody
+        this.tbody = document.createElement('tbody');
+        this.table.appendChild(this.tbody);
+
+        this.container.appendChild(this.table);
+
+        if (this.options.defaultRowCount > 0) {
+            for (let i = 0; i < this.options.defaultRowCount; i++) {
+                this.addRow();
+            }
+        }
+    }
+
+    // Add a new row
+    addRow(rowData = null) {
+        const row = document.createElement('tr');
+        row.className = 'data-row';
+
+        this.fields.forEach((field, index) => {
+            const cell = document.createElement('td');
+            const input = this.createInput(field, rowData ? rowData[field.name] : '');
+            
+            input.setAttribute('data-field-name', field.name);
+            input.setAttribute('data-row-index', this.tbody.children.length);
+            input.setAttribute('data-cell-index', index);
+
+            cell.appendChild(input);
+            row.appendChild(cell);
+        });
+
+        // Add delete button cell
+        const actionCell = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'delete-row-btn';
+        deleteBtn.onclick = () => this.deleteRow(row);
+        actionCell.appendChild(deleteBtn);
+        row.appendChild(actionCell);
+
+        this.tbody.appendChild(row);
+
+        if (!rowData) {
+            const firstInput = row.querySelector('input, select, textarea');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }
+
+        return row;
+    }
+
+    // Create appropriate input based on field type
+    createInput(field, value = '') {
+        let input;
+
+        switch (field.type) {
+            case 'select':
+                input = document.createElement('select');
+                field.options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value || option;
+                    optionElement.textContent = option.label || option;
+                    if (value === optionElement.value) {
+                        optionElement.selected = true;
+                    }
+                    input.appendChild(optionElement);
+                });
+                break;
+
+            case 'date':
+                input = document.createElement('input');
+                input.type = 'date';
+                input.value = value;
+                break;
+
+            case 'number':
+                input = document.createElement('input');
+                input.type = 'number';
+                input.value = value;
+                break;
+
+            case 'textarea':
+                input = document.createElement('textarea');
+                input.value = value;
+                input.rows = 2;
+                break;
+
+            default:
+                input = document.createElement('input');
+                input.type = 'text';
+                input.value = value;
+        }
+
+        if (field.placeholder && input.tagName === 'INPUT') {
+            input.placeholder = field.placeholder;
+        }
+
+        input.className = `excel-input ${field.type}-input`;
+        return input;
+    }
+
+    // Delete a row
+    deleteRow(row) {
+        if (this.tbody.children.length > 1 || this.options.allowEmptyRows) {
+            row.remove();
+            this.updateRowIndexes();
+        }
+    }
+
+    // Update row indexes after deletion
+    updateRowIndexes() {
+        const rows = this.tbody.querySelectorAll('.data-row');
+        rows.forEach((row, rowIndex) => {
+            const inputs = row.querySelectorAll('[data-field-name]');
+            inputs.forEach(input => {
+                input.setAttribute('data-row-index', rowIndex);
+            });
+        });
+    }
+
+    // Get cell coordinates
+    getCellCoordinates(cell) {
+        const rowIndex = parseInt(cell.getAttribute('data-row-index'));
+        const cellIndex = parseInt(cell.getAttribute('data-cell-index'));
+        return { rowIndex, cellIndex };
+    }
+
+    // Navigate to next cell (Tab behavior)
+    navigateNextCell(currentCell) {
+        const { rowIndex, cellIndex } = this.getCellCoordinates(currentCell);
+        
+        if (cellIndex < this.fields.length - 1) {
+            // Next cell in same row
+            const nextCell = this.tbody.children[rowIndex].children[cellIndex + 1].querySelector('input, select, textarea');
+            if (nextCell) nextCell.focus();
+        } else {
+            // First cell of next row
+            if (rowIndex < this.tbody.children.length - 1) {
+                const nextRowFirstCell = this.tbody.children[rowIndex + 1].children[0].querySelector('input, select, textarea');
+                if (nextRowFirstCell) nextRowFirstCell.focus();
+            } else {
+                // Add new row and focus first cell
+                const newRow = this.addRow();
+                const firstCell = newRow.children[0].querySelector('input, select, textarea');
+                if (firstCell) firstCell.focus();
+            }
+        }
+    }
+
+    // Navigate to cell below (Enter behavior) - FIXED
+    navigateBelowCell(currentCell) {
+        const { rowIndex, cellIndex } = this.getCellCoordinates(currentCell);
+        
+        if (rowIndex < this.tbody.children.length - 1) {
+            // Cell below in next row
+            const belowCell = this.tbody.children[rowIndex + 1].children[cellIndex].querySelector('input, select, textarea');
+            if (belowCell) {
+                belowCell.focus();
+                belowCell.select(); // Optional: select text for easy editing
+            }
+        } else {
+            // Add new row and focus same column
+            const newRow = this.addRow();
+            const sameColumnCell = newRow.children[cellIndex].querySelector('input, select, textarea');
+            if (sameColumnCell) {
+                sameColumnCell.focus();
+                sameColumnCell.select(); // Optional: select text for easy editing
+            }
+        }
+    }
+
+    // Attach event listeners - FIXED
+    attachEventListeners() {
+        // Use event delegation for dynamic content
+        this.container.addEventListener('keydown', (e) => {
+            const target = e.target;
+            
+            // Check if the keypress is on an input, select, or textarea
+            if (target.matches('input, select, textarea')) {
+                
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    this.navigateNextCell(target);
+                } 
+                else if (e.key === 'Enter' && !e.shiftKey) {
+                    // For textarea, allow Shift+Enter for new line, Enter for navigation
+                    if (target.tagName !== 'TEXTAREA' || !e.shiftKey) {
+                        e.preventDefault();
+                        this.navigateBelowCell(target);
+                    }
+                }
+            }
+        });
+
+        // Additional click handler for better cell management
+        this.container.addEventListener('click', (e) => {
+            if (e.target.matches('input, select, textarea')) {
+                this.currentCell = e.target;
+            }
+        });
+    }
+
+    // Connect external button to addRow method
+    connectAddRowButton(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.addEventListener('click', () => {
+                this.addRow();
+            });
+        }
+    }
+
+    // Get JSON data from table
+    getJSON() {
+        const data = [];
+        const rows = this.tbody.querySelectorAll('.data-row');
+
+        rows.forEach(row => {
+            const rowData = {};
+            const inputs = row.querySelectorAll('[data-field-name]');
+
+            inputs.forEach(input => {
+                const fieldName = input.getAttribute('data-field-name');
+                rowData[fieldName] = input.value;
+            });
+
+            if (Object.values(rowData).some(val => val !== '') || this.options.allowEmptyRows) {
+                data.push(rowData);
+            }
+        });
+
+        return data;
+    }
+
+    // Connect external button to get JSON
+    connectJSONButton(buttonId, callback = null) {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.addEventListener('click', () => {
+                const jsonData = this.getJSON();
+                if (callback && typeof callback === 'function') {
+                    callback(jsonData);
+                } else {
+                    return jsonData;
+                }
+            });
+        }
+    }
+
+    // Load data into table
+    loadData(data) {
+        this.tbody.innerHTML = '';
+        data.forEach(rowData => {
+            this.addRow(rowData);
+        });
+    }
+
+    // Clear all data
+    clear() {
+        this.tbody.innerHTML = '';
+        if (this.options.defaultRowCount > 0) {
+            for (let i = 0; i < this.options.defaultRowCount; i++) {
+                this.addRow();
+            }
+        }
+    }
 }

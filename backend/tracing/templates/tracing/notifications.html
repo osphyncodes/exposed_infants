@@ -86,11 +86,11 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="m-0 font-weight-bold text-primary">With phone but no call ({{no_phone_clients.count}} {% if no_phone_clients.count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                    <h5 id="no_phone_call" class="m-0 font-weight-bold text-primary">With phone but no call ({{no_phone_clients.count}} {% if no_phone_clients.count > 1 %} Clients {% else %} Client {% endif %})</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-striped" id="no_phone_call_table" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Serial #</th>
@@ -189,11 +189,11 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="m-0 font-weight-bold text-primary">More than 4 Days without Tracing Attempt ({{tracing_overdue_count}} {% if tracing_overdue_count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                    <h5 id="four_days" class="m-0 font-weight-bold text-primary">More than 4 Days without Tracing Attempt ({{tracing_overdue_count}} {% if tracing_overdue_count > 1 %} Clients {% else %} Client {% endif %})</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-striped" id="four_days_table" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Serial #</th>
@@ -292,11 +292,11 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="m-0 font-weight-bold text-primary">Over 28 Days without outcome (Need Closure) ({{need_closure_count}} {% if need_closure_count > 1 %} Clients {% else %} Client {% endif %})</h5>
+                    <h5 id="need_closure" class="m-0 font-weight-bold text-primary">Over 28 Days without outcome (Need Closure) ({{need_closure_count}} {% if need_closure_count > 1 %} Clients {% else %} Client {% endif %})</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="tracingTable" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-striped" id="need_closure_table" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Serial #</th>
@@ -390,4 +390,12 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        makeTableInteractive('no_phone_call_table', 'no_phone_call')
+        makeTableInteractive('four_days_table', 'four_days')
+        makeTableInteractive('need_closure_table', 'need_closure')
+    })
+</script>
 {% endblock %}

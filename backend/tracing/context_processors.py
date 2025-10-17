@@ -69,7 +69,7 @@ def notification_count(request):
         home_count = tracing.home_tracings.count()
         phone_count = tracing.phone_tracings.count()
 
-        if days_since_assigned > 4:
+        if days_since_assigned > 4 and tracing.final_outcome != 'Came Back':
             if home_count == 0 and phone_count == 0:
                 count += 1
                 tracing_overdue_count += 1

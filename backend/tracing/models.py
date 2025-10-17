@@ -20,6 +20,10 @@ class Tracing(models.Model):
     chw = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="tracings")
     date_entered = models.DateTimeField()
     art_number = models.CharField(max_length=20, blank=True, null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    age = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    gender = models.CharField(max_length=20, blank=True, null=True)
+    phone_number = models.CharField(max_length=100, blank=True, null=True)
     type = models.CharField(max_length=100)
     reason = models.CharField(max_length=100)
     with_phone = models.BooleanField(default=False)
@@ -30,6 +34,8 @@ class Tracing(models.Model):
     tracing_outcome = models.BooleanField(default=False)
     final_outcome = models.CharField(max_length=100, choices=FINAL_OUTCOME_CHOICES, blank=True, null=True)
     outcome_date = models.DateTimeField(blank=True, null=True)
+    tracing_updated = models.BooleanField(default=False)
+    mother_art = models.CharField(blank=True, null=True, max_length=4)
 
     def __str__(self):
         return f"{self.art_number}->{self.chw.name}->{self.reason}"
@@ -80,12 +86,17 @@ class Tracing(models.Model):
                         'chw': staff,
                         'date_entered': row['date_entered'],  # Note: Typo in field name?
                         'art_number': row['art_number'],
+                        'name': row['name'],
+                        'gender': row['gender'],
+                        'age': row['age'],
+                        'phone_number': row['phone_number'],
                         'type': row['type'],
                         'reason': row['reason'],
                         'with_phone': row.get('with_phone', '').lower() == 'yes',
                         'home_traced': row.get('home_traced', '').lower() == 'home traced',
                         'tracing_outcome': row.get('tracing_outcome', '').lower() == 'talked to',
-                        'final_outcome': row['final_outcome']
+                        'final_outcome': row['final_outcome'],
+                        'mother_art': row['mother_art']
                     }
 
                     

@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'art',
     'teen_club',
     'django_select2',
-    'tracing'
+    'tracing',
+    'hvl_management',
 ]
 
 SELECT2_CACHE_BACKEND = 'default'
@@ -134,8 +135,11 @@ DATABASES = {
         'NAME': 'osphyncodes',    # Database created in MySQL
         'USER': 'root',       # e.g. 'root'
         'PASSWORD': 'osphyncodes@1995', # e.g. 'usbw' for USBWebserver
-        'HOST': 'localhost',             # or MySQL server IP/domain
-        'PORT': '3306',                  # USBWebserver uses 3307 by default
+        'HOST': '127.0.0.1',             # or MySQL server IP/domain
+        'PORT': '3306', 
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
     }
 }
 
@@ -178,11 +182,18 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "children" / "static",
-    BASE_DIR / "tingathe_tools" / "static",
-    BASE_DIR / "pact" / "static",
-    BASE_DIR / "art" / "static",
+    BASE_DIR / app / "static" 
+    for app in [
+        "children", 
+        "tingathe_tools", 
+        "pact", 
+        "art", 
+        "teen_club", 
+        "tracing", 
+        "hvl_management"
+    ]
 ]
+
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/select-app/'

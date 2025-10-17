@@ -12,7 +12,31 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.db import transaction
+from io import StringIO
+import csv
+import re
+from io import TextIOWrapper
+from django.contrib import messages
 
+@login_required
+def refresh_tracing_attempts(request):
+
+    tracings = Tracing.objects.all()
+
+    for tracing in tracings:
+        if tracing.home_tracings.count() > 0:
+            tracing.home_traced = True
+            tracing.tracing_attempted = True
+        elif tracing.phone_tracings.count() > 0:
+            tracing.phone_called = True
+            tracing.tracing_attempted = True
+        
+        if tracing.home_tracings.filter(outcome='found_house_talked').exists() or tracing.phone_tracings.filter(outcome='talked_to_client').exists():
+            tracing.tracing_outcome=True
+            
+        tracing.save()
+    return redirect('tracing:tracing_updates')
 
 @login_required
 def tracing_updates(request):
@@ -20,8 +44,10 @@ def tracing_updates(request):
     chw_filter = request.GET.get('chw', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
+    date_outcome_from = request.GET.get('date_outcome_from', '')
+    date_outcome_to = request.GET.get('date_outcome_to', '')
     tracing_type = request.GET.get('type', '')
-    outcome_filter = request.GET.get('outcome', '')
+    outcome_filter = request.GET.getlist('outcome', '')
     with_phone_filter = request.GET.get('with_phone', '')
     home_traced_filter = request.GET.get('home_traced', '')
     tracing_attempted_filter = request.GET.get('tracing_attempted', '')
@@ -39,15 +65,30 @@ def tracing_updates(request):
     
     if date_to:
         tracings = tracings.filter(date_entered__lte=date_to)
+
+    if date_outcome_from:
+        tracings = tracings.filter(outcome_date__gte=date_outcome_from)
+
+    if date_outcome_to:
+        tracings = tracings.filter(outcome_date__lte=date_outcome_to)
     
     if tracing_type:
         tracings = tracings.filter(reason=tracing_type)
     
     if outcome_filter:
-        if outcome_filter != 'Unknown':
-            tracings = tracings.filter(final_outcome=outcome_filter)
+    # Handle "Unknown" specially
+        if "Unknown" in outcome_filter:
+            # Outcomes excluding "Unknown"
+            known_outcomes = [o for o in outcome_filter if o != "Unknown"]
+
+            if known_outcomes:
+                tracings = tracings.filter(
+                    Q(final_outcome__in=known_outcomes) | Q(final_outcome=None)
+                )
+            else:
+                tracings = tracings.filter(final_outcome=None)
         else:
-            tracings = tracings.filter(final_outcome='')
+            tracings = tracings.filter(final_outcome__in=outcome_filter)
     
     if with_phone_filter:
         if with_phone_filter == 'yes':
@@ -92,10 +133,11 @@ def tracing_updates(request):
 
     for outcome in outcomes_list:
         if outcome != '':
-            outcomes.append(outcome)
+            if outcome != None:
+                outcomes.append(outcome)
     
     context = {
-        'tracings': tracings,
+        'tracings': tracings.order_by('unique_id', 'chw__name'),
         'recent_tracings': recent_tracings,
         'all_chws': all_chws,
         'tracing_types': tracing_types,
@@ -108,17 +150,20 @@ def tracing_updates(request):
         'with_phone_filter': with_phone_filter,
         'home_traced_filter': home_traced_filter,
         'tracing_attempted_filter': tracing_attempted_filter,
-        'talked_to_filter': talked_to_filter
+        'talked_to_filter': talked_to_filter,
+        'date_outcome_from': date_outcome_from,
+        'date_outcome_to': date_outcome_to,
     }
     
     return render(request, 'tracing/tracing_updates.html', context)
 
-@login_required
-def dashboard(request):
-    # Get filter parameters from request
+
+def filters(request):
     chw_filter = request.GET.get('chw', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
+    date_outcome_from = request.GET.get('date_outcome_from', '')
+    date_outcome_to = request.GET.get('date_outcome_to', '')
     tracing_type = request.GET.get('type', '')
     outcome_filter = request.GET.get('outcome', '')
     with_phone_filter = request.GET.get('with_phone', '')
@@ -140,6 +185,12 @@ def dashboard(request):
     if tracing_type:
         tracings = tracings.filter(reason=tracing_type)
     
+    if date_outcome_from:
+        tracings = tracings.filter(outcome_date__gte=date_outcome_from)
+
+    if date_outcome_to:
+        tracings = tracings.filter(outcome_date__lte=date_outcome_to)
+
     if outcome_filter:
         tracings = tracings.filter(final_outcome=outcome_filter)
     
@@ -154,6 +205,14 @@ def dashboard(request):
             tracings = tracings.filter(home_traced=True)
         elif home_traced_filter == 'no':
             tracings = tracings.filter(home_traced=False)
+    
+    return tracings, chw_filter, date_from, date_to, date_outcome_from, date_outcome_to, tracing_type, outcome_filter, with_phone_filter, home_traced_filter
+
+@login_required
+def dashboard(request):
+    # Get filter parameters from request
+    tracings, chw_filter, date_from, date_to, date_outcome_from, date_outcome_to, tracing_type, outcome_filter, with_phone_filter, home_traced_filter = filters(request)
+
     
     # Calculate statistics
     total_tracings = tracings.count()
@@ -222,7 +281,12 @@ def dashboard(request):
             filter=Q(with_phone=True),
             distinct=True
         ),
-
+        
+        talked_to=Count(
+            'unique_id',
+            filter=Q(tracing_outcome=True),
+            distinct=True
+        ),
         # how many tracings have at least one phone call (any outcome)
         number_called=Count(
             'unique_id',
@@ -272,6 +336,8 @@ def dashboard(request):
         'chw_filter': chw_filter,
         'date_from': date_from,
         'date_to': date_to,
+        'date_outcome_from': date_outcome_from,
+        'date_outcome_to': date_outcome_to,
         'tracing_type': tracing_type,
         'outcome_filter': outcome_filter,
         'with_phone_filter': with_phone_filter,
@@ -335,11 +401,21 @@ def update_tracing_field(request):
             if value.strip() == '':
                 Tracing.objects.filter(unique_id=tracing_id).update(outcome_date=None)
                 tracing.refresh_from_db()
+                value = None
 
-        print(f"this is final outcome {tracing.final_outcome} now" )
+        if isInteger(field):
+            chw = Tracing.objects.filter(name=value)
+            print(f"This is the value {value}")
+            tracing.chw = chw
+            tracing.save()
+            return JsonResponse({'success': True})
+        
         # Update the field
         if hasattr(tracing, field):
             setattr(tracing, field, value)
+            if field != 'tracing_updated':
+                setattr(tracing, 'tracing_updated', False)
+
             tracing.save()
             return JsonResponse({'success': True})
         else:
@@ -375,10 +451,18 @@ def add_phone_tracing(request):
             notes=notes
         )
 
+        tracing.tracing_updated = False
+        tracing.tracing_attempted = True
+        tracing.home_traced = True
+        
+
         if outcome == 'talked_to_client':
             talking_to_client = True
+            tracing.tracing_outcome = True
         else:
             talking_to_client = False
+
+        tracing.save()
 
         return JsonResponse({
             'success': True,
@@ -414,7 +498,7 @@ def add_home_tracing(request):
 
         if tracing.home_tracings.count() >= 2:
             return JsonResponse({'success': False, 'error': 'Maximum of 2 home tracing attempts reached.'})
-        
+    
         HomeTracing.objects.create(
             tracing=tracing,
             date_visited=date_visited,
@@ -422,10 +506,18 @@ def add_home_tracing(request):
             notes=notes
         )
 
+        tracing.tracing_updated = False
+        tracing.tracing_attempted = True
+        tracing.home_traced = True
+         
+
         if outcome == 'found_house_talked':
             talking_to_client = True
+            tracing.tracing_outcome = True
         else:
             talking_to_client = False
+
+        tracing.save()
 
         return JsonResponse({
             'success': True,
@@ -462,3 +554,99 @@ def delete_home_tracing(request, pk):
     tracing_id = home_tracing.tracing.unique_id
     home_tracing.delete()
     return redirect('tracing:tracing_detail', unique_id=tracing_id)
+
+def isInteger(s: str) -> bool:
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+@login_required
+def import_attendance_page(request):
+    if request.method == 'POST':
+        
+        if request.FILES.get('csvFile'):
+            csv_file = request.FILES['csvFile']
+
+            if not csv_file.name.endswith('.csv'):
+                return redirect('tracing:import_attendance')
+            
+        
+
+            # Read entire file into memory
+            content = TextIOWrapper(csv_file.file, encoding='utf-8', newline='').read()
+            
+            # First pass to get all unique_ids for the query
+            reader = csv.DictReader(StringIO(content))
+            count = 0
+
+            try:
+                for row in reader:
+                    arv_number = extract_art_number(row['ARV Number'])
+                    visit_date = to_yyyy_mm_dd(row['Visit date'])
+
+                    tracing = Tracing.objects.filter(art_number=arv_number, type='ART').first()
+
+                    if tracing:
+                        
+                        if (tracing.final_outcome == None or tracing.final_outcome == '') and tracing.tracing_attempted:
+                            tracing.final_outcome = "Attended Appointment"
+                            tracing.outcome_date = visit_date
+
+                            count += 1
+                            tracing.save()
+
+                        elif (tracing.final_outcome == None or tracing.final_outcome == '') and not tracing.tracing_attempted:
+                            tracing.final_outcome = 'Came Back'
+                            tracing.outcome_date = visit_date
+                            count += 1
+                            tracing.save()
+
+                        child = Tracing.objects.filter(mother_art=arv_number).first()
+                        if child:
+                            print(f"Found tracing for ART number {arv_number}")
+                            if (child.final_outcome == None or child.final_outcome == '') and child.tracing_attempted:
+                                child.final_outcome = "Attended Appointment"
+                                child.outcome_date = visit_date
+                                count += 1
+                                child.save()
+                            else:
+                                child.final_outcome = "Came Back"
+                                child.outcome_date = visit_date
+                                count += 1
+                                child.save()
+
+                messages.success(request, f"{count} Clients have been updated successfully!")
+                return redirect('tracing:dashboard')
+            
+            except KeyError as e:
+                messages.error(request, f"Missing expected column in CSV: {str(e)}")
+                return redirect('tracing:import_attendance_page')
+
+    return render(request, 'tracing/imports/attendance.html')
+
+
+def extract_art_number(value: str) -> int | None:
+    """
+    Extract ART number from a string formatted like 'LGWN-ARV-234'.
+    Returns the number as int, or None if not found.
+    """
+    match = re.search(r'(\d+)$', value)  # match digits at the end
+    if match:
+        return int(match.group(1))
+    return None   
+
+from datetime import datetime
+from dateutil import parser
+
+def to_yyyy_mm_dd(date_str: str) -> str | None:
+    """
+    Convert any date string to 'YYYY-MM-DD' format.
+    Returns None if parsing fails.
+    """
+    try:
+        parsed_date = parser.parse(date_str)
+        return parsed_date.strftime("%Y-%m-%d")
+    except (ValueError, TypeError):
+        return None

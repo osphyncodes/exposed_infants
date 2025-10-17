@@ -6,13 +6,21 @@
     <title>{% block title %}Tracing System{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'js/apexcharts.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap_select.css' %}">
+    <script src="{% static 'js/jquery.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/bootstrap_select.js' %}"></script>
+    <script src="{% static 'js/apexcharts.js' %}"></script>
     <script src="{% static 'js/functions.js' %}"></script>
-    
-    <!-- Sidebar toggle and tooltip styles are now in styles.css -->
+
+    <style>
+        select {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
@@ -46,6 +54,7 @@
             </form>
         </div>
     </div>
+    {% include 'includes/messages.html' %}
     <div class="content" id="mainContent">
         {% block content %}{% endblock %}
     </div>
@@ -124,6 +133,8 @@
                 }
             });
         })();
+
+        
     </script>
 </body>
 
