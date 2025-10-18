@@ -16,4 +16,5 @@ urlpatterns = [
     path('case/<int:sn>/add-iac-followup/', views.add_iac_followup, name='add_iac_followup'),
     path('case/<int:sn>/add-resistance-test/', views.add_resistance_test, name='add_resistance_test'),
     path('case/<int:sn>/notify-client/', views.notify_client, name='notify_client'),
+    path('case/<int:sn>/update-result/', views.update_result, name='update_result'),
 ]

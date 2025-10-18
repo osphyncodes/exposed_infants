@@ -1,0 +1,818 @@
+{% extends "hvl_management/core/base.html" %}
+
+{% block title %}HVL Case Details - SN: {{ hvl_record.sn }}{% endblock %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+	<!-- Header with Navigation -->
+	<div class="d-sm-flex align-items-center justify-content-between mb-4">
+		<div>
+			<h1 class="h3 mb-0 text-gray-800">HVL Case Details</h1>
+			<nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="{% url 'hvl_management:dashboard' %}">Dashboard</a></li>
+					<li class="breadcrumb-item active" aria-current="page">SN: {{ hvl_record.sn }}</li>
+				</ol>
+			</nav>
+		</div>
+		<div class="d-flex">
+			<a href="{% url 'hvl_management:dashboard' %}" class="btn btn-secondary mr-2">
+				<i class="fas fa-arrow-left"></i> Back to Dashboard
+			</a>
+			<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+				<i class="fas fa-plus"></i> Add IAC Session
+			</button>
+		</div>
+	</div>
+
+	<!-- Patient Information (compact) -->
+	<div class="row mb-2">
+		<div class="col-lg-8">
+			<div class="card shadow-sm">
+				<div class="card-body py-2">
+					<div class="d-flex justify-content-between align-items-start">
+						<div>
+							<h5 class="mb-1 text-primary fw-bold">Patient</h5>
+							<small class="text-muted">SN: <strong>{{ hvl_record.sn }}</strong> • ART: {{ hvl_record.art_number }}</small>
+							<div class="mt-2 d-flex flex-wrap gap-2">
+								<small class="text-muted me-3">Sex: <strong>{{ hvl_record.sex }}</strong></small>
+								<small class="text-muted me-3">Age: <strong>{{ hvl_record.age }}y</strong></small>
+								<small class="text-muted">Entered: <strong>{{ hvl_record.date_entered }}</strong></small>
+							</div>
+						</div>
+						<div class="text-end">
+							<span class="badge rounded-pill {% if hvl_record.result_value > 1000 %}bg-danger{% else %}bg-success{% endif %} text-white mb-1">
+								VL: {{ hvl_record.result_value }}
+							</span>
+							<br>
+							{% if hvl_record.status %}
+								<span class="small badge rounded-pill bg-info text-dark mt-1">{{ hvl_record.status }}</span>
+							{% else %}
+								<small class="text-muted d-block mt-1">Status: Not specified</small>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Quick Actions (compact) -->
+		<div class="col-lg-4">
+			<div class="card shadow-sm">
+				<div class="card-body py-2">
+					<div class="d-grid gap-2">
+						<button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+							<i class="fas fa-comments me-1"></i> New IAC
+						</button>
+						{% if iac_session_count > 0 %}
+						<button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+							<i class="fas fa-redo me-1"></i> Follow-up
+						</button>
+						{% endif %}
+						{% if iac_follow_ups.count > 0 %}
+						<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+							<i class="fas fa-vial me-1"></i> Resistance
+						</button>
+						{% endif %}
+						<a class="btn btn-sm btn-outline-primary" href="#"><i class="fas fa-print me-1"></i> Print</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Compact Summaries: IAC Session | Follow-up | Resistance -->
+	<div class="row g-2 mb-3">
+		<!-- IAC Session summary -->
+		<div class="col-md-4">
+			<div class="card h-100 shadow-sm">
+				<div class="card-header py-1 d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center gap-2">
+						<i class="fas fa-comments text-primary"></i>
+						<small class="fw-bold">IAC Sessions</small>
+						<small class="text-muted">({{ iac_sessions.count }})</small>
+					</div>
+					<div>
+						<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">Add</button>
+					</div>
+				</div>
+				<div class="card-body py-2">
+					{% if iac_sessions %}
+						{% with session=iac_sessions.first %}
+						<div class="small">
+							<div class="mb-1"><strong>{{ session.session_date }}</strong> — {{ session.staff }}</div>
+							<div class="text-muted small">
+								End: {% if session.end_time %}{{ session.end_time|date:"M d, Y H:i" }}{% else %}Ongoing{% endif %} • Duration: {% if session.end_time %}{{ session.session_date|timesince:session.end_time.date }}{% else %}-{% endif %}
+							</div>
+						</div>
+						{% endwith %}
+						<hr class="my-2">
+						<div class="list-group list-group-flush small" style="max-height:170px; overflow:auto;">
+							{% for s in iac_sessions %}
+							<div class="list-group-item py-1 d-flex justify-content-between align-items-center">
+								<div>
+									<strong class="d-block">{{ s.session_date }}</strong>
+									<small class="text-muted">{{ s.staff }}</small>
+								</div>
+								<div class="text-end">
+									<button class="btn btn-sm btn-link p-0" data-bs-toggle="modal" data-bs-target="#sessionDetailModal{{ s.id }}"><small>View</small></button>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+						<div class="mt-2 text-end">
+							<button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#allIacSessions">Show all</button>
+						</div>
+						<div class="collapse mt-2" id="allIacSessions">
+							<div class="small" style="max-height:240px; overflow:auto;">
+								<table class="table table-sm mb-0">
+									<thead><tr><th>Date</th><th>Staff</th></tr></thead>
+									<tbody>
+										{% for s in iac_sessions %}
+										<tr><td>{{ s.session_date }}</td><td>{{ s.staff }}</td></tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					{% else %}
+						<div class="text-center small text-muted py-2">No sessions yet</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Follow-up summary -->
+		<div class="col-md-4">
+			<div class="card h-100 shadow-sm">
+				<div class="card-header py-1 d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center gap-2">
+						<i class="fas fa-redo text-primary"></i>
+						<small class="fw-bold">Follow-ups</small>
+						<small class="text-muted">({{ iac_follow_ups.count }})</small>
+					</div>
+					<div>
+						<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">Add</button>
+					</div>
+				</div>
+				<div class="card-body py-2">
+					{% if iac_follow_ups %}
+						{% with f=iac_follow_ups.first %}
+						<div class="small">
+							<div class="mb-1"><strong>{{ f.collection_date }}</strong> — {{ f.sample_log_number }}</div>
+							<div class="d-flex gap-2">
+								{% if f.result_value %}
+									<span class="badge rounded-pill {% if f.result_value > 1000 %}bg-danger{% else %}bg-success{% endif %} text-white small">{{ f.result_value }}</span>
+								{% else %}
+									<span class="small text-muted">Pending</span>
+								{% endif %}
+								<small class="text-muted">Given: {% if f.date_given_to_client %}{{ f.date_given_to_client }}{% else %}No{% endif %}</small>
+							</div>
+						</div>
+						{% endwith %}
+						<hr class="my-2">
+						<div class="list-group list-group-flush small" style="max-height:170px; overflow:auto;">
+							{% for fu in iac_follow_ups %}
+							<div class="list-group-item py-1 d-flex justify-content-between align-items-center">
+								<div>
+									<strong class="d-block">{{ fu.collection_date }}</strong>
+									<small class="text-muted">{{ fu.sample_log_number }}</small>
+								</div>
+								<div class="text-end">
+									<button class="btn btn-sm btn-link p-0" data-bs-toggle="modal" data-bs-target="#followUpDetailModal{{ fu.id }}"><small>View</small></button>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+						<div class="mt-2 text-end">
+							<button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#allFollowUps">Show all</button>
+						</div>
+						<div class="collapse mt-2" id="allFollowUps">
+							<div class="small" style="max-height:240px; overflow:auto;">
+								<table class="table table-sm mb-0">
+									<thead><tr><th>Collection</th><th>Sample Log</th><th>Result</th></tr></thead>
+									<tbody>
+										{% for fu in iac_follow_ups %}
+										<tr>
+											<td>{{ fu.collection_date }}</td>
+											<td>{{ fu.sample_log_number }}</td>
+											<td>{% if fu.result_value %}{{ fu.result_value }}{% else %}-{% endif %}</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					{% else %}
+						<div class="text-center small text-muted py-2">No follow-ups</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Resistance summary -->
+		<div class="col-md-4">
+			<div class="card h-100 shadow-sm">
+				<div class="card-header py-1 d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center gap-2">
+						<i class="fas fa-vial text-primary"></i>
+						<small class="fw-bold">Resistance Tests</small>
+						<small class="text-muted">({{ resistance_tests.count }})</small>
+					</div>
+					<div>
+						<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">Add</button>
+					</div>
+				</div>
+				<div class="card-body py-2">
+					{% if resistance_tests %}
+						{% with t=resistance_tests.first %}
+						<div class="small">
+							<div class="mb-1"><strong>{{ t.application_date }}</strong></div>
+							<div class="text-muted small">
+								Submit: {{ t.submit_sample }} • Resistance: {{ t.resistance_detected }}
+							</div>
+						</div>
+						{% endwith %}
+						<hr class="my-2">
+						<div class="list-group list-group-flush small" style="max-height:170px; overflow:auto;">
+							{% for rt in resistance_tests %}
+							<div class="list-group-item py-1 d-flex justify-content-between align-items-center">
+								<div>
+									<strong class="d-block">{{ rt.application_date }}</strong>
+									<small class="text-muted">{{ rt.submit_sample }} • {{ rt.resistance_detected }}</small>
+								</div>
+								<div class="text-end">
+									<button class="btn btn-sm btn-link p-0" data-bs-toggle="modal" data-bs-target="#resistanceTestDetailModal{{ rt.id }}"><small>View</small></button>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+						<div class="mt-2 text-end">
+							<button class="btn btn-sm btn-link p-0" data-bs-toggle="collapse" data-bs-target="#allResistance">Show all</button>
+						</div>
+						<div class="collapse mt-2" id="allResistance">
+							<div class="small" style="max-height:240px; overflow:auto;">
+								<table class="table table-sm mb-0">
+									<thead><tr><th>Applied</th><th>Submit</th><th>Resistant</th></tr></thead>
+									<tbody>
+										{% for rt in resistance_tests %}
+										<tr><td>{{ rt.application_date }}</td><td>{{ rt.submit_sample }}</td><td>{{ rt.resistance_detected }}</td></tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					{% else %}
+						<div class="text-center small text-muted py-2">No tests</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+    <div style="display: none;">
+	<!-- IAC Session Card -->
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex justify-content-between align-items-center">
+					<h6 class="m-0 font-weight-bold text-primary">
+						<i class="fas fa-comments me-2"></i>IAC Session
+					</h6>
+					{% if iac_sessions %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+						<i class="fas fa-edit"></i> Update Session
+					</button>
+					{% else %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+						<i class="fas fa-plus"></i> Add Session
+					</button>
+					{% endif %}
+				</div>
+				<div class="card-body">
+					{% if iac_sessions %}
+						{% with session=iac_sessions.first %}
+						<div class="row">
+							<div class="col-md-8">
+								<div class="d-flex flex-column">
+									<div class="mb-3">
+										<h5 class="text-primary mb-1">Session Details</h5>
+										<p class="text-muted mb-0">Conducted by {{ session.staff }} on {{ session.session_date }}</p>
+									</div>
+									<div class="row">
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Session Date</small>
+											<p class="mb-0 fw-bold">{{ session.session_date }}</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Staff Member</small>
+											<p class="mb-0 fw-bold">{{ session.staff }}</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">End Time</small>
+											<p class="mb-0 fw-bold">
+												{% if session.end_time %}
+													{{ session.end_time|date:"M d, Y H:i" }}
+												{% else %}
+													<span class="text-muted">Ongoing</span>
+												{% endif %}
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Duration</small>
+											<p class="mb-0 fw-bold">
+												{% if session.end_time %}
+													{{ session.session_date|timesince:session.end_time.date }}
+												{% else %}
+													<span class="text-muted">-</span>
+												{% endif %}
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 border-start">
+								<div class="d-flex flex-column h-100 justify-content-center">
+									<div class="text-center">
+										<button class="btn btn-outline-info btn-sm mb-2 w-100" data-bs-toggle="modal" data-bs-target="#sessionDetailModal{{ session.id }}">
+											<i class="fas fa-eye me-1"></i> View Details
+										</button>
+										<button class="btn btn-outline-warning btn-sm w-100">
+											<i class="fas fa-edit me-1"></i> Edit Session
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						{% endwith %}
+					{% else %}
+					<div class="text-center py-4">
+						<i class="fas fa-comments fa-3x text-gray-300 mb-3"></i>
+						<p class="text-muted">No IAC sessions recorded yet.</p>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIacSessionModal">
+							<i class="fas fa-plus"></i> Add First Session
+						</button>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- IAC Follow-up Card -->
+	{% if iac_session_count > 0 %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex justify-content-between align-items-center">
+					<h6 class="m-0 font-weight-bold text-primary">
+						<i class="fas fa-redo me-2"></i>IAC Follow-up
+					</h6>
+					{% if iac_follow_ups %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+						<i class="fas fa-edit"></i> Update Follow-up
+					</button>
+					{% else %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+						<i class="fas fa-plus"></i> Add Follow-up
+					</button>
+					{% endif %}
+				</div>
+				<div class="card-body">
+					{% if iac_follow_ups %}
+						{% with follow_up=iac_follow_ups.first %}
+						<div class="row">
+							<div class="col-md-8">
+								<div class="d-flex flex-column">
+									<div class="mb-3">
+										<h5 class="text-primary mb-1">Follow-up Details</h5>
+										<p class="text-muted mb-0">Sample collected on {{ follow_up.collection_date }}</p>
+									</div>
+									<div class="row">
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Collection Date</small>
+											<p class="mb-0 fw-bold">{{ follow_up.collection_date }}</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Sample Log Number</small>
+											<p class="mb-0 fw-bold">{{ follow_up.sample_log_number }}</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Result Value</small>
+											<p class="mb-0 fw-bold">
+												{% if follow_up.result_value %}
+													{% if is_numeric %}
+													<span class="badge rounded-pill {% if result_value > 1000 %}bg-danger{% else %}bg-success{% endif %} text-white">
+														{{ follow_up.result_value }}
+													</span>
+													{% else %}
+														{% if result_value == "LDL" %}
+														<span class="badge rounded-pill bg-success text-white">{{result_value}}</span>
+														{% else %}
+														<span class="badge rounded-pill bg-secondary text-white">{{result_value}}</span>
+														{% endif %}
+													{% endif %}
+												{% else %}
+													<span class="text-muted">Pending</span>
+												{% endif %}
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Date Given to Client</small>
+											<p class="mb-0 fw-bold">
+												{% if follow_up.date_given_to_client %}
+													{{ follow_up.date_given_to_client }}
+												{% else %}
+													<span class="text-muted">Not given</span>
+												{% endif %}
+											</p>
+										</div>
+										<div class="col-12 mb-2">
+											<small class="text-muted">Status</small>
+											<p class="mb-0">
+												{% if follow_up.result_value %}
+													{% if is_numeric %}
+														{% if result_value > 1000 %}
+															<span class="badge rounded-pill bg-warning text-dark">High VL</span>
+														{% else %}
+															<span class="badge rounded-pill bg-success text-white">Suppressed</span>
+														{% endif %}
+													{% else %}
+														{% if result_value == 'LDL' %}
+															<span class="badge rounded-pill bg-success text-white">Suppressed</span>
+														{% else %}
+															<span class="badge rounded-pill bg-secondary text-white">Unknown Status</span>
+														{% endif %}
+													{% endif %}
+												{% else %}
+													<span class="badge rounded-pill bg-secondary text-white">Pending Result</span>
+												{% endif %}
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 border-start">
+								<div class="d-flex flex-column h-100 justify-content-center gap-2">
+									<button class="btn btn-outline-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#followUpDetailModal{{ follow_up.id }}">
+										<i class="fas fa-eye me-1"></i> View Details
+									</button>
+									<button class="btn btn-outline-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#updateResultModal">
+										<i class="fas fa-sync-alt me-1"></i> Update Result
+									</button>
+									<button class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#notifyClientModal">
+										<i class="fas fa-paper-plane me-1"></i> Notify Client
+									</button>
+									<button class="btn btn-outline-warning btn-sm w-100">
+										<i class="fas fa-edit me-1"></i> Edit Follow-up
+									</button>
+								</div>
+							</div>
+						</div>
+						{% endwith %}
+					{% else %}
+					<div class="text-center py-4">
+						<i class="fas fa-redo fa-3x text-gray-300 mb-3"></i>
+						<p class="text-muted">No follow-ups recorded yet.</p>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+							<i class="fas fa-plus"></i> Add First Follow-up
+						</button>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
+	<!-- Drug Resistance Test Card -->
+	{% if iac_follow_ups.count > 0 %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex justify-content-between align-items-center">
+					<h6 class="m-0 font-weight-bold text-primary">
+						<i class="fas fa-vial me-2"></i>Drug Resistance Test
+					</h6>
+					{% if resistance_tests %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+						<i class="fas fa-edit"></i> Update Test
+					</button>
+					{% else %}
+					<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+						<i class="fas fa-plus"></i> Add Test
+					</button>
+					{% endif %}
+				</div>
+				<div class="card-body">
+					{% if resistance_tests %}
+						{% with test=resistance_tests.first %}
+						<div class="row">
+							<div class="col-md-8">
+								<div class="d-flex flex-column">
+									<div class="mb-3">
+										<h5 class="text-primary mb-1">Resistance Test Details</h5>
+										<p class="text-muted mb-0">Applied on {{ test.application_date }}</p>
+									</div>
+									<div class="row">
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Application Date</small>
+											<p class="mb-0 fw-bold">{{ test.application_date }}</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Submit Sample</small>
+											<p class="mb-0">
+												<span class="badge rounded-pill
+													{% if test.submit_sample == 'Yes' %}bg-success text-white
+													{% elif test.submit_sample == 'No' %}bg-danger text-white
+													{% else %}bg-warning text-dark{% endif %}">
+													{{ test.submit_sample }}
+												</span>
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Collection Date</small>
+											<p class="mb-0 fw-bold">
+												{% if test.collection_date %}
+													{{ test.collection_date }}
+												{% else %}
+													<span class="text-muted">Not collected</span>
+												{% endif %}
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Resistance Detected</small>
+											<p class="mb-0">
+												<span class="badge rounded-pill
+													{% if test.resistance_detected == 'Yes' %}bg-danger text-white
+													{% elif test.resistance_detected == 'No' %}bg-success text-white
+													{% else %}bg-warning text-dark{% endif %}">
+													{{ test.resistance_detected }}
+												</span>
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">Action Taken</small>
+											<p class="mb-0 fw-bold">
+												{% if test.action_taken %}
+													<span class="badge rounded-pill {% if test.action_taken == 'switch' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+														{{ test.get_action_taken_display }}
+													</span>
+												{% else %}
+													<span class="text-muted">No action taken</span>
+												{% endif %}
+											</p>
+										</div>
+										<div class="col-sm-6 mb-2">
+											<small class="text-muted">VL After Action</small>
+											<p class="mb-0 fw-bold">
+												{% if test.vl_after_action %}
+													{{ test.vl_after_action }}
+												{% else %}
+													<span class="text-muted">Not available</span>
+												{% endif %}
+											</p>
+										</div>
+									</div>
+									{% if test.comments %}
+									<div class="mt-2">
+										<small class="text-muted">Comments</small>
+										<div class="border rounded p-2 bg-light mt-1">
+											<small>{{ test.comments }}</small>
+										</div>
+									</div>
+									{% endif %}
+								</div>
+							</div>
+							<div class="col-md-4 border-start">
+								<div class="d-flex flex-column h-100 justify-content-center">
+									<div class="text-center">
+										<button class="btn btn-outline-info btn-sm mb-2 w-100" data-bs-toggle="modal" data-bs-target="#resistanceTestDetailModal{{ test.id }}">
+											<i class="fas fa-eye me-1"></i> View Details
+										</button>
+										<button class="btn btn-outline-warning btn-sm w-100">
+											<i class="fas fa-edit me-1"></i> Edit Test
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						{% endwith %}
+					{% else %}
+					<div class="text-center py-4">
+						<i class="fas fa-vial fa-3x text-gray-300 mb-3"></i>
+						<p class="text-muted">No drug resistance tests recorded yet.</p>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addResistanceTestModal">
+							<i class="fas fa-plus"></i> Add First Test
+						</button>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
+	<!-- Session detail modal -->
+	{% if iac_sessions %}
+	    {% with session=iac_sessions.first %}
+	    <div class="modal fade" id="sessionDetailModal{{ session.id }}" tabindex="-1" aria-hidden="true">
+	        <div class="modal-dialog modal-dialog-centered">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title">IAC Session Details</h5>
+	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                </div>
+	                <div class="modal-body">
+	                    <table class="table table-borderless">
+	                        <tr>
+	                            <th class="text-muted">Session Date:</th>
+	                            <td>{{ session.session_date }}</td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">Staff Member:</th>
+	                            <td>{{ session.staff }}</td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">End Time:</th>
+	                            <td>
+	                                {% if session.end_time %}
+	                                    {{ session.end_time|date:"M d, Y H:i" }}
+	                                {% else %}
+	                                    <span class="text-muted">Ongoing</span>
+	                                {% endif %}
+	                            </td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">HVL Record:</th>
+	                            <td>SN: {{ session.hvl_record.sn }}</td>
+	                        </tr>
+	                    </table>
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	    {% endwith %}
+	{% endif %}
+
+	<!-- Follow-up detail modal -->
+	{% if iac_follow_ups %}
+	    {% with follow_up=iac_follow_ups.first %}
+	    <div class="modal fade" id="followUpDetailModal{{ follow_up.id }}" tabindex="-1" aria-hidden="true">
+	        <div class="modal-dialog modal-dialog-centered">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title">Follow-up Details</h5>
+	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                </div>
+	                <div class="modal-body">
+	                    <table class="table table-borderless">
+	                        <tr>
+	                            <th class="text-muted">Collection Date:</th>
+	                            <td>{{ follow_up.collection_date }}</td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">Sample Log Number:</th>
+	                            <td>{{ follow_up.sample_log_number }}</td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">Result Value:</th>
+	                            <td>
+	                                {% if follow_up.result_value %}
+	                                    {{ follow_up.result_value }}
+	                                {% else %}
+	                                    <span class="text-muted">Pending</span>
+	                                {% endif %}
+	                            </td>
+	                        </tr>
+	                        <tr>
+	                            <th class="text-muted">Date Given to Client:</th>
+	                            <td>
+	                                {% if follow_up.date_given_to_client %}
+	                                    {{ follow_up.date_given_to_client }}
+	                                {% else %}
+	                                    <span class="text-muted">Not given</span>
+	                                {% endif %}
+	                            </td>
+	                        </tr>
+	                    </table>
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	    {% endwith %}
+	{% endif %}
+
+	<!-- Resistance test detail modal -->
+	{% if resistance_tests %}
+	    {% with test=resistance_tests.first %}
+	    <div class="modal fade" id="resistanceTestDetailModal{{ test.id }}" tabindex="-1" aria-hidden="true">
+	        <div class="modal-dialog modal-lg modal-dialog-centered">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title">Drug Resistance Test Details</h5>
+	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                </div>
+	                <div class="modal-body">
+	                    <div class="row">
+	                        <div class="col-md-6">
+	                            <table class="table table-borderless">
+	                                <tr>
+	                                    <th class="text-muted">Application Date:</th>
+	                                    <td>{{ test.application_date }}</td>
+	                                </tr>
+	                                <tr>
+	                                    <th class="text-muted">Submit Sample:</th>
+	                                    <td>
+	                                        <span class="badge rounded-pill
+	                                            {% if test.submit_sample == 'Yes' %}bg-success text-white
+	                                            {% elif test.submit_sample == 'No' %}bg-danger text-white
+	                                            {% else %}bg-warning text-dark{% endif %}">
+	                                            {{ test.submit_sample }}
+	                                        </span>
+	                                    </td>
+	                                </tr>
+	                                <tr>
+	                                    <th class="text-muted">Collection Date:</th>
+	                                    <td>
+	                                        {% if test.collection_date %}
+	                                            {{ test.collection_date }}
+	                                        {% else %}
+	                                            <span class="text-muted">Not collected</span>
+	                                        {% endif %}
+	                                    </td>
+	                                </tr>
+	                            </table>
+	                        </div>
+	                        <div class="col-md-6">
+	                            <table class="table table-borderless">
+	                                <tr>
+	                                    <th class="text-muted">Resistance Detected:</th>
+	                                    <td>
+	                                        <span class="badge rounded-pill
+	                                            {% if test.resistance_detected == 'Yes' %}bg-danger text-white
+	                                            {% elif test.resistance_detected == 'No' %}bg-success text-white
+	                                            {% else %}bg-warning text-dark{% endif %}">
+	                                            {{ test.resistance_detected }}
+	                                        </span>
+	                                    </td>
+	                                </tr>
+	                                <tr>
+	                                    <th class="text-muted">Action Taken:</th>
+	                                    <td>
+	                                        {% if test.action_taken %}
+	                                            {{ test.get_action_taken_display }}
+	                                        {% else %}
+	                                            <span class="text-muted">No action taken</span>
+	                                        {% endif %}
+	                                    </td>
+	                                </tr>
+	                                <tr>
+	                                    <th class="text-muted">VL After Action:</th>
+	                                    <td>
+	                                        {% if test.vl_after_action %}
+	                                            {{ test.vl_after_action }}
+	                                        {% else %}
+	                                            <span class="text-muted">Not available</span>
+	                                        {% endif %}
+	                                    </td>
+	                                </tr>
+	                            </table>
+	                        </div>
+	                    </div>
+	                    {% if test.comments %}
+	                    <div class="row mt-3">
+	                        <div class="col-12">
+	                            <h6>Comments:</h6>
+	                            <div class="border rounded p-3 bg-light">
+	                                {{ test.comments }}
+	                            </div>
+	                        </div>
+	                    </div>
+	                    {% endif %}
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	    {% endwith %}
+	{% endif %}
+    </div>
+
+	<!-- Keep modals at bottom (unchanged) -->
+	<!-- ...existing code... (sessionDetailModal, followUpDetailModal, resistanceTestDetailModal, add modals etc.) ... -->
+
+</div>
+
+{% comment %} script from static/hvl_management/js/case_detail.js   {% endcomment %}
+<script src="{% static 'hvl_management/js/case_detail.js' %}"></script>
+{% endblock %}

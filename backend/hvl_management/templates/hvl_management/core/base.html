@@ -292,6 +292,7 @@
             </div>
         </div>
 
+        <!-- Notify Client Modal -->
         <div class="modal fade" id="notifyClientModal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -316,6 +317,63 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary">Notify Client</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update result Modal -->
+        <div class="modal fade" id="updateResultModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Result</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <form method="post" action="{% url 'hvl_management:update_result' hvl_record.sn %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h5 class="card-title mb-3">Select input type</h5>
+
+                                    <!-- Radio group -->
+                                    <div class="btn-group btn-group-sm d-flex" role="radiogroup" aria-label="Input type">
+                                        <input type="radio" class="btn-check" name="inputType" id="numericRadio" value="numeric" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="numericRadio">
+                                            <i class="fa-solid fa-hashtag me-1" aria-hidden="true"></i> Numeric
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="inputType" id="alnumRadio" value="alphanumeric" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="alnumRadio">
+                                            <i class="fa-solid fa-font me-1" aria-hidden="true"></i> Alphanumeric
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+                                    <div class="form-group" id="numericField">
+                                        <label for="resultNumeric">Result (Numeric)</label>
+                                        <input type="number" class="form-control" id="resultNumeric" name="result_numeric" placeholder="Enter numeric value">
+                                    </div>
+
+                                    <div class="form-group d-none" id="alphanumericField">
+                                        <label for="resultAlphanumeric">Result (Alphanumeric)</label>
+                                        <select class="form-select" id="resultAlphanumeric" name="result_alphanumeric">
+                                            <option value="LDL" selected>LDL</option>
+                                            <option value="Collect New Sample">Collect New Sample</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update</button>
                         </div>
                     </form>
                 </div>

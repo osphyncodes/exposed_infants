@@ -23,7 +23,20 @@ def hvl_case_detail(request, sn):
 
     iac_followup_count = iac_follow_ups.count()
     
-    
+    result = iac_follow_ups.first().result_value
+
+    # check if result is numeric or alphanumeric
+    is_numeric = False
+    result_value = None
+    if result is not None:
+        try:
+            float(result)
+            is_numeric = True
+            result_value = float(result)
+        except ValueError:
+            is_numeric = False
+            result_value = result
+
     context = {
         'hvl_record': hvl_record,
         'iac_sessions': iac_sessions,
@@ -32,6 +45,8 @@ def hvl_case_detail(request, sn):
         'staffs': staffs,
         'iac_session_count': iac_session_count,
         'iac_followup_count': iac_followup_count,
+        'is_numeric': is_numeric,
+        'result_value': result_value,
     }
     
     return render(request, 'hvl_management/case_detail.html', context)
@@ -156,6 +171,30 @@ def notify_client(request, sn):
         iac_follow_ups.save()
 
         messages.success(request, f'Client for HVL Record SN: {hvl_record.sn} has been notified successfully!')
+    
+    return redirect('hvl_management:hvl_case_detail', sn=sn)
+
+def update_result(request, sn):
+    if request.method == 'POST':
+        hvl_record = get_object_or_404(HVLRecord, sn=sn)
+        iac_follow_ups = IacFollowUp.objects.filter(hvl_record=hvl_record).first()
+ 
+        try:
+            input_type = request.POST.get('inputType')
+
+            if input_type == 'numeric':
+                new_result = request.POST.get('result_numeric')
+            elif input_type == 'alphanumeric':
+                new_result = request.POST.get('result_alphanumeric')
+
+            if new_result is not None:
+                iac_follow_ups.result_value = new_result
+                iac_follow_ups.save()
+                messages.success(request, 'HVL result updated successfully!')
+            else:
+                messages.error(request, 'No result value provided.')
+        except Exception as e:
+            messages.error(request, f'Error updating HVL result: {str(e)}')
     
     return redirect('hvl_management:hvl_case_detail', sn=sn)
 
