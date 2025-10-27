@@ -150,7 +150,7 @@ class HTSSample(models.Model):
 
 
 # --- System Log Model ---
-from django.contrib.auth.models import User
+from accounts.models import User
 
 class SystemLog(models.Model):
     ACTION_CHOICES = [

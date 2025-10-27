@@ -1,0 +1,12 @@
+/* Disable text selection globally for PDF viewer */
+.pdf-viewer-container {
+  -webkit-user-select: none; /* Safari/Chrome */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+ */
+  user-select: none;         /* Standard */
+}
+
+/* Disable dragging/clicking of images inside PDF viewer */
+.pdf-viewer-container img {
+  pointer-events: none; /* Prevent drag & pointer interaction */
+}

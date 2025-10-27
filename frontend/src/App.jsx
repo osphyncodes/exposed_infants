@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/UseAuth";
+import ProtectedRoute from "./components/ProtecedRoute";
+import Login from "./pages/Login";
+import AppSelector from "./pages/AppSelector";
+import Try from "./pages/Try";
+import ExposedDashboard from "./pages/exposed/ExposedDashboard";
+
+import { AlertProvider } from "./context/AlertContext"; // <- make sure path is correct
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthProvider>
+      <AlertProvider>
+        <div className="App">
+          <main>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/try" element={<Try />} />
+              {/* Protected Routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <AppSelector />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/exposed-infants"
+                element={
+                  <ProtectedRoute>
+                    <ExposedDashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </div>
+      </AlertProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

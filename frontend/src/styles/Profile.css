@@ -1,0 +1,775 @@
+/* Profile.css */
+.profile-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.profile-avatar .avatar-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.profile-info h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 2rem;
+}
+
+.profile-info p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.role-badge, .subscription-badge {
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.role-badge {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.subscription-badge {
+  background: #28a745;
+  color: white;
+}
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+}
+
+.profile-sidebar {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  padding: 20px 0;
+  height: fit-content;
+}
+
+.sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 25px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-size: 1rem;
+}
+
+.sidebar-tab:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.sidebar-tab.active {
+  background: #667eea;
+  color: white;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.profile-main {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  padding: 30px;
+}
+
+/* Overview Tab */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  color: #667eea;
+}
+
+.stat-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.progress-section {
+  margin-bottom: 30px;
+}
+
+.progress-section h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.progress-items {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.progress-item {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 10px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.activity-icon {
+  font-size: 1.2rem;
+}
+
+.activity-details p {
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.activity-time {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Subscription Tab */
+.subscription-card {
+  border: 2px solid #e9ecef;
+  border-radius: 15px;
+  padding: 30px;
+}
+
+.subscription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.plan-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.plan-badge.basic {
+  background: #6c757d;
+  color: white;
+}
+
+.plan-badge.standard {
+  background: #007bff;
+  color: white;
+}
+
+.plan-badge.premium {
+  background: #28a745;
+  color: white;
+}
+
+.subscription-details {
+  margin-bottom: 25px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.subscription-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.subscription-features li {
+  padding: 8px 0;
+  color: #666;
+}
+
+.subscription-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.upgrade-btn, .cancel-btn, .subscribe-now-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn, .subscribe-now-btn {
+  background: #667eea;
+  color: white;
+}
+
+.upgrade-btn:hover, .subscribe-now-btn:hover {
+  background: #5a6fd8;
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+}
+
+.no-subscription {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-subscription-content {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.subscription-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+/* Downloads Tab */
+.downloads-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.downloads-count {
+  background: #667eea;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.downloads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.download-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.download-icon {
+  font-size: 1.5rem;
+}
+
+.download-details h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.download-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.download-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.status-badge.downloaded {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.open-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Quiz History Tab */
+.quiz-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.performance-summary {
+  text-align: center;
+}
+
+.average-score {
+  background: #f8f9fa;
+  padding: 15px 25px;
+  border-radius: 10px;
+}
+
+.score-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #667eea;
+  margin-top: 5px;
+}
+
+.quiz-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quiz-history-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.quiz-icon {
+  font-size: 1.5rem;
+}
+
+.quiz-details h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.quiz-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.quiz-score {
+  margin-left: auto;
+  text-align: center;
+  margin-right: 20px;
+}
+
+.score-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(var(--score-color) 0% calc(var(--score-percent) * 1%), #e9ecef calc(var(--score-percent) * 1%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  position: relative;
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: #f8f9fa;
+  border-radius: 50%;
+}
+
+.score-percent {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--score-color);
+  position: relative;
+  z-index: 1;
+}
+
+.score-grade {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--score-color);
+  font-weight: bold;
+}
+
+.score-detail {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.retake-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Settings Tab */
+.settings-section {
+  margin-bottom: 40px;
+}
+
+.settings-section h3 {
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.settings-form {
+  max-width: 500px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group input:disabled {
+  background: #f8f9fa;
+  color: #666;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.edit-btn, .save-btn, .cancel-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn, .save-btn {
+  background: #667eea;
+  color: white;
+}
+
+.edit-btn:hover, .save-btn:hover {
+  background: #5a6fd8;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+}
+
+.preference-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.preference-item:last-child {
+  border-bottom: none;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #667eea;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.account-actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: #f8f9fa;
+}
+
+.action-btn.danger {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.action-btn.danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-sidebar {
+    order: 2;
+  }
+
+  .sidebar-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 20px;
+  }
+
+  .sidebar-tab {
+    flex-direction: column;
+    min-width: 80px;
+    text-align: center;
+    padding: 15px 10px;
+  }
+
+  .tab-label {
+    font-size: 0.8rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quiz-history-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .quiz-score {
+    margin: 0;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-actions {
+    flex-direction: column;
+  }
+
+  .download-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .download-status {
+    margin: 0;
+  }
+}

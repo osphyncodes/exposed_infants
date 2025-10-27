@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
+    "@nivo/bar": "^0.99.0",
+    "@nivo/core": "^0.99.0",
+    "@nivo/line": "^0.99.0",
     "@syncfusion/ej2-react-pdfviewer": "^31.2.3",
     "axios": "^1.12.2",
     "boostrap": "^2.0.0",
@@ -19,9 +22,11 @@
     "lucide-react": "^0.546.0",
     "pdf-react": "^1.0.5",
     "pdfjs-dist": "^5.4.296",
+    "react-apexcharts": "^1.8.0",
     "react-bootstrap": "^2.10.10",
     "react-pdf": "^10.2.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "recharts": "^3.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

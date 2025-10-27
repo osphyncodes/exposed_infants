@@ -2,7 +2,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 # Change password view for standard users
 
-from django.contrib.auth.models import User
+from accounts.models import User
 from django.utils.dateparse import parse_date
 from .forms_user import UserForm
 from django.core.paginator import Paginator

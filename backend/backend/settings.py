@@ -67,7 +67,8 @@ INSTALLED_APPS = [
     'django_select2',
     'tracing',
     'hvl_management',
-    'backups'
+    'backups',
+    'accounts',
 ]
 
 SELECT2_CACHE_BACKEND = 'default'
@@ -84,6 +85,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+# AUTH_USER_MODEL = 'accounts.User'
 
 
 # 0985772677

@@ -1,0 +1,36 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fb;
+}
+
+.navbar {
+  transition: all 0.3s ease-in-out;
+}
+
+.navbar-brand span {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.nav-link {
+  color: #333 !important;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.nav-link:hover {
+  color: #0d6efd !important;
+  transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+  transform: translateY(-1px);
+}

@@ -1,0 +1,87 @@
+/* Admin Layout Styles */
+.admin-layout {
+  position: relative;
+  min-height: 100vh;
+}
+
+.admin-main-content {
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Desktop sidebar */
+@media (min-width: 768px) {
+  .admin-main-content {
+    margin-left: 280px;
+  }
+}
+
+/* Mobile sidebar open state */
+.admin-main-content.sidebar-open {
+  margin-left: 280px;
+}
+
+/* Topbar */
+.admin-topbar {
+  background: white;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+/* Main content area */
+.admin-content {
+  padding: 1.5rem;
+  min-height: calc(100vh - 80px);
+}
+
+/* Mobile overlay */
+.admin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1039;
+  backdrop-filter: blur(2px);
+}
+
+/* Ensure proper z-index for sidebar */
+.admin-sidebar {
+  z-index: 1040;
+}
+
+/* Smooth transitions */
+.admin-main-content,
+.admin-sidebar {
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .admin-content {
+    padding: 1rem;
+  }
+  
+  .admin-topbar {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .admin-topbar,
+  .admin-sidebar {
+    display: none !important;
+  }
+  
+  .admin-main-content {
+    margin-left: 0 !important;
+  }
+}

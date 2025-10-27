@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import api_data
 
 app_name = "children"
 
@@ -47,4 +48,6 @@ urlpatterns = [
 
     path('missed-milestones/', views.missed_milestones_view, name='missed_milestones'),
     path('reports/eid_report/view/', views.eid_report, name='eid_report'),
+    path('api/exposed_dashboard/', api_data.DashboardAPIView.as_view(), name='dashboard-api'),
+
 ]
