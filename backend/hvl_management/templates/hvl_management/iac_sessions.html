@@ -1,1 +1,86 @@
-{% extends "hvl_management/core/base.html" %}
+{% extends 'hvl_management/core/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>HVL Cases</h2>
+        <a href="{% url 'children:add_child' %}" class="btn btn-primary">Add Case</a>
+    </div>
+
+    <form method="post" class="row g-3 mb-4">
+        {% csrf_token %}
+        <div class="col-md-4">
+            <select id="id_search_by" name="search_by" class="form-select" required>
+                <option value="case_id" {% if request.GET.search_by == "case_id" %}selected{% endif %}>Case ID</option>
+                <option value="art_number" {% if request.GET.search_by == "art_number" %}selected{% endif %}>ART Number</option>
+            </select>
+        </div>
+        <div class="col-md-5">
+            <input type="text" id='id_search_value' name="query" class="form-control" placeholder="Enter search value" value="{{ request.GET.query }}" required>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success w-100">Search</button>
+        </div>
+    </form>
+
+    <div class="card-header bg-white">
+        <h5 id='table_title' class="card-title mb-0">Case List</h5>
+    </div>
+    <hr/>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="recentRecordsTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>SN</th>
+                        <th>ART Number</th>
+                        <th>Sex</th>
+                        <th>Age</th>
+                        <th>Date Entered</th>
+                        <th>Reason for Test</th>
+                        <th>Result Value</th>
+                        <th>Has IAC?</th>
+                        <th>IAC Date</th>
+                        <th>Has IAC Follow-up</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_records %}
+                    <tr>
+                        <td>{{ record.sn }}</td>
+                        <td>{{ record.art_number }}</td>
+                        <td>{{ record.sex|title }}</td>
+                        <td>{{ record.age }}</td>
+                        <td>{{ record.date_entered|date:'d/m/Y' }}</td>
+                        <td>{{ record.reason_for_test|title }}</td>
+                        <td>
+                            {{ record.result_value }}
+                        </td>
+                        <td>
+                            {{ record.has_iac}}
+                        </td>
+                        <td>{{ record.iac_date|date:'d/m/Y' }}</td>
+                        <td>{{ record.has_iac_followup }}</td>
+                        <td>
+                                <a href="{% url 'hvl_management:hvl_case_detail' record.sn %}" class="btn btn-sm btn-info" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            <a href="#" class="btn btn-sm btn-warning" title="IAC Session">
+                                <i class="fas fa-comments"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'hvl_management/js/iac_sessions.js'%}"></script>
+<script>
+    makeTableInteractive('recentRecordsTable', 'table_title')
+</script>
+{% endblock %}

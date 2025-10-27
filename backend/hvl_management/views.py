@@ -11,7 +11,7 @@ from pact.models import Staff
 def hvl_case_detail(request, sn):
     # Get the HVL record or return 404
     hvl_record = get_object_or_404(HVLRecord, sn=sn)
-    
+    result = None
     # Get related data
     iac_sessions = hvl_record.iac_sessions.all().order_by('-session_date')
     iac_follow_ups = hvl_record.iac_follow_ups.all().order_by('-collection_date')
@@ -23,7 +23,8 @@ def hvl_case_detail(request, sn):
 
     iac_followup_count = iac_follow_ups.count()
     
-    result = iac_follow_ups.first().result_value
+    if iac_follow_ups:
+        result = iac_follow_ups.first().result_value
 
     # check if result is numeric or alphanumeric
     is_numeric = False
@@ -92,7 +93,7 @@ def add_iac_followup(request, sn):
             return redirect('hvl_management:hvl_case_detail', sn=sn)
         
         # check if 3 months have passed since the iac session date
-        three_months_later = iac_session.session_date + timedelta(days=90)
+        three_months_later = iac_session.session_date + timedelta(days=60)
         if timezone.now().date() < three_months_later:
             messages.error(request, 'Cannot add follow-up: 3 months have not passed since the IAC session date.')
             return redirect('hvl_management:hvl_case_detail', sn=sn)
@@ -319,7 +320,7 @@ def dashboard(request):
         'high_vl_count': high_vl_count,
         'iac_sessions_count': iac_sessions_count,
         'resistance_tests_count': resistance_tests_count,
-        'recent_records': recent_records.order_by('-sn'),
+        'recent_records': recent_records.order_by('sn'),
         'viral_load_data': json.dumps(viral_load_data),
         'viral_load_categories': json.dumps(viral_load_categories),
         'reason_for_test_data': json.dumps(reason_for_test_data),
@@ -347,7 +348,21 @@ def notifications(request):
 
 def iac_sessions(request):
     # Logic for displaying IAC sessions goes here
-    return render(request, 'hvl_management/iac_sessions.html')
+    records = HVLRecord.objects.all()
+    
+    if request.method == 'POST':
+        search_by = request.POST.get('search_by')
+        query = request.POST.get('query')
+        if search_by and query:
+            if search_by == 'case_id':
+                records = records.filter(sn=query)
+            elif search_by == 'art_number':
+                records = records.filter(art_number=query)
+    
+    context = {
+        'recent_records': records
+    }
+    return render(request, 'hvl_management/iac_sessions.html', context)
 
 def get_hvl_data(request):
     if request.method != "POST":

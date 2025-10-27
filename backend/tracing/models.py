@@ -38,7 +38,7 @@ class Tracing(models.Model):
     mother_art = models.CharField(blank=True, null=True, max_length=4)
 
     def __str__(self):
-        return f"{self.art_number}->{self.chw.name}->{self.reason}"
+        return f"{self.unique_id}->{self.art_number}->{self.chw.name}->{self.reason}"
     
     @classmethod
     def import_tracing_csv(cls, csv_file):

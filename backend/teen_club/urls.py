@@ -15,4 +15,6 @@ urlpatterns = [
     path('api/patients/search/', PatientSearchAPI.as_view(), name='patient_search_api'),
     path('api/patients/<int:patient_id>/', PatientDetailAPI.as_view(), name='patient_detail_api'),
     path('search_name/api/', views.search_patient, name='search_name'),
+    path('api/update/sign/<int:pk>', views.update_sign_up, name='sign_up_update'),
+    path('api/update/register/<int:pk>', views.update_register, name='register_update'),
 ]

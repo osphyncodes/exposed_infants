@@ -284,6 +284,8 @@
                                     <th>CHW Name</th>
                                     <th>Date Assigned</th>
                                     <th>ART #</th>
+                                    <th>Name</th>
+                                    <th>M. ART</th>
                                     <th>Type</th>
                                     <th>Reason</th>
                                     <th>With Phone</th>
@@ -305,6 +307,8 @@
                                         <td class="editable-cell" data-field="{{tracing.chw.id}}">{{ tracing.chw.name }}</td>
                                         <td>{{ tracing.date_entered|date:"M d, Y" }}</td>
                                         <td class="editable-cell" data-field="art_number">{{ tracing.art_number }}</td>
+                                        <td class="editable-cell" data-field="name">{{ tracing.name }}</td>
+                                        <td class="editable-cell" data-field="mother_art">{{ tracing.mother_art }}</td>
                                         <td class="editable-cell" data-field="type">{{ tracing.type }}</td>
                                         <td>{{ tracing.reason }}</td>
                                         <td>

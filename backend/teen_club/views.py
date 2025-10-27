@@ -209,4 +209,34 @@ def search_patient(request):
                 'age': age
             })
 
+def update_sign_up(request, pk):
+    try:
+        attendance = get_object_or_404(Attendance, pk=pk)
+        if attendance.sign_updated == "No":
+            attendance.sign_updated = "Yes"
+        else:
+            attendance.sign_updated = "No"
+        attendance.save()
 
+        return JsonResponse({
+            'message': 'Parameter Updated successfuly'
+            
+        })
+    except Exception as e:
+        return JsonResponse({'status': "Zatheka"})
+    
+def update_register(request, pk):
+    try:
+        attendance = get_object_or_404(Attendance, pk=pk)
+        if attendance.tracing_updated == "No":
+            attendance.tracing_updated = "Yes"
+        else:
+            attendance.tracing_updated = "No"
+        attendance.save()
+        
+        return JsonResponse({
+            'message': 'Parameter Updated successfuly'
+        })
+    except Exception as e:
+        return JsonResponse({'status': "Zatheka"})
+        

@@ -563,6 +563,47 @@ def isInteger(s: str) -> bool:
         return False
 
 @login_required
+def collect_data(request):
+    # Logic for collecting data goes here
+    return render(request, 'tracing/collect_data.html')
+
+@login_required
+def get_hvl_data(request):
+    if request.method != "POST":
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+    try:
+        payload = json.loads(request.body)
+
+        # Collect all Tracing objects
+        tracing_records = []
+        for item in payload:
+            tracing_records.append(
+                Tracing(
+                    unique_id=item.get('Unique ID'),
+                    date_entered=item.get('Date Entered'),
+                    chw = Staff.objects.get(id=item.get('CHW')) if item.get('CHW') else None,
+                    art_number=item.get('ART Number'),
+                    name = item.get('Name'),
+                    gender=item.get('Gender'),
+                    age=item.get('Age'),
+                    phone_number=item.get('Phone Number'),
+                    type=item.get('Type'),
+                    reason=item.get('Reason'),
+                    # true if yes, false if no
+                    with_phone=(item.get('With Phone', '').lower() == 'yes'),
+                )
+            )
+
+        # Bulk insert all at once
+        Tracing.objects.bulk_create(tracing_records)
+
+        return JsonResponse({'status': 'success', 'message': f'{len(tracing_records)} records inserted.'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+    
+@login_required
 def import_attendance_page(request):
     if request.method == 'POST':
         
@@ -650,3 +691,8 @@ def to_yyyy_mm_dd(date_str: str) -> str | None:
         return parsed_date.strftime("%Y-%m-%d")
     except (ValueError, TypeError):
         return None
+
+def get_chws_data(request):
+    chws = Staff.objects.filter(id__gt=3).values('id', 'name', 'chw_code')
+    chw_list = list(chws)
+    return JsonResponse({'chws': chw_list})

@@ -1,0 +1,21 @@
+{%extends "tracing/core/base.html" %} {% load static %} {% block title %}Tracing
+Data{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{% static 'hvl_management/css/collect_data.css' %}"
+/>
+<h2 class="mb-4">Collect Tracing Data</h2>
+
+<div class="control-buttons">
+  <button id="addRowBtn">Add Row (+)</button>
+  <button id="saveBtn">Save</button>
+  <button id="clearBtn">Clear Table</button>
+  <button data-url="{% url 'tracing:get_hvl_data' %}" id="submitBtn">
+    Submit
+  </button>
+</div>
+
+<div id="excelTable"></div>
+
+<script src="{% static 'tracing/js/collect_data.js' %}"></script>
+{% endblock %}

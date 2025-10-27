@@ -11,6 +11,25 @@ class HVLRecord(models.Model):
     reason_for_test = models.CharField("Reason for Test", max_length=100)
     result_value = models.IntegerField("Result Value")
     status = models.CharField("Status", max_length=50, blank=True, null=True)
+    
+    def has_iac(self):
+        if IacSession.objects.filter(hvl_record=self).exists():
+            return "Yes"
+        else:
+            return "No"
+        
+    def iac_date(self):
+            session = IacSession.objects.filter(hvl_record=self)
+            
+            if session.exists():
+                return session.first().session_date
+        
+        
+    def has_iac_followup(self):
+        if IacFollowUp.objects.filter(hvl_record=self).exists():
+            return "Yes"
+        else:
+            return "No"
 
     def __str__(self):
         return f"HVL Record SN: {self.pk} - ART Number: {self.art_number}"

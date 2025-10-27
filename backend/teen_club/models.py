@@ -54,10 +54,12 @@ class Attendance(models.Model):
     vl_drawn = models.BooleanField()
     notes = models.TextField(blank=True, null=True)
     arrived_at = models.TimeField(auto_now_add=True)
+    sign_updated = models.CharField(max_length=3, default="No")
+    tracing_updated = models.CharField(max_length=3, default="No")
     
     class Meta:
         ordering = ['-arrived_at']
         unique_together = ['session', 'patient']
 
     def __str__(self):
-        return f"{self.patient.arv_number}, Purpose: {self.purpose}"
+        return f"{self.patient.arv_number}, {self.patient.name} Purpose: {self.purpose}"
