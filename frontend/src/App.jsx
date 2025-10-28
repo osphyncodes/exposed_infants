@@ -11,6 +11,7 @@ import ExposedLayout from "./components/ExposedLayout";
 import { AlertProvider } from "./context/AlertContext"; // <- make sure path is correct
 import ChildrenList from "./pages/exposed/ChildrenList";
 import ChildForm from "./components/children/ChildForm";
+import ChildDetail from "./components/children/ChildDetail";
 
 function App() {
   return (
@@ -43,6 +44,11 @@ function App() {
                 <Route index element={<ExposedDashboard />} />
                 <Route path="children" element={<ChildrenList />} />
                 <Route path="children/create" element={<ChildForm />} />
+                <Route
+                  path="children/edit/:hcc_number"
+                  element={<ChildForm />}
+                />
+                <Route path="children/:hcc_number" element={<ChildDetail />} />
                 {/* <Route path="papers" element={<AdminPapers />} />
                 <Route path="quizzes" element={<AdminQuizzes />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />

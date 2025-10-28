@@ -37,17 +37,15 @@ const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
   }, []);
 
   const isActive = (path, exact = false) => {
-    // If this is the children route, mark all /children paths as active
-    if (path === "/children") {
-      return location.pathname.startsWith("/children");
-    }
-
-    // Exact match
     if (exact) {
       return location.pathname === path;
     }
 
-    // Normal startsWith check
+    // Special case for children/exposed-infants routes
+    if (path === "/exposed-infants") {
+      return location.pathname.startsWith("/exposed-infants");
+    }
+
     return location.pathname.startsWith(path);
   };
 

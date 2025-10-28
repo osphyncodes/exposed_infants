@@ -180,10 +180,10 @@ class ChildrenListView(generics.ListCreateAPIView):
             else:
                 queryset = queryset.filter(mother_art_number=search)
         
-        return queryset
+        return queryset.order_by('-child_dob')[:10]
     
 class ChildDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Child.objects.all()
     serializer_class = ChildSerializers
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     lookup_field = 'hcc_number'

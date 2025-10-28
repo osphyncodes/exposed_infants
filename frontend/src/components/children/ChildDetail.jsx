@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { exposedAPI } from "../../utils/api";
 import {
-  FaChild,
-  FaCalendarCheck,
-  FaVial,
-  FaUserShield,
-  FaArrowLeft,
-} from "react-icons/fa";
+  Baby,
+  CalendarCheck,
+  FlaskConical,
+  Shield,
+  ArrowLeft,
+  Plus,
+  Eye,
+} from "lucide-react";
 
 const ChildDetail = () => {
   const { hcc_number } = useParams();
@@ -17,7 +20,7 @@ const ChildDetail = () => {
   useEffect(() => {
     const fetchChild = async () => {
       try {
-        const res = await axios.get(`/api/children/${hcc_number}/`);
+        const res = await exposedAPI.getChild(hcc_number);
         setChild(res.data);
       } catch (err) {
         console.error(err);
@@ -33,18 +36,15 @@ const ChildDetail = () => {
   if (!child) return <div>Child not found</div>;
 
   return (
-    <div
-      className="container-fluid px-4"
-      style={{ maxWidth: "1600px", paddingTop: "70px" }}
-    >
+    <div className="container-fluid" style={{ maxWidth: "1600px" }}>
       {/* Navbar */}
       <nav
-        className="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm"
+        className="navbar navbar-expand-lg navbar-light bg-white shadow-sm"
         style={{ zIndex: 1030 }}
       >
         <div className="container-fluid">
           <span className="navbar-brand fw-bold">
-            <FaChild className="me-2" /> {child.child_name} ({child.hcc_number})
+            <Baby className="me-2" /> {child.child_name} ({child.hcc_number})
           </span>
 
           <button
@@ -58,22 +58,98 @@ const ChildDetail = () => {
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to={`/visits/${child.hcc_number}`}>
-                  <FaCalendarCheck className="me-1" /> Visits
-                </Link>
+              {/* Visits Dropdown */}
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  id="visitsDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <CalendarCheck className="me-1" /> Visits
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="visitsDropdown">
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      to={`/visits/add/${child.hcc_number}`}
+                    >
+                      <Plus className="me-2" size={16} />
+                      Add Visit
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      to={`/visits/${child.hcc_number}`}
+                    >
+                      <Eye className="me-2" size={16} />
+                      View Visits
+                    </Link>
+                  </li>
+                </ul>
               </li>
-              <li className="nav-item">
-                <Link className="nav-link" to={`/hts/${child.hcc_number}`}>
-                  <FaVial className="me-1" /> HTS Results
-                </Link>
+
+              {/* HTS Samples Dropdown */}
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  id="htsDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <FlaskConical className="me-1" /> HTS Samples
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="htsDropdown">
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      to={`/hts/add/${child.hcc_number}`}
+                    >
+                      <Plus className="me-2" size={16} />
+                      Add HTS Sample
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      to={`/hts/${child.hcc_number}`}
+                    >
+                      <Eye className="me-2" size={16} />
+                      View HTS Samples
+                    </Link>
+                  </li>
+                </ul>
               </li>
-              {/* Admin dropdown only if needed */}
-              {/* Add more links as necessary */}
+
+              {/* Admin dropdown if needed */}
+              {/* <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  id="adminDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <Shield className="me-1" /> Admin
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="adminDropdown">
+                  <li><Link className="dropdown-item" to="#">Action</Link></li>
+                  <li><Link className="dropdown-item" to="#">Another action</Link></li>
+                </ul>
+              </li> */}
             </ul>
 
-            <Link className="btn btn-outline-secondary" to="/children">
-              <FaArrowLeft className="me-2" /> Back to List
+            <Link
+              className="btn btn-outline-secondary"
+              to="/exposed-infants/children"
+            >
+              <ArrowLeft className="me-2" /> Back to List
             </Link>
           </div>
         </div>
@@ -83,7 +159,7 @@ const ChildDetail = () => {
       <div className="card shadow mb-4 mt-4">
         <div className="card-header bg-primary text-white">
           <h3 className="card-title mb-0">
-            <FaChild className="me-2" />
+            <Baby className="me-2" />
             Child Information
           </h3>
         </div>
@@ -148,10 +224,19 @@ const ChildDetail = () => {
       {/* Visits Table */}
       <div className="card shadow mb-4">
         <div className="card-header bg-secondary text-white">
-          <h3 className="card-title mb-0">
-            <FaCalendarCheck className="me-2" />
-            Visit History
-          </h3>
+          <div className="d-flex justify-content-between align-items-center">
+            <h3 className="card-title mb-0">
+              <CalendarCheck className="me-2" />
+              Visit History
+            </h3>
+            <Link
+              to={`/visits/add/${child.hcc_number}`}
+              className="btn btn-light btn-sm"
+            >
+              <Plus className="me-1" size={16} />
+              Add Visit
+            </Link>
+          </div>
         </div>
         <div className="card-body">
           {child.visits.length > 0 ? (
@@ -184,7 +269,16 @@ const ChildDetail = () => {
               </table>
             </div>
           ) : (
-            <div className="alert alert-info">No visits recorded yet.</div>
+            <div className="alert alert-info text-center">
+              <CalendarCheck className="me-2" />
+              No visits recorded yet.{" "}
+              <Link
+                to={`/visits/add/${child.hcc_number}`}
+                className="alert-link"
+              >
+                Add the first visit
+              </Link>
+            </div>
           )}
         </div>
       </div>

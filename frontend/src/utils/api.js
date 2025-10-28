@@ -143,8 +143,8 @@ export const adminAPI = {
 export const exposedAPI = {
   getExposedDashboard: () => api.get("/exposed/dashboard/"),
   getChildren: (params = {}) => api.get("/exposed/children/", { params }),
-  getChild: (id) => api.get(`/exposed/children/${id}`),
-  updateChild: (id) => api.put(`/exposed/children/${id}`),
+  getChild: (id) => api.get(`/exposed/children/${id}/`),
+  updateChild: (id) => api.put(`/exposed/children/${id}/`),
   createChild: (data) => api.post(`/exposed/children/`, data),
 };
 

@@ -5,41 +5,43 @@ import Loader from "../../components/Loader";
 import { ArrowLeft, Save, Upload, FileText, X } from "lucide-react";
 
 const ChildForm = () => {
-  const { childId } = useParams();
+  const { hcc_number } = useParams();
   const navigate = useNavigate();
-  const isEdit = Boolean(childId);
+  const isEdit = Boolean(hcc_number);
+
+  console.log(hcc_number);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
-    hcc_number: "77777",
-    child_name: "Josephy Ngomba",
-    child_dob: "2022-05-22",
-    child_gender: "Male",
-    child_birth_weight: "3.0",
-    guardian_name: "Maria Chimwaza",
-    relationship: "Mother",
-    guardian_phone: "None",
-    physical_address: "Chilonga",
+    hcc_number: "",
+    child_name: "",
+    child_dob: "",
+    child_gender: "",
+    child_birth_weight: "",
+    guardian_name: "",
+    relationship: "",
+    guardian_phone: "",
+    physical_address: "",
     agrees_to_fup: "Yes",
-    mother_status: "Alive",
-    mother_art_number: "2560",
-    mother_art_start_date: "2002-01-01",
+    mother_status: "Alive OnART",
+    mother_art_number: "",
+    mother_art_start_date: "",
   });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchInitialData();
-  }, [childId]);
+  }, [hcc_number]);
 
   const fetchInitialData = async () => {
     try {
       setLoading(true);
 
       if (isEdit) {
-        const childRes = await exposedAPI.getChild(childId);
+        const childRes = await exposedAPI.getChild(hcc_number);
         const child = childRes.data;
         setFormData({
           hcc_number: child.hcc_number,
@@ -83,8 +85,7 @@ const ChildForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.hcc_number.trim())
-      newErrors.hcc_number = "HCC Number is required";
+    if (!formData.hcc_number) newErrors.hcc_number = "HCC Number is required";
     if (!formData.child_name.trim())
       newErrors.child_name = "Child name is required";
     if (!formData.child_dob)
@@ -138,7 +139,8 @@ const ChildForm = () => {
       );
 
       if (isEdit) {
-        await exposedAPI.updateChild(childId, submitData, {
+        console.log(formData);
+        await exposedAPI.updateChild(hcc_number, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Child updated successfully!");
@@ -174,12 +176,12 @@ const ChildForm = () => {
         <div>
           <button
             className="btn btn-outline-secondary btn-sm me-3"
-            onClick={() => navigate("/admin/papers")}
+            onClick={() => navigate("/exposed-infants/children")}
           >
             <ArrowLeft size={16} />
           </button>
           <h4 className="d-inline-block mb-0">
-            {isEdit ? "Edit Paper" : "Create New Paper"}
+            {isEdit ? "Edit Child" : "Create New Child"}
           </h4>
         </div>
         <button

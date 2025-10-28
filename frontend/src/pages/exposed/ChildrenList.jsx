@@ -71,8 +71,10 @@ const ChildrenList = () => {
     }
   }, [loading, tableData]);
 
-  const handleView = (row) => alert(`Viewing ${row.name}`);
-  const handleEdit = (row) => alert(`Editing ${row.name}`);
+  const handleView = (row) => navigate(`${row.id}`);
+  const handleEdit = (row) => {
+    navigate(`edit/${row.id}`);
+  };
   const handleDelete = (row) => alert(`Deleting ${row.name}`);
 
   const handleSubmit = async (e) => {
@@ -128,6 +130,7 @@ const ChildrenList = () => {
   if (creating) {
     return <ChildForm />;
   }
+
   return (
     <>
       <div className="container mt-4">
@@ -176,7 +179,7 @@ const ChildrenList = () => {
 
         <div className="card-header bg-white">
           <h5 id="table_title" className="card-title mb-0">
-            Attendance List
+            Recently Added Children
           </h5>
         </div>
         <hr />
