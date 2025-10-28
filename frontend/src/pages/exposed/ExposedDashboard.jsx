@@ -18,7 +18,6 @@ const ExposedDashboard = () => {
     const fetchDashboard = async () => {
       try {
         const res = await exposedAPI.getExposedDashboard();
-        console.log(res.data);
 
         setDashboard(res.data);
       } catch (err) {

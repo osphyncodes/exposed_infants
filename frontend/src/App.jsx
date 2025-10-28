@@ -6,7 +6,8 @@ import Login from "./pages/Login";
 import AppSelector from "./pages/AppSelector";
 import Try from "./pages/Try";
 import ExposedDashboard from "./pages/exposed/ExposedDashboard";
-
+import AdminLayout from "./components/AdminLayout";
+import ExposedLayout from "./components/ExposedLayout";
 import { AlertProvider } from "./context/AlertContext"; // <- make sure path is correct
 
 function App() {
@@ -27,15 +28,24 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
+              // Add admin routes
               <Route
-                path="/exposed-infants"
+                path="/exposed-infants/*"
                 element={
                   <ProtectedRoute>
-                    <ExposedDashboard />
+                    <ExposedLayout />
                   </ProtectedRoute>
                 }
-              />
+              >
+                e
+                <Route index element={<ExposedDashboard />} />
+                {/* <Route path="users" element={<AdminUsers />} />
+                <Route path="papers" element={<AdminPapers />} />
+                <Route path="quizzes" element={<AdminQuizzes />} />
+                <Route path="subscriptions" element={<AdminSubscriptions />} />
+                <Route path="logs" element={<AdminLogs />} />
+                <Route path="settings" element={<AdminSettings />} /> */}
+              </Route>
             </Routes>
           </main>
         </div>

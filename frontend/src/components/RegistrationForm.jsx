@@ -82,7 +82,6 @@ export default function RegistrationForm() {
   };
 
   const handleSubmit = (values) => {
-    console.log("Registration data:", values);
     // Handle form submission
   };
 

@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
-import { Menu, Bell, User } from "lucide-react";
 import "../styles/AdminLayout.css";
+import { LayoutDashboard, Menu, Bell, User } from "lucide-react";
+import { useAuth } from "../hooks/UseAuth";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
+  const { user, logout } = useAuth();
+
+  const menuData = [
+    {
+      name: "Dashboard",
+      path: "/exposed-infants",
+      icon: <LayoutDashboard size={20} />,
+      exact: true,
+    },
+  ];
 
   useEffect(() => {
     const checkMobile = () => {
@@ -52,6 +64,7 @@ const AdminLayout = () => {
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onCollapse={handleSidebarToggle}
+        menuItems={menuData}
       />
 
       {/* Main Content */}
@@ -110,9 +123,14 @@ const AdminLayout = () => {
                   <hr className="dropdown-divider" />
                 </li>
                 <li>
-                  <a className="dropdown-item" href="/logout">
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      logout();
+                    }}
+                  >
                     Logout
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>

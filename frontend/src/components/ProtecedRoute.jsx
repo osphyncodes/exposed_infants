@@ -7,7 +7,6 @@ const ProtectedRoute = ({ children, requireSubscription = false }) => {
   const { user, loading, token } = useAuth();
   const location = useLocation();
 
-  console.log(user);
   if (loading) {
     return <Loader text="Checking authentication..." />;
   }

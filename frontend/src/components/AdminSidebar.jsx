@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/UseAuth";
+import { useNavigate } from "react-router-dom";
+import "../styles/AdminSidebar.css";
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  BookOpen,
-  CreditCard,
-  Settings,
-  Activity,
-  BarChart3,
   Shield,
   LogOut,
   Menu,
   ChevronLeft,
   ChevronRight,
   Home,
+  RefreshCcw,
 } from "lucide-react";
-import "../styles/AdminSidebar.css";
 
-const AdminSidebar = ({ isOpen, onToggle }) => {
+const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Check if device is mobile
   useEffect(() => {
@@ -36,50 +33,6 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
       window.removeEventListener("resize", checkMobile);
     };
   }, []);
-
-  const menuItems = [
-    {
-      name: "Dashboard",
-      path: "/admin",
-      icon: <LayoutDashboard size={20} />,
-      exact: true,
-    },
-    {
-      name: "Users",
-      path: "/admin/users",
-      icon: <Users size={20} />,
-    },
-    {
-      name: "Papers",
-      path: "/admin/papers",
-      icon: <FileText size={20} />,
-    },
-    {
-      name: "Quizzes",
-      path: "/admin/quizzes",
-      icon: <BookOpen size={20} />,
-    },
-    {
-      name: "Subscriptions",
-      path: "/admin/subscriptions",
-      icon: <CreditCard size={20} />,
-    },
-    {
-      name: "Subjects",
-      path: "/admin/subjects",
-      icon: <BarChart3 size={20} />,
-    },
-    {
-      name: "Activity Logs",
-      path: "/admin/logs",
-      icon: <Activity size={20} />,
-    },
-    {
-      name: "Settings",
-      path: "/admin/settings",
-      icon: <Settings size={20} />,
-    },
-  ];
 
   const isActive = (path, exact = false) => {
     if (exact) {
@@ -223,25 +176,17 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
             )}
 
             <div className="d-flex gap-2">
-              <Link
+              <button
                 to="/"
                 className="btn btn-outline-light btn-sm"
                 title="Back to Home"
-                onClick={handleLinkClick}
+                onClick={() => {
+                  navigate("/");
+                }}
               >
-                <Home size={14} />
-                {!collapsed && <span className="ms-1">Home</span>}
-              </Link>
-
-              <Link
-                to="/logout"
-                className="btn btn-outline-light btn-sm"
-                title="Logout"
-                onClick={handleLinkClick}
-              >
-                <LogOut size={14} />
-                {!collapsed && <span className="ms-1">Logout</span>}
-              </Link>
+                <RefreshCcw size={14} />
+                {!collapsed && <span className="ms-1">Switch App</span>}
+              </button>
             </div>
           </div>
         </div>
