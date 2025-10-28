@@ -3,13 +3,14 @@ from datetime import date, timedelta
 from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import TruncMonth, TruncDay
 from django.utils import timezone
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import json
 
 from .models import Child, ChildVisit, HTSSample
-from .serializers import DashboardSerializer
+from .serializers import DashboardSerializer, ChildSerializers
 
 
 class DashboardAPIView(APIView):
@@ -161,3 +162,28 @@ class DashboardAPIView(APIView):
 
         serializer = DashboardSerializer(context)
         return Response(serializer.data)
+
+
+class ChildrenListView(generics.ListCreateAPIView):
+    serializer_class = ChildSerializers
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = Child.objects.all()
+        
+        search_by = self.request.query_params.get('search_by', '')
+        search = self.request.query_params.get('search', '')
+        
+        if search:
+            if search_by == 'hcc':
+                queryset = queryset.filter(hcc_number=search)
+            else:
+                queryset = queryset.filter(mother_art_number=search)
+        
+        return queryset
+    
+class ChildDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Child.objects.all()
+    serializer_class = ChildSerializers
+    permission_classes = [AllowAny]
+    lookup_field = 'hcc_number'

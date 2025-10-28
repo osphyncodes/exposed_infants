@@ -19,6 +19,12 @@ const AdminLayout = () => {
       icon: <LayoutDashboard size={20} />,
       exact: true,
     },
+    {
+      name: "Children",
+      path: "/exposed-infants/children",
+      icon: <LayoutDashboard size={20} />,
+      exact: true,
+    },
   ];
 
   useEffect(() => {

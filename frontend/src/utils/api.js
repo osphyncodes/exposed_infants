@@ -1,6 +1,16 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://192.168.43.52:8000/api";
+const hostname = window.location.hostname;
+
+let API_BASE_URL;
+
+// Check if running locally
+if (hostname === "localhost" || hostname === "127.0.0.1") {
+  API_BASE_URL = "http://127.0.0.1:8000/api";
+} else {
+  // Use LAN IP for phones or other PCs on same Wi-Fi
+  API_BASE_URL = "http://192.168.43.52:8000/api";
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -132,6 +142,10 @@ export const adminAPI = {
 
 export const exposedAPI = {
   getExposedDashboard: () => api.get("/exposed/dashboard/"),
+  getChildren: (params = {}) => api.get("/exposed/children/", { params }),
+  getChild: (id) => api.get(`/exposed/children/${id}`),
+  updateChild: (id) => api.put(`/exposed/children/${id}`),
+  createChild: (data) => api.post(`/exposed/children/`, data),
 };
 
 export default api;

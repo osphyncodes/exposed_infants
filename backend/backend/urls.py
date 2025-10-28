@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from children.views import dashboard
 from children.views import app_selector
-from children.api_data import DashboardAPIView
+from children.api_data import DashboardAPIView, ChildrenListView, ChildDetailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,5 +22,7 @@ urlpatterns = [
     path('hvl-management/', include('hvl_management.urls')),
     path('api/auth/', include('accounts.urls')),
     path('backups/', include('backups.urls')),
-    path('api/exposed/dashboard/', DashboardAPIView.as_view(), name='api_exposed_dashboard')
+    path('api/exposed/dashboard/', DashboardAPIView.as_view(), name='api_exposed_dashboard'),
+    path('api/exposed/children/', ChildrenListView.as_view(), name="children_list"),
+    path('api/exposed/children/<int:hcc_number>/', ChildDetailView.as_view(), name="children_list")
 ]

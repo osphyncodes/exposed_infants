@@ -14,11 +14,13 @@ import {
 } from "lucide-react";
 
 const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
-  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  // Check if current path starts with "/children"
+  const isChildrenActive = location.pathname.startsWith("/exposed-infants");
 
   // Check if device is mobile
   useEffect(() => {
@@ -35,9 +37,17 @@ const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
   }, []);
 
   const isActive = (path, exact = false) => {
+    // If this is the children route, mark all /children paths as active
+    if (path === "/children") {
+      return location.pathname.startsWith("/children");
+    }
+
+    // Exact match
     if (exact) {
       return location.pathname === path;
     }
+
+    // Normal startsWith check
     return location.pathname.startsWith(path);
   };
 
@@ -55,7 +65,9 @@ const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
     }
   };
 
-  const sidebarWidth = collapsed ? "80px" : "280px";
+  const width = "230px";
+
+  const sidebarWidth = collapsed ? "80px" : "230px";
   const sidebarClass = `bg-dark text-white vh-100 position-fixed start-0 top-0 z-3 ${
     isOpen || !isMobile ? "d-block" : "d-none"
   }`;
@@ -74,7 +86,7 @@ const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
       <div
         className={sidebarClass}
         style={{
-          width: isMobile ? "280px" : sidebarWidth,
+          width: isMobile ? "230px" : sidebarWidth,
           transition: "all 0.3s ease",
           boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
         }}
@@ -194,7 +206,7 @@ const AdminSidebar = ({ isOpen, onToggle, menuItems = [] }) => {
 
       {/* Spacer for desktop when not collapsed */}
       {!isMobile && !collapsed && (
-        <div style={{ width: "280px", flexShrink: 0 }}></div>
+        <div style={{ width: width, flexShrink: 0 }}></div>
       )}
 
       {!isMobile && collapsed && (
