@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Child(models.Model):
     hcc_number = models.IntegerField(primary_key=True)
     child_name = models.CharField(max_length=200)
@@ -29,6 +30,14 @@ class Child(models.Model):
     mother_status = models.CharField(max_length=20, choices=MOTHER_STATUS_CHOICES, default='Alive OnART')
     mother_art_number = models.CharField(max_length=20, blank=True, null=True)
     mother_art_start_date = models.DateField(blank=True, null=True)
+    
+    @property
+    def chil(self):
+        return list(self.visits.all().values())
+
+    @property
+    def hts_samples_data(self):
+        return list(self.hts_samples.all().values())
 
     def __str__(self):
         return f"{self.child_name} ({self.hcc_number})"

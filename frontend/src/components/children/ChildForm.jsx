@@ -115,50 +115,28 @@ const ChildForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setSaving(true);
     try {
-      const submitData = new FormData();
-      submitData.append("hcc_number", formData.hcc_number);
-      submitData.append("child_name", formData.child_name);
-      submitData.append("child_dob", formData.child_dob);
-      submitData.append("child_gender", formData.child_gender);
-      submitData.append("child_birth_weight", formData.child_birth_weight);
-      submitData.append("guardian_name", formData.guardian_name);
-      submitData.append("relationship", formData.relationship);
-      submitData.append("guardian_phone", formData.guardian_phone);
-      submitData.append("physical_address", formData.physical_address);
-      submitData.append("agrees_to_fup", formData.agrees_to_fup);
-      submitData.append("mother_status", formData.mother_status);
-      submitData.append("mother_art_number", formData.mother_art_number);
-      submitData.append(
-        "mother_art_start_date",
-        formData.mother_art_start_date
-      );
-
       if (isEdit) {
-        console.log(formData);
+        console.log("Updating child:", JSON.stringify(formData));
         await exposedAPI.updateChild(hcc_number, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "application/json" },
         });
         alert("Child updated successfully!");
       } else {
-        submitData.forEach((value, key) => {
-          console.log(key, value);
-        });
-
-        await exposedAPI.createChild(submitData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // For create, you can still use JSON (no need for FormData unless uploading files)
+        await exposedAPI.createChild(formData, {
+          headers: { "Content-Type": "application/json" },
         });
         alert("Child created successfully!");
       }
 
       navigate("/admin/papers");
     } catch (error) {
-      console.error("Error saving paper:", error);
-      const errorMsg = error.response?.data || "Failed to save paper";
+      console.error("Error saving child:", error);
+      const errorMsg = error.response?.data || "Failed to save child";
       alert(typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg);
     } finally {
       setSaving(false);

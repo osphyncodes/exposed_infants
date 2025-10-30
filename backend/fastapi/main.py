@@ -22,6 +22,6 @@ app.add_middleware(
 )
 
 # Routers
-app.include_router(children.router, prefix='/exposed-infants')
+app.include_router(children.router, prefix='/api/exposed')
 app.include_router(auth.router, prefix="/api/auth")        # now React can call /api/auth/token/
 

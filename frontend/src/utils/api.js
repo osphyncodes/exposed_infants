@@ -1,4 +1,5 @@
 import axios from "axios";
+import { data } from "react-router-dom";
 
 const hostname = window.location.hostname;
 
@@ -101,51 +102,13 @@ export const coreAPI = {
   getUserActivity: () => api.get("/core/activity/"),
 };
 
-export const adminAPI = {
-  // Dashboard
-  getAdminDashboardStats: () => api.get("/core/admin/dashboard/stats/"),
-
-  // Users
-  getAdminUsers: (params = {}) => api.get("/core/admin/users/", { params }),
-  getAdminUser: (id) => api.get(`/core/admin/users/${id}/`),
-  updateAdminUser: (id, data) => api.put(`/core/admin/users/${id}/`, data),
-  deleteAdminUser: (id) => api.delete(`/core/admin/users/${id}/`),
-
-  // Papers
-  getAdminPapers: (params = {}) => api.get("/core/admin/papers/", { params }),
-  getAdminPaper: (id) => api.get(`/core/admin/papers/${id}/`),
-  createAdminPaper: (data) => api.post("/core/admin/papers/", data),
-  updateAdminPaper: (id, data) => api.put(`/core/admin/papers/${id}/`, data),
-  deleteAdminPaper: (id) => api.delete(`/core/admin/papers/${id}/`),
-  bulkApprovePapers: (paperIds) =>
-    api.post("/core/admin/papers/bulk-approve/", { paper_ids: paperIds }),
-
-  // Quizzes
-  getAdminQuizzes: () => api.get("/core/admin/quizzes/"),
-  getAdminQuiz: (id) => api.get(`/core/admin/quizzes/${id}/`),
-  createAdminQuiz: (data) => api.post("/core/admin/quizzes/", data),
-  updateAdminQuiz: (id, data) => api.put(`/core/admin/quizzes/${id}/`, data),
-  deleteAdminQuiz: (id) => api.delete(`/core/admin/quizzes/${id}/`),
-
-  // Subscriptions
-  getAdminSubscriptions: (params = {}) =>
-    api.get("/core/admin/subscriptions/", { params }),
-
-  // Settings
-  getSystemSettings: () => api.get("/core/admin/settings/"),
-  updateSystemSetting: (id, data) =>
-    api.put(`/core/admin/settings/${id}/`, data),
-
-  // Logs
-  getAdminLogs: () => api.get("/core/admin/logs/"),
-};
-
 export const exposedAPI = {
   getExposedDashboard: () => api.get("/exposed/dashboard/"),
   getChildren: (params = {}) => api.get("/exposed/children/", { params }),
   getChild: (id) => api.get(`/exposed/children/${id}/`),
-  updateChild: (id) => api.put(`/exposed/children/${id}/`),
-  createChild: (data) => api.post(`/exposed/children/`, data),
+  updateChild: (hcc_number, data) =>
+    api.put(`/exposed/children/${hcc_number}/`, data),
+  createChild: (data) => api.post(`/exposed/children/create/`, data),
 };
 
 export default api;

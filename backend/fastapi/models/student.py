@@ -1,4 +1,4 @@
-from typing import Optional,List
+from typing import Optional,List, Any
 from datetime import date
 from pydantic import BaseModel
 
@@ -50,7 +50,31 @@ class ChildResponse(BaseModel):
     mother_status: Optional[str] = None
     mother_art_number: Optional[str] = None
     mother_art_start_date: Optional[date] = None
+    visits: list = None
+    hts_samples: list = None
 
     class Config:
         orm_mode = True
+
+class ChildBase(BaseModel):
+    hcc_number: int
+    child_name: str
+    child_dob: date
+    child_gender: str
+    child_birth_weight: Optional[float]
+    guardian_name: Optional[str]
+    relationship: Optional[str]
+    guardian_phone: Optional[str]
+    physical_address: Optional[str]
+    agrees_to_fup: Optional[str]
+    mother_status: Optional[str]
+    mother_art_number: Optional[str]
+    mother_art_start_date: Optional[date]
+
+class ChildCreate(ChildBase):
+    pass
+
+class ChildUpdate(ChildBase):
+    pass
+
 
