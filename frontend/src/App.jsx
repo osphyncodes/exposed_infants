@@ -12,6 +12,7 @@ import { AlertProvider } from "./context/AlertContext"; // <- make sure path is 
 import ChildrenList from "./pages/exposed/ChildrenList";
 import ChildForm from "./components/children/ChildForm";
 import ChildDetail from "./components/children/ChildDetail";
+import ChildVisit from "./pages/exposed/ChildVisits";
 
 function App() {
   return (
@@ -40,7 +41,6 @@ function App() {
                   </ProtectedRoute>
                 }
               >
-                e
                 <Route index element={<ExposedDashboard />} />
                 <Route path="children" element={<ChildrenList />} />
                 <Route path="children/create" element={<ChildForm />} />
@@ -49,6 +49,10 @@ function App() {
                   element={<ChildForm />}
                 />
                 <Route path="children/:hcc_number" element={<ChildDetail />} />
+                <Route
+                  path="children/:hcc_number/visits"
+                  element={<ChildVisit />}
+                />
                 {/* <Route path="papers" element={<AdminPapers />} />
                 <Route path="quizzes" element={<AdminQuizzes />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />

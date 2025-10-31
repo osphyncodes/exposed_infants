@@ -74,7 +74,7 @@ const ChildDetail = () => {
                   <li>
                     <Link
                       className="dropdown-item"
-                      to={`/visits/add/${child.hcc_number}`}
+                      to={`/exposed-children/children/${child.hcc_number}/visits`}
                     >
                       <Plus className="me-2" size={16} />
                       Add Visit

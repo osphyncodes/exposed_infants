@@ -109,6 +109,8 @@ export const exposedAPI = {
   updateChild: (hcc_number, data) =>
     api.put(`/exposed/children/${hcc_number}/`, data),
   createChild: (data) => api.post(`/exposed/children/create/`, data),
+  getChildVisits: (hcc_number) =>
+    api.get(`/exposed/children/${hcc_number}/visits/`),
 };
 
 export default api;
