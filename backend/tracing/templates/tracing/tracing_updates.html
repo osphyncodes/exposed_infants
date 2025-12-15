@@ -319,19 +319,19 @@
                                         </td>
                                         <td>
                                             <label class="toggle-btn form-check form-switch">
-                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} disabled>
+                                                <input class="form-check-input" id="tracing_attempted_{{ tracing.unique_id }}" type="checkbox" data-field="tracing_attempted" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_attempted %}checked{% endif %} >
                                                 <span class="slider"></span>
                                             </label>
                                         </td>                                        
                                         <td>
                                             <label class="form-check form-switch toggle-btn">
-                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} disabled>
+                                                <input class="form-check-input" id="phone_called_{{ tracing.unique_id }}" type="checkbox" data-field="phone_called" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.phone_called %}checked{% endif %} >
                                                 <span class="slider"></span>
                                             </label>
                                         </td>
                                         <td>
                                             <label class="form-check form-switch toggle-btn">
-                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %} disabled>
+                                                <input class="form-check-input" id="home_traced_{{ tracing.unique_id }}" type="checkbox" data-field="home_traced" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.home_traced %}checked{% endif %}>
                                                 <span class="slider"></span>
                                             </label>
                                         </td>
@@ -344,7 +344,7 @@
 
                                         <td>
                                             <label class="form-check form-switch toggle-btn">
-                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %} disabled>
+                                                <input class="form-check-input" id='tracing_successful_{{ tracing.unique_id }}' type="checkbox" data-field="tracing_successful" data-tracing-id="{{ tracing.unique_id }}" {% if tracing.tracing_outcome %}checked{% endif %}>
                                                 <span class="slider"></span>
                                             </label>
                                         </td>

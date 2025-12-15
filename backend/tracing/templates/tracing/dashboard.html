@@ -224,7 +224,7 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">CHW Performance</h6>
+                    <h6 id="chwPerformance" class="m-0 font-weight-bold text-primary">CHW Performance</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -273,11 +273,11 @@
         <div class="col-xl-12">
             <div class="card dashboard-card mb-4">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Performance by Reason</h6>
+                    <h6 id="" class="m-0 font-weight-bold text-primary">Performance by Reason</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="chwPerformanceTable" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-striped" id="reasonPerformanceTable" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>CHW Name</th>
@@ -388,6 +388,8 @@
 
 <script>
     // Outcome Distribution Chart
+    makeTableInteractive('chwPerformanceTable', 'chwPerformance');
+    makeTableInteractive('reasonPerformanceTable', 'reasonPerformance');
     var outcomeCtx = document.getElementById("outcomeChart");
     var outcomeChart = new Chart(outcomeCtx, {
         type: 'doughnut',

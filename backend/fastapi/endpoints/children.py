@@ -195,8 +195,12 @@ def list_children(
     children_qs = Child.objects.prefetch_related("visits", "hts_samples").all()
 
     if search and search_by:
-        filters = {f"hcc_number__icontains": search}
-        children_qs = children_qs.filter(**filters)
+        if search_by == 'hcc':
+            filters = {f"hcc_number__icontains": search}
+            children_qs = children_qs.filter(**filters)
+        else:
+            filters = {f"mother_art_number__icontains": search}
+            children_qs = children_qs.filter(**filters)
 
     return [serialize_child(child) for child in children_qs.order_by('-child_dob')[:10]]
 

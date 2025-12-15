@@ -54,7 +54,7 @@ def tracing_updates(request):
     talked_to_filter = request.GET.get('talked_to', '')
     
     # Start with all tracings
-    tracings = Tracing.objects.all().select_related('chw')
+    tracings = Tracing.objects.all().select_related('chw').filter(date_entered__gte='2025-10-01')
     
     # Apply filters
     if chw_filter:
